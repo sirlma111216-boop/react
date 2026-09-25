@@ -104,6 +104,11 @@ export class LocalClient implements GameClient {
     return { ok: false, error: '연습 모드에서는 지원하지 않는 명령입니다.' };
   }
 
+  /** 화면이 다시 마운트될 때 현재 상태를 다시 내보낸다 (StrictMode 이중 실행·라우트 전환 대비) */
+  refresh(): void {
+    this.emit();
+  }
+
   close(): void {
     if (this.timer) clearTimeout(this.timer);
     store.reset();

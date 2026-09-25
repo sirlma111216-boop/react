@@ -11,7 +11,7 @@ export function PracticeScreen({ mode, onLeave }: { mode: ModeId; onLeave: () =>
   const client = useMemo(() => new LocalClient(mode, 6), [mode]);
   const { view } = useAppState();
   const [bundle, setBundle] = useState('gas');
-  useEffect(() => () => client.close(), [client]);
+  useEffect(() => { client.refresh(); return () => client.close(); }, [client]);
   if (!view) return null;
   if (!view.game) {
     return (

@@ -26,7 +26,8 @@ export function App() {
   const { view, connection, closedReason } = useAppState();
 
   useEffect(() => {
-    if (route.kind !== 'room') { client?.close(); setClient(null); store.reset(); return; }
+    // 방 라우트가 아니면 WebSocket 클라이언트만 정리한다. 연습 모드는 자체 LocalClient 가 store 를 채우므로 여기서 reset 하면 빈 화면이 된다.
+    if (route.kind !== 'room') { if (client) { client.close(); setClient(null); store.reset(); } return; }
     const c = new WsClient(route.session.code, route.session.token);
     setClient(c);
     return () => c.close();
