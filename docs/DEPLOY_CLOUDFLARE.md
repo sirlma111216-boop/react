@@ -33,6 +33,8 @@ npx wrangler secret put TEACHER_PASSWORD
 
 ## 방법 B — GitHub 연동 (Workers Builds)
 
+**2026-09-26 연결 완료.** `main` 에 push 하면 Workers Builds 가 `npm run build` → `npx wrangler deploy` 를 자동 실행한다. 빌드 상태는 대시보드 → reaction-guild → Deployments 에서 본다.
+
 1. Cloudflare 대시보드 → Workers & Pages → `reaction-guild` → Settings → **Builds** → GitHub 저장소 `sirlma111216-boop/react` 연결.
 2. Build command `npm run build`, Deploy command `npx wrangler deploy`, root `/`.
 3. main 브랜치 push 마다 빌드·배포됩니다. PR 은 preview 로 빌드되지만 **Durable Object 가 포함된 Worker 의 preview 는 production namespace 와 분리되지 않으므로** 실시간 방 검증은 staging 배포(`--env staging`)로 하세요. (지원 범위는 https://developers.cloudflare.com/workers/ci-cd/builds/ 에서 재확인)
