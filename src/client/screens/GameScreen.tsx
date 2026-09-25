@@ -25,7 +25,7 @@ type MobileTab = 'workshop' | 'orders' | 'team' | 'inventory';
 
 const PHASE_LABEL = { plan: '계획', execute: '실행', settle: '정산·인계', finished: '종료', setup: '준비' } as const;
 
-export function GameScreen({ view, client, onLeave }: { view: ClientView; client: GameClient; onLeave: () => void }) {
+export function GameScreen({ view, client, onLeave, headerExtra }: { view: ClientView; client: GameClient; onLeave: () => void; headerExtra?: React.ReactNode }) {
   const game = view.game!;
   const team = game.myTeam;
   const me = view.me;
@@ -92,6 +92,7 @@ export function GameScreen({ view, client, onLeave }: { view: ClientView; client
         <span className="stat"><ActionIcon /> {game.phase === 'execute' ? team.actionsLeft : '-'}/{game.config.actionsPerRound}</span>
         <span className={`stat ${me.isOperator && game.phase === 'execute' ? 'pulse' : ''}`} style={{ background: me.isOperator ? 'var(--amber-soft)' : undefined }}>담당 {operatorNick}{me.isOperator ? ' (나)' : ''}</span>
         <span style={{ flex: 1 }} />
+        {headerExtra}
         <button className="btn btn-sm btn-copper" onClick={() => setHelp(true)}>도움말</button>
         <button className="btn btn-sm btn-ghost" onClick={() => setCodex(true)}>도감</button>
         <button className="btn btn-sm btn-ghost" onClick={onLeave}>나가기</button>

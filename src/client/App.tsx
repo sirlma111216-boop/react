@@ -73,11 +73,6 @@ export function App() {
   let screen: React.ReactNode;
   if (view.room.status === 'lobby' || !view.game) screen = <LobbyScreen view={view} client={client} onLeave={leave} />;
   else if (isTeacher && (teacherView === 'spectate' || !view.me.teamId)) screen = <TeacherBoard view={view} client={client} onLeave={leave} teacherKey={loadTeacherKey()} onSwitchToTeam={view.me.teamId ? () => setTeacherView('team') : undefined} />;
-  else screen = (
-    <div style={{ position: 'relative' }}>
-      <GameScreen view={view} client={client} onLeave={leave} />
-      {isTeacher && <button className="btn btn-sm btn-copper" style={{ position: 'fixed', top: 62, right: 12, zIndex: 20 }} onClick={() => setTeacherView('spectate')}>관전 보드</button>}
-    </div>
-  );
+  else screen = <GameScreen view={view} client={client} onLeave={leave} headerExtra={isTeacher ? <button className="btn btn-sm btn-copper" onClick={() => setTeacherView('spectate')}>관전 보드</button> : undefined} />;
   return <>{screen}<Toasts /><ConnectionBadge /></>;
 }

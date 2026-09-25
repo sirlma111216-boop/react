@@ -27,14 +27,12 @@ export function PracticeScreen({ mode, onLeave }: { mode: ModeId; onLeave: () =>
       </div>
     );
   }
-  return (
-    <div style={{ position: 'relative' }}>
-      <GameScreen view={view} client={client} onLeave={onLeave} />
-      {view.game.phase !== 'finished' && <div style={{ position: 'fixed', top: 62, right: 12, zIndex: 20 }} className="row">
-        <button className="btn btn-sm btn-copper pulse" onClick={() => client.send({ type: 'extend', seconds: 0 })}>다음 단계 ▶ {view.game.phase === 'plan' ? '실행으로' : view.game.phase === 'execute' ? '정산으로' : '다음 라운드'}</button>
-        <button className="btn btn-sm btn-ghost" onClick={() => { const on = !auto; setAuto(on); client.setAuto(on); }}>{auto ? '자동 진행 끄기' : '자동 진행 켜기'}</button>
-        {auto && (view.room.status === 'paused' ? <button className="btn btn-sm" onClick={() => client.send({ type: 'resume' })}>재개</button> : <button className="btn btn-sm btn-ghost" onClick={() => client.send({ type: 'pause' })}>일시정지</button>)}
-      </div>}
-    </div>
-  );
+  const controls = view.game.phase !== 'finished' ? (
+    <>
+      <button className="btn btn-sm btn-copper pulse" onClick={() => client.send({ type: 'extend', seconds: 0 })}>다음 단계 ▶ {view.game.phase === 'plan' ? '실행으로' : view.game.phase === 'execute' ? '정산으로' : '다음 라운드'}</button>
+      <button className="btn btn-sm btn-ghost" onClick={() => { const on = !auto; setAuto(on); client.setAuto(on); }}>{auto ? '자동 끄기' : '자동 진행'}</button>
+      {auto && (view.room.status === 'paused' ? <button className="btn btn-sm" onClick={() => client.send({ type: 'resume' })}>재개</button> : <button className="btn btn-sm btn-ghost" onClick={() => client.send({ type: 'pause' })}>일시정지</button>)}
+    </>
+  ) : null;
+  return <GameScreen view={view} client={client} onLeave={onLeave} headerExtra={controls} />;
 }
