@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.wrangler/
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+# 원본 미디어(대용량)는 저장소에 넣지 않는다. 런타임 WebP는 public/assets 에 커밋한다.
+assets-source/images/*.png
+assets-source/audio/*.wav
+reports/balance/runs/

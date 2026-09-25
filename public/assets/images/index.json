@@ -1,0 +1,157 @@
+{
+  "builtAt": "2026-09-25T11:34:10.892Z",
+  "images": [
+    {
+      "id": "bg-title",
+      "status": "ok",
+      "width": 1672,
+      "height": 941,
+      "alpha": false,
+      "kb": 226
+    },
+    {
+      "id": "bg-lobby",
+      "status": "ok",
+      "width": 1672,
+      "height": 941,
+      "alpha": false,
+      "kb": 90
+    },
+    {
+      "id": "bg-results",
+      "status": "ok",
+      "width": 1672,
+      "height": 941,
+      "alpha": false,
+      "kb": 80
+    },
+    {
+      "id": "district-paper",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": false,
+      "kb": 38
+    },
+    {
+      "id": "district-water",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": false,
+      "kb": 44
+    },
+    {
+      "id": "district-energy",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": false,
+      "kb": 47
+    },
+    {
+      "id": "district-ceramics",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": false,
+      "kb": 48
+    },
+    {
+      "id": "district-metals",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": false,
+      "kb": 58
+    },
+    {
+      "id": "district-bioprocess",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": false,
+      "kb": 56
+    },
+    {
+      "id": "equipment-reactor",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": true,
+      "kb": 62
+    },
+    {
+      "id": "equipment-heater",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": true,
+      "kb": 52
+    },
+    {
+      "id": "equipment-cooler",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": true,
+      "kb": 39
+    },
+    {
+      "id": "equipment-filter",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": true,
+      "kb": 51
+    },
+    {
+      "id": "equipment-electrolyzer",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": true,
+      "kb": 52
+    },
+    {
+      "id": "equipment-pressure",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": true,
+      "kb": 52
+    },
+    {
+      "id": "equipment-purifier",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": true,
+      "kb": 72
+    },
+    {
+      "id": "equipment-catalyst",
+      "status": "ok",
+      "width": 768,
+      "height": 768,
+      "alpha": true,
+      "kb": 43
+    },
+    {
+      "id": "card-back",
+      "status": "ok",
+      "width": 1024,
+      "height": 1365,
+      "alpha": false,
+      "kb": 43
+    },
+    {
+      "id": "surface-paper",
+      "status": "ok",
+      "width": 1024,
+      "height": 1024,
+      "alpha": false,
+      "kb": 15
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "reaction-guild",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "리액션 길드 / REACTION GUILD — 학급 실시간 화학 공방 보드게임",
+  "scripts": {
+    "dev": "vite",
+    "dev:worker": "wrangler dev --port 8787",
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.worker.json --noEmit",
+    "lint": "eslint src --max-warnings 0",
+    "test": "vitest run",
+    "verify:chemistry": "tsx scripts/verify-chemistry.ts",
+    "sim:smoke": "tsx src/sim/cli.ts smoke",
+    "sim:balance": "tsx src/sim/cli.ts balance",
+    "sim:validate": "tsx src/sim/cli.ts validate",
+    "sim:replay": "tsx src/sim/cli.ts replay",
+    "assets:build": "node scripts/build-assets.mjs",
+    "deploy": "npm run build && wrangler deploy",
+    "deploy:staging": "npm run build && wrangler deploy --env staging",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run verify:chemistry && npm run build"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260923.1",
+    "@eslint/js": "^9.36.0",
+    "@types/node": "^24.5.2",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.3",
+    "eslint": "^9.36.0",
+    "sharp": "^0.34.4",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.1",
+    "vite": "^7.1.7",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.40.0"
+  }
+}

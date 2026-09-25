@@ -1,0 +1,85 @@
+{
+  "baseline": -24.16,
+  "history": [
+    {
+      "loop": 1,
+      "changes": [
+        "startEnergy 6→5"
+      ],
+      "objective": -28.67,
+      "accepted": false
+    },
+    {
+      "loop": 2,
+      "changes": [
+        "reward.C13 36→40",
+        "startCoins 40→38",
+        "price.aceticAcid_l 3→2"
+      ],
+      "objective": -28.92,
+      "accepted": false
+    },
+    {
+      "loop": 3,
+      "changes": [
+        "equip.U10 8→6",
+        "equip.U03 8→10"
+      ],
+      "objective": -22.53,
+      "accepted": true
+    },
+    {
+      "loop": 4,
+      "changes": [
+        "price.CuO_s 4→5",
+        "reward.C02 24→22"
+      ],
+      "objective": -26.55,
+      "accepted": false
+    },
+    {
+      "loop": 5,
+      "changes": [
+        "equip.U04 8→10"
+      ],
+      "objective": -20.14,
+      "accepted": true
+    },
+    {
+      "loop": 6,
+      "changes": [
+        "equip.U07 12→10"
+      ],
+      "objective": -22.41,
+      "accepted": false
+    },
+    {
+      "loop": 7,
+      "changes": [
+        "reward.C09 36→38"
+      ],
+      "objective": -23.42,
+      "accepted": false
+    },
+    {
+      "loop": 8,
+      "changes": [
+        "reward.C07 44→48",
+        "reward.C12 52→56"
+      ],
+      "objective": -15,
+      "accepted": true
+    },
+    {
+      "loop": 10,
+      "changes": [
+        "reward.C12 56→59",
+        "reward.C04 30→27"
+      ],
+      "objective": -19.42,
+      "accepted": false
+    }
+  ],
+  "selectedVersion": "econ-1.1+c8",
+  "elapsedMs": 65436
+}

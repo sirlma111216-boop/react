@@ -1,0 +1,43 @@
+{
+  // 리액션 길드 — Cloudflare Workers + Durable Objects (SQLite) + Static Assets
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "reaction-guild",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2025-09-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/ws", "/ws/*"]
+  },
+  "vars": {
+    // 교사 로그인 기본값. 운영에서는 `wrangler secret put TEACHER_PASSWORD` 로 덮어쓸 수 있다.
+    "TEACHER_ID": "teacher",
+    "TEACHER_PASSWORD": "guild2026",
+    "ENVIRONMENT": "production"
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOM", "class_name": "RoomDurableObject" },
+      { "name": "DIRECTORY", "class_name": "DirectoryDurableObject" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["RoomDurableObject", "DirectoryDurableObject"] }
+  ],
+  "env": {
+    "staging": {
+      "name": "reaction-guild-staging",
+      "vars": { "TEACHER_ID": "teacher", "TEACHER_PASSWORD": "guild2026", "ENVIRONMENT": "staging" },
+      "durable_objects": {
+        "bindings": [
+          { "name": "ROOM", "class_name": "RoomDurableObject" },
+          { "name": "DIRECTORY", "class_name": "DirectoryDurableObject" }
+        ]
+      }
+    }
+  }
+}

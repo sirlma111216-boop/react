@@ -1,0 +1,339 @@
+{
+  "title": "candidate-8: reward.C07 44→48, reward.C12 52→56",
+  "when": "2026-09-25T11:51:24.565Z",
+  "seedPrefix": "train-c8",
+  "games": 600,
+  "configVersion": "econ-1.1+c5+c8",
+  "scienceVersion": "chem-1.0",
+  "summary": {
+    "games": 600,
+    "teamsPerGame": 6,
+    "errors": 0,
+    "ledgerFailures": 0,
+    "byBot": {
+      "random": {
+        "n": 600,
+        "asset": 13.38,
+        "assetCi": [
+          12.21,
+          14.54
+        ],
+        "assetMedian": 9,
+        "winRate": 0,
+        "delivered": 0.58,
+        "firstDelivery": 6,
+        "stalledRate": 0.07
+      },
+      "quickcash": {
+        "n": 600,
+        "asset": 109.54,
+        "assetCi": [
+          107.11,
+          111.96
+        ],
+        "assetMedian": 109,
+        "winRate": 0.27,
+        "delivered": 3.68,
+        "firstDelivery": 4,
+        "stalledRate": 0
+      },
+      "planner": {
+        "n": 600,
+        "asset": 108.17,
+        "assetCi": [
+          105.32,
+          111.02
+        ],
+        "assetMedian": 109,
+        "winRate": 0.26,
+        "delivered": 3.88,
+        "firstDelivery": 2,
+        "stalledRate": 0.02
+      },
+      "byproduct": {
+        "n": 600,
+        "asset": 104.74,
+        "assetCi": [
+          101.98,
+          107.49
+        ],
+        "assetMedian": 106,
+        "winRate": 0.23,
+        "delivered": 3.47,
+        "firstDelivery": 4,
+        "stalledRate": 0.01
+      },
+      "investor": {
+        "n": 600,
+        "asset": 75.2,
+        "assetCi": [
+          72.58,
+          77.83
+        ],
+        "assetMedian": 80,
+        "winRate": 0.06,
+        "delivered": 2.53,
+        "firstDelivery": 4,
+        "stalledRate": 0.1
+      },
+      "bidder": {
+        "n": 600,
+        "asset": 97.87,
+        "assetCi": [
+          94.79,
+          100.95
+        ],
+        "assetMedian": 103,
+        "winRate": 0.19,
+        "delivered": 3.42,
+        "firstDelivery": 2,
+        "stalledRate": 0.03
+      }
+    },
+    "byPosition": {
+      "0": {
+        "n": 600,
+        "winRate": 0.18,
+        "winCi": [
+          0.15,
+          0.21
+        ],
+        "asset": 84.84
+      },
+      "1": {
+        "n": 600,
+        "winRate": 0.19,
+        "winCi": [
+          0.16,
+          0.22
+        ],
+        "asset": 85.34
+      },
+      "2": {
+        "n": 600,
+        "winRate": 0.16,
+        "winCi": [
+          0.13,
+          0.19
+        ],
+        "asset": 84.14
+      },
+      "3": {
+        "n": 600,
+        "winRate": 0.16,
+        "winCi": [
+          0.13,
+          0.18
+        ],
+        "asset": 84.9
+      },
+      "4": {
+        "n": 600,
+        "winRate": 0.17,
+        "winCi": [
+          0.14,
+          0.2
+        ],
+        "asset": 86.15
+      },
+      "5": {
+        "n": 600,
+        "winRate": 0.15,
+        "winCi": [
+          0.12,
+          0.18
+        ],
+        "asset": 83.52
+      }
+    },
+    "byBundle": {
+      "gas": {
+        "n": 1200,
+        "asset": 59.06,
+        "winRate": 0.11
+      },
+      "carbonate": {
+        "n": 1200,
+        "asset": 92.37,
+        "winRate": 0.16
+      },
+      "material": {
+        "n": 1200,
+        "asset": 103.02,
+        "winRate": 0.22
+      }
+    },
+    "firstDeliveryMedian": 4,
+    "deliveredMedian": 3,
+    "stalledRate": 0.03,
+    "dominantTemplate": {
+      "templateId": "C03",
+      "share": 0.26
+    },
+    "plannerVsRandom": 94.79,
+    "skilledSpreadPct": 36.25,
+    "objective": -15,
+    "objectiveParts": {
+      "fairness": -4,
+      "progress": 0,
+      "firstSuccess": -8,
+      "deliveries": 0,
+      "diversity": 0,
+      "skill": 10,
+      "spread": -13
+    }
+  },
+  "config": {
+    "version": "econ-1.1+c5",
+    "startCoins": 40,
+    "startEnergy": 6,
+    "energyCap": 12,
+    "energyPerRound": 2,
+    "actionsPerRound": 2,
+    "reactionSlots": 2,
+    "processSlots": 1,
+    "contractLimit": 2,
+    "procureMaxKinds": 3,
+    "procureMaxTotal": 6,
+    "procureMaxPerKindPerRound": 4,
+    "energyBundleCost": 2,
+    "energyBundleAmount": 3,
+    "energyBundleMax": 2,
+    "heatRecoveryPerRound": 2,
+    "equipmentSalvageRate": 0.5,
+    "auctionRounds": [
+      3,
+      6
+    ],
+    "auctionMaxBid": 6,
+    "auctionBonus": 8,
+    "eventMaxPerGame": 3,
+    "sameTemplateLimit": 2,
+    "byproductTemplateLimit": 2,
+    "offersPerRound": 3,
+    "deadlineSlack": 2,
+    "prices": {
+      "H2_g": 2,
+      "O2_g": 1,
+      "H2O_l": 1,
+      "H2O2_aq": 3,
+      "CH4_g": 3,
+      "Mg_s": 3,
+      "NaHCO3_s": 1,
+      "Na2CO3_s": 3,
+      "CaCl2_s": 2,
+      "CaO_s": 3,
+      "CaOH2_s": 3,
+      "HCl_aq": 2,
+      "NaOH_aq": 2,
+      "CaCO3_s": 2,
+      "Zn_s": 4,
+      "CuSO4_aq": 4,
+      "CuO_s": 4,
+      "Fe_s": 3,
+      "N2_g": 1,
+      "glucose_aq": 4,
+      "ethanol_l": 4,
+      "aceticAcid_l": 3,
+      "HCl_g": 3
+    },
+    "contractRewards": {
+      "C01": 30,
+      "C02": 24,
+      "C03": 26,
+      "C04": 30,
+      "C05": 18,
+      "C06": 12,
+      "C07": 48,
+      "C08": 24,
+      "C09": 36,
+      "C10": 32,
+      "C11": 42,
+      "C12": 56,
+      "C13": 36,
+      "C14": 54
+    },
+    "equipmentPrices": {
+      "U01": 14,
+      "U02": 10,
+      "U03": 10,
+      "U04": 10,
+      "U05": 12,
+      "U06": 14,
+      "U07": 12,
+      "U08": 8,
+      "U09": 8,
+      "U10": 6
+    },
+    "reactionEnergy": {},
+    "reactionTime": {},
+    "bundles": [
+      {
+        "id": "gas",
+        "name": "기체 공방",
+        "items": [
+          {
+            "materialId": "H2_g",
+            "units": 4
+          },
+          {
+            "materialId": "O2_g",
+            "units": 2
+          },
+          {
+            "materialId": "H2O2_aq",
+            "units": 1
+          }
+        ],
+        "extraCoins": 2,
+        "blurb": "물 합성으로 정제수 계약을 바로 노린다."
+      },
+      {
+        "id": "carbonate",
+        "name": "탄산 공방",
+        "items": [
+          {
+            "materialId": "NaHCO3_s",
+            "units": 4
+          },
+          {
+            "materialId": "CaCl2_s",
+            "units": 2
+          },
+          {
+            "materialId": "Na2CO3_s",
+            "units": 1
+          }
+        ],
+        "extraCoins": 2,
+        "blurb": "열분해와 침전으로 제지 계약을 노린다."
+      },
+      {
+        "id": "material",
+        "name": "소재 공방",
+        "items": [
+          {
+            "materialId": "Mg_s",
+            "units": 2
+          },
+          {
+            "materialId": "O2_g",
+            "units": 2
+          },
+          {
+            "materialId": "CaO_s",
+            "units": 1
+          },
+          {
+            "materialId": "H2O_l",
+            "units": 2
+          }
+        ],
+        "extraCoins": 0,
+        "blurb": "마그네슘 연소로 세라믹 계약을 빠르게 완료한다."
+      }
+    ]
+  },
+  "failures": [],
+  "elapsedMs": 61523
+}

@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run verify:chemistry
+      - run: npm run sim:smoke -- --games 60
+      - run: npm run build
+      - name: wrangler config check (dry run)
+        run: npx wrangler deploy --dry-run --outdir dist/worker-dry
+
+  # 긴 밸런스 탐색은 CI 기본 실행에 넣지 않는다 (수동: npm run sim:balance && npm run sim:validate)
+
+  deploy:
+    # main 에 push 되면 Cloudflare 에 배포한다. 저장소 Secrets 에 CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID 가 있어야 한다.
+    # Workers Builds(Git 연동)를 대시보드에서 연결했다면 이 job 은 중복이므로 비활성화해도 된다.
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: deploy
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
