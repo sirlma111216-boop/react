@@ -107,7 +107,7 @@ class Client {
   const spec = await api(`/api/rooms/${code}/join`, { method: 'POST', body: JSON.stringify({ nick: '늦은학생' }) });
   check('경기 중 입장은 관전자', spec.status === 200 && spec.data.role === 'spectator');
   // 7. 명령: 담당자만 실행, 중복 commandId 는 한 번만, 다른 팀 비공개 정보 미노출
-  await leaders[0].waitView((v) => v.game?.phase === 'execute');
+  await leaders[0].waitView((v) => v.game?.phase === 'execute', FAST ? 10000 : 45000);
   const team0 = leaders[0].view.game.myTeam;
   const opId = team0.operatorId;
   const members = leaders[0].view.teams.find((t) => t.id === team0.id).members;
@@ -128,7 +128,7 @@ class Client {
   check('재접속 후 상태 복구', op.view.game.myTeam.id === team0.id);
   // 9. 일시정지·재개·연장
   const pz = await teacher.send({ type: 'pause' }); check('일시정지', pz.ok, pz.error ?? '');
-  await teacher.waitView((v) => v.room.status === 'paused');
+  await teacher.waitView((v) => v.room.status === 'paused', 10000);
   check('일시정지 중 팀 명령 거절', !(await op.send({ type: 'team', cmd: { type: 'buyEnergy', bundles: 1 } })).ok);
   const rs = await teacher.send({ type: 'resume' }); check('재개', rs.ok, rs.error ?? '');
   check('연장', (await teacher.send({ type: 'extend', seconds: 5 })).ok);

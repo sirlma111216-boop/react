@@ -1,6 +1,6 @@
 # Cloudflare 배포
 
-현재 운영 배포: **https://reaction-guild.sirlma.workers.dev** (계정 Sirlma@naver.com, Worker , 2026-09-25 wrangler deploy 로 배포·검증)
+현재 운영 배포: **https://reaction-guild.sirlma.workers.dev** (계정 Sirlma@naver.com, Worker `reaction-guild`, 2026-09-25 `wrangler deploy` 로 배포·검증)
 
 이 앱은 **Cloudflare Workers 하나**로 정적 프런트엔드(Static Assets)와 실시간 서버(Durable Objects)를 함께 배포합니다. 외부 DB·회원가입·Firebase 는 없습니다.
 
