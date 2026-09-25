@@ -148,8 +148,8 @@ p { margin: 0; }
 
 /* ---------- 게임 보드 ---------- */
 .board {
-  height: 100vh; height: 100dvh; display: grid; grid-template-rows: 56px 1fr 150px; grid-template-columns: 290px 1fr 270px;
-  grid-template-areas: 'head head head' 'left center right' 'inv inv right'; gap: 10px; padding: 10px;
+  height: 100vh; height: 100dvh; display: grid; grid-template-rows: 56px auto 1fr 150px; grid-template-columns: 290px 1fr 270px;
+  grid-template-areas: 'head head head' 'coach coach coach' 'left center right' 'inv inv right'; gap: 10px; padding: 10px;
   background: var(--ivory) url('/assets/images/surface-paper.webp') center/512px repeat;
 }
 .board > * { min-height: 0; min-width: 0; }
@@ -160,7 +160,7 @@ p { margin: 0; }
 .board-inv { grid-area: inv; background: var(--paper); border-radius: 14px; padding: 10px 12px; box-shadow: var(--shadow-s); overflow: auto; }
 .mobile-nav { display: none; }
 @media (max-width: 1099px) {
-  .board { grid-template-rows: auto 1fr 58px; grid-template-columns: 1fr; grid-template-areas: 'head' 'main' 'nav'; }
+  .board { grid-template-rows: auto auto 1fr 58px; grid-template-columns: 1fr; grid-template-areas: 'head' 'coach' 'main' 'nav'; }
   .board-head { flex-wrap: wrap; row-gap: 4px; padding: 6px 10px; }
   .board-head .timer { font-size: 18px; min-width: 52px; }
   .board-left, .board-center, .board-right, .board-inv { grid-area: main; display: none; }
@@ -183,6 +183,14 @@ p { margin: 0; }
 
 .panel { background: var(--paper); border-radius: 14px; padding: 12px; box-shadow: var(--shadow-s); border: 1px solid rgba(23, 73, 77, 0.06); }
 .panel-title { font-size: 13px; font-weight: 800; color: var(--teal); letter-spacing: 0.04em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+/* 안내 줄 */
+.coach { grid-area: coach; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--amber-soft); border: 1.5px solid var(--amber); border-radius: 12px; padding: 8px 12px; }
+.coach-min { background: transparent; border-color: transparent; padding: 0; }
+.coach-step { font-weight: 800; color: #7a4f0b; white-space: nowrap; }
+.coach-detail { flex: 1; min-width: 200px; font-size: 13.5px; }
+.coach-go { white-space: nowrap; }
+.help-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
 
 /* 슬롯 */
 .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }

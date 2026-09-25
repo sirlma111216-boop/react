@@ -17,6 +17,8 @@ import { ContractCard } from '../components/ContractCard';
 import { LotChip, LotDetail } from '../components/Inventory';
 import { ShopModal, EquipmentModal } from '../components/Shops';
 import { Codex } from '../components/Codex';
+import { CoachBar, HelpModal } from '../components/Coach';
+import { prefGet, prefSet } from '../lib/session';
 import { ResultsScreen } from './ResultsScreen';
 
 type MobileTab = 'workshop' | 'orders' | 'team' | 'inventory';
@@ -33,6 +35,8 @@ export function GameScreen({ view, client, onLeave }: { view: ClientView; client
   const [shop, setShop] = useState(false);
   const [equip, setEquip] = useState(false);
   const [codex, setCodex] = useState(false);
+  const [help, setHelp] = useState(() => prefGet('help.seen', '0') !== '1');
+  const manual = view.room.phaseEndsAt === null && view.room.pausedRemaining === null && client.kind === 'local';
   const [bidInput, setBidInput] = useState<number | null>(null);
   const seconds = useCountdown(view.room.phaseEndsAt, view.room.pausedRemaining);
   const canAct = !!team && me.isOperator && game.phase === 'execute' && view.room.status === 'playing';
@@ -82,15 +86,17 @@ export function GameScreen({ view, client, onLeave }: { view: ClientView; client
         <Wordmark compact />
         <span className="round-label">R{game.round}/{game.roundsTotal}</span>
         <span className={`phase-pill phase-${game.phase}`}>{PHASE_LABEL[game.phase]}{view.room.status === 'paused' ? ' · 일시정지' : ''}</span>
-        <span className={`timer ${seconds <= 10 && game.phase === 'execute' ? 'low' : ''}`} aria-live="off">{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}</span>
+        <span className={`timer ${seconds <= 10 && game.phase === 'execute' && !manual ? 'low' : ''}`} aria-live="off">{manual ? '수동' : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`}</span>
         <span className="stat"><CoinIcon /> {team.coins}{team.bid > 0 && <span className="muted small">(입찰 예약 {team.bid})</span>}</span>
         <span className="stat"><EnergyIcon /> {team.energy}/{game.config.energyCap}</span>
         <span className="stat"><ActionIcon /> {game.phase === 'execute' ? team.actionsLeft : '-'}/{game.config.actionsPerRound}</span>
         <span className={`stat ${me.isOperator && game.phase === 'execute' ? 'pulse' : ''}`} style={{ background: me.isOperator ? 'var(--amber-soft)' : undefined }}>담당 {operatorNick}{me.isOperator ? ' (나)' : ''}</span>
         <span style={{ flex: 1 }} />
+        <button className="btn btn-sm btn-copper" onClick={() => setHelp(true)}>도움말</button>
         <button className="btn btn-sm btn-ghost" onClick={() => setCodex(true)}>도감</button>
         <button className="btn btn-sm btn-ghost" onClick={onLeave}>나가기</button>
       </header>
+      <CoachBar view={view} isLocal={client.kind === 'local'} onGoTab={(t) => setTab(t)} />
 
       {/* 좌: 주문·상점 */}
       <aside className={`board-left ${activeCls('orders')}`}>
@@ -235,6 +241,7 @@ export function GameScreen({ view, client, onLeave }: { view: ClientView; client
       {shop && <ShopModal game={game} team={team} canAct={canAct} onClose={() => setShop(false)} onBuy={async (items) => { if (await send({ type: 'procure', items }, 'sfx-supply')) setShop(false); }} onBuyEnergy={async (n) => { if (await send({ type: 'buyEnergy', bundles: n }, 'sfx-supply')) setShop(false); }} />}
       {equip && <EquipmentModal game={game} team={team} canAct={canAct} onClose={() => setEquip(false)} onBuy={async (id) => { if (await send({ type: 'equip', equipmentId: id }, 'sfx-achievement')) setEquip(false); }} />}
       {codex && <Codex activeReactions={game.activeReactions} onClose={() => setCodex(false)} />}
+      {help && <HelpModal isLocal={client.kind === 'local'} onClose={() => { setHelp(false); prefSet('help.seen', '1'); }} />}
     </div>
   );
 }

@@ -24,6 +24,8 @@ export class LocalClient implements GameClient {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private paused = false;
   private pausedRemaining: number | null = null;
+  /** 수동 진행: 타이머 없이 '다음 단계' 버튼으로만 진행 (연습 기본값) */
+  private manual = true;
   private readonly me = { playerId: 'me', nick: '연습생', teamId: 'T1' };
 
   constructor(private mode: 'classic' | 'extended' | 'industrial' = 'classic', rounds = 6) {
@@ -58,9 +60,21 @@ export class LocalClient implements GameClient {
 
   private schedule(ms: number): void {
     if (this.timer) clearTimeout(this.timer);
+    if (this.manual) { this.phaseEndsAt = null; this.timer = null; this.emit(); return; }
     this.phaseEndsAt = Date.now() + ms;
     this.timer = setTimeout(() => this.advance(), ms);
     this.emit();
+  }
+
+  get isManual(): boolean { return this.manual; }
+
+  /** 자동 진행 켜기/끄기 */
+  setAuto(on: boolean): void {
+    this.manual = !on;
+    const g = this.state;
+    if (g.phase === 'setup' || g.phase === 'finished') { this.emit(); return; }
+    const ms = g.phase === 'plan' ? PLAN_MS : g.phase === 'execute' ? EXEC_MS : SETTLE_MS;
+    this.schedule(ms);
   }
 
   private botPlan(): void {

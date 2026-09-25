@@ -11,6 +11,7 @@ export function PracticeScreen({ mode, onLeave }: { mode: ModeId; onLeave: () =>
   const client = useMemo(() => new LocalClient(mode, 6), [mode]);
   const { view } = useAppState();
   const [bundle, setBundle] = useState('gas');
+  const [auto, setAuto] = useState(false);
   useEffect(() => { client.refresh(); return () => client.close(); }, [client]);
   if (!view) return null;
   if (!view.game) {
@@ -19,7 +20,7 @@ export function PracticeScreen({ mode, onLeave }: { mode: ModeId; onLeave: () =>
         <div className="bg-full bg-fallback-lobby" />
         <div className="bg-content title-panel stack">
           <h2 style={{ color: 'var(--teal)' }}>연습 모드 · {mode === 'classic' ? '클래식' : mode === 'extended' ? '확장' : '산업'} 공방</h2>
-          <p className="small">시작 묶음을 고르고 시작하세요. 각 단계는 자동으로 넘어가고, 헤더의 <b>다음 단계</b>로 바로 넘길 수도 있습니다. 목표: 6라운드 안에 주문 하나 이상 납품.</p>
+          <p className="small">시작 묶음을 고르고 시작하세요. 연습에서는 시간이 자동으로 흐르지 않고 <b>다음 단계 ▶</b> 버튼으로 진행합니다. 보드 위의 💡 안내가 다음 할 일을 알려줍니다. 목표: 6라운드 안에 주문 하나 이상 납품.</p>
           {DEFAULT_ECONOMY.bundles.map((b) => <button key={b.id} className={`btn ${bundle === b.id ? 'btn-primary' : 'btn-ghost'}`} style={{ justifyContent: 'flex-start' }} onClick={() => { setBundle(b.id); client.send({ type: 'setBundle', bundleId: b.id }); }}><span><b>{b.name}</b> <span className="small">{b.items.map((i) => `${MATERIALS[i.materialId]!.formula}×${i.units}`).join(' ')}</span></span></button>)}
           <div className="row"><button className="btn btn-ghost" onClick={onLeave}>돌아가기</button><button className="btn btn-copper btn-lg btn-block" onClick={() => client.send({ type: 'start' })}>시작</button></div>
         </div>
@@ -29,7 +30,11 @@ export function PracticeScreen({ mode, onLeave }: { mode: ModeId; onLeave: () =>
   return (
     <div style={{ position: 'relative' }}>
       <GameScreen view={view} client={client} onLeave={onLeave} />
-      {view.game.phase !== 'finished' && <div style={{ position: 'fixed', top: 62, right: 12, zIndex: 20 }} className="row"><button className="btn btn-sm btn-copper" onClick={() => client.send({ type: 'extend', seconds: 0 })}>다음 단계 ▶</button>{view.room.status === 'paused' ? <button className="btn btn-sm" onClick={() => client.send({ type: 'resume' })}>재개</button> : <button className="btn btn-sm btn-ghost" onClick={() => client.send({ type: 'pause' })}>일시정지</button>}</div>}
+      {view.game.phase !== 'finished' && <div style={{ position: 'fixed', top: 62, right: 12, zIndex: 20 }} className="row">
+        <button className="btn btn-sm btn-copper pulse" onClick={() => client.send({ type: 'extend', seconds: 0 })}>다음 단계 ▶ {view.game.phase === 'plan' ? '실행으로' : view.game.phase === 'execute' ? '정산으로' : '다음 라운드'}</button>
+        <button className="btn btn-sm btn-ghost" onClick={() => { const on = !auto; setAuto(on); client.setAuto(on); }}>{auto ? '자동 진행 끄기' : '자동 진행 켜기'}</button>
+        {auto && (view.room.status === 'paused' ? <button className="btn btn-sm" onClick={() => client.send({ type: 'resume' })}>재개</button> : <button className="btn btn-sm btn-ghost" onClick={() => client.send({ type: 'pause' })}>일시정지</button>)}
+      </div>}
     </div>
   );
 }
