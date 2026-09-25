@@ -1,5 +1,7 @@
 # 리액션 길드 · REACTION GUILD
 
+**배포 주소: https://reaction-guild.sirlma.workers.dev** · 저장소: https://github.com/sirlma111216-boop/react
+
 학급(교사 1명 + 학생 최대 40명)이 팀을 이루어 **화학 공방을 운영하는 실시간 웹 보드게임**입니다. 원료를 사고(조달), 반응 카드를 실행해(생산), 가공으로 제품을 분리하고(가공), 도시의 주문에 납품(납품)하며, 설비에 투자(설비)합니다. 최종 자산(코인 + 유료 설비 잔존가치 50%)이 가장 높은 길드가 승리합니다. 퀴즈·정답 입력·개인 성적표는 없습니다.
 
 - 스택: TypeScript strict · React + Vite · Cloudflare Workers(Static Assets) · Durable Objects(SQLite storage, WebSocket Hibernation)
