@@ -108,7 +108,10 @@ export function StorePlace({ view, send, focusId, canAct, goTo, highlight }: { v
     ...g.shopMaterials.map((m) => ({ kind: 'mat' as const, id: m, rec: (needed[m] ?? 0) > 0 })),
     ...g.activeEquipment.map((e) => ({ kind: 'equip' as const, id: e, rec: usefulEquip.has(e) && !t.equipment.some((x) => x.id === e) })),
   ];
-  const shown = products.filter((p) => filter === 'all' || (filter === 'mat' && p.kind === 'mat') || (filter === 'equip' && p.kind === 'equip') || (filter === 'rec' && p.rec));
+  // 추천할 것이 없으면(받은 주문이 없을 때 등) 빈 진열대 대신 전체 상품을 보여 준다
+  const hasRec = products.some((p) => p.rec);
+  const eff: Filter = filter === 'rec' && !hasRec ? 'all' : filter;
+  const shown = products.filter((p) => eff === 'all' || (eff === 'mat' && p.kind === 'mat') || (eff === 'equip' && p.kind === 'equip') || (eff === 'rec' && p.rec));
   const line = Object.keys(needed).length ? `"${focus?.title}"에 필요한 재료를 추천해 뒀어요. 한 번에 ${cfg.procureMaxKinds}종류, ${cfg.procureMaxTotal}개까지예요.` : '필요한 재료와 장비를 고르세요. 구경은 공짜예요.';
 
   return (
@@ -118,7 +121,7 @@ export function StorePlace({ view, send, focusId, canAct, goTo, highlight }: { v
         <div className="place-main">
           <div className="filters" role="tablist">
             {(['rec', 'all', 'mat', 'equip'] as Filter[]).map((f) => <button key={f} role="tab" aria-selected={filter === f} className={`chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{{ rec: '추천', all: '전체', mat: '재료', equip: '장비' }[f]}</button>)}
-            {filter === 'rec' && shown.length === 0 && <span className="muted small">추천할 것이 없어요. "전체"를 보세요.</span>}
+            {filter === 'rec' && !hasRec && <span className="small filter-note">주문을 받으면 필요한 재료를 추천해 드려요. 지금은 전체 상품이에요.</span>}
           </div>
           <div className="product-grid">
             {shown.map((p) => p.kind === 'mat' ? (

@@ -472,3 +472,38 @@ p { margin: 0; }
 @media (prefers-reduced-motion: reduce) { .npc-img, .device-img.processing, .bubbles i, .parcel { animation: none !important; } }
 /* 주문·계약 삽화는 어디서나 54px 썸네일 */
 .cimg { width: 54px; height: 54px; border-radius: 10px; object-fit: cover; background: var(--ivory-2); flex: none; }
+
+/* ===================== V3 레이아웃: 화면 높이에 맞춘 장소 · 큰 NPC · 하단 선반 ===================== */
+@media (min-width: 1001px) {
+  /* 게임 화면 전체를 뷰포트 높이에 고정하고 장소 화면이 남은 높이를 모두 쓴다 */
+  .game-shell { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+  .place-view { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 8px 10px 10px; }
+  .scene { flex: 1; min-height: 0; height: auto; display: flex; }
+  .scene-content { flex: 1; min-height: 0; padding: 12px; display: flex; }
+  .place-grid { flex: 1; min-height: 0; }
+  .place-main, .place-side { min-height: 0; overflow: auto; }
+
+  /* HUD: 한 줄로 흐르게, 장소 버튼 글자가 두 줄로 깨지지 않게 */
+  .hud-main { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 5px 12px; }
+  .place-nav { flex: 1; justify-content: center; }
+  .place-btn { white-space: nowrap; min-height: 40px; padding: 5px 12px; }
+  .hud-ready { min-width: 0; }
+
+  /* 사람이 나오는 장소: 인물을 왼쪽 아래에 크게 세우고, 대사는 인물 아래쪽 말풍선 */
+  .orders-grid, .store-grid, .shipping-grid { grid-template-columns: clamp(300px, 30%, 480px) minmax(0, 1fr) 300px; }
+  .npc-col { position: relative; min-height: 0; }
+  .npc { position: absolute; left: -12px; right: 0; bottom: -12px; top: -12px; display: flex; align-items: flex-end; justify-content: center; pointer-events: none; }
+  .npc-img { width: auto; height: 100%; max-width: 135%; object-fit: contain; object-position: bottom center; margin: 0; }
+  .npc-bubble { position: absolute; left: 16px; right: 8px; bottom: 20px; margin: 0; font-size: 14.5px; line-height: 1.5; padding: 10px 14px; background: rgba(255, 255, 255, 0.95); border-width: 2px; border-color: var(--copper-soft); z-index: 2; }
+  .npc-bubble::after { display: none; }
+  .npc-bubble b { color: var(--teal); }
+
+  /* 공방: 작업대(위) · 그림이 보이는 빈 공간(가운데) · 재료 선반 + 완성품 트레이(아래) */
+  .workshop-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: 'bench bench' '. .' 'shelf tray'; align-content: stretch; }
+  .workshop-grid .bench { align-self: start; }
+  .workshop-grid .shelf, .workshop-grid .tray { align-self: stretch; max-height: 42vh; overflow: auto; }
+  .bench-slots { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .device { min-height: 118px; padding: 8px; }
+  .device-img { width: 60px; height: 60px; }
+}
+.filter-note { background: rgba(255,255,255,0.92); padding: 4px 10px; border-radius: 999px; color: var(--ink-2); }

@@ -74,7 +74,7 @@ export function Hud({ view, place, onPlace, hint, badges, onReady, onHelp, onCod
             {preview?.energy !== undefined && <span className="res-preview">→ {t.energy + preview.energy}</span>}
           </span>
           <span className={`res res-act ${actFlash}`} title="행동: 이번 라운드에 할 수 있는 횟수">
-            <ActionTokens left={t.actionsLeft} total={g.config.actionsPerRound} /> <b>남은 행동 {t.actionsLeft}/{g.config.actionsPerRound}</b>
+            <ActionTokens left={t.actionsLeft} total={g.config.actionsPerRound} /> <span className="res-label">남은 행동</span> <b>{t.actionsLeft}/{g.config.actionsPerRound}</b>
             {preview?.actions !== undefined && <span className="res-preview">→ {t.actionsLeft + preview.actions}</span>}
           </span>
         </div>
