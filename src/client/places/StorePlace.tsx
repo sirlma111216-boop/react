@@ -132,8 +132,11 @@ export function StorePlace({ view, send, focusId, canAct, goTo, highlight }: { v
                   <span className="tag tag-copper"><CoinIcon size={12} /> {g.prices[p.id]}/개</span>
                   {p.rec && <span className="tag tag-amber">{needed[p.id]}개 필요</span>}
                 </button>
-                <div className="stepper"><button onClick={() => change(p.id, -1)} aria-label="빼기">−</button><span>{basket[p.id] ?? 0}</span><button onClick={() => change(p.id, 1)} aria-label="더하기" disabled={(cfg.procureMaxPerKindPerRound - (t.purchasesThisRound[p.id] ?? 0)) <= 0}>+</button></div>
-                {selected === p.id && <p className="small muted product-desc">{MATERIALS[p.id]!.blurb} 이번 라운드 {cfg.procureMaxPerKindPerRound - (t.purchasesThisRound[p.id] ?? 0)}개 더 살 수 있어요.</p>}
+                <p className="product-desc">{MATERIALS[p.id]!.blurb}</p>
+                <div className="product-foot">
+                  <div className="stepper"><button onClick={() => change(p.id, -1)} aria-label="빼기">−</button><span>{basket[p.id] ?? 0}</span><button onClick={() => change(p.id, 1)} aria-label="더하기" disabled={(cfg.procureMaxPerKindPerRound - (t.purchasesThisRound[p.id] ?? 0)) <= 0}>+</button></div>
+                  <span className="small muted">이번 라운드 {cfg.procureMaxPerKindPerRound - (t.purchasesThisRound[p.id] ?? 0)}개 더</span>
+                </div>
               </div>
             ) : (
               <div key={p.id} className={`product equip ${selected === p.id ? 'sel' : ''} ${p.rec ? 'rec' : ''}`}>
@@ -144,8 +147,8 @@ export function StorePlace({ view, send, focusId, canAct, goTo, highlight }: { v
                   {t.equipment.some((e) => e.id === p.id) && <span className="tag tag-teal">설치됨</span>}
                   {p.rec && !t.equipment.some((e) => e.id === p.id) && <span className="tag tag-amber">지금 유용</span>}
                 </button>
-                {selected === p.id && <p className="small product-desc">{EQUIPMENT[p.id]!.effect}<br /><span className="muted">{placement(p.id)}</span></p>}
-                <div className="row-between">
+                <p className="product-desc">{EQUIPMENT[p.id]!.effect}<br /><span className="muted small">{placement(p.id)}</span></p>
+                <div className="row-between product-foot">
                   <span className="small muted">{equipReason(p.id)}</span>
                   <button className="btn btn-sm btn-primary" disabled={!!equipReason(p.id)} {...previewProps({ coins: -EQUIPMENT[p.id]!.price, actions: -1, label: EQUIPMENT[p.id]!.name })} onClick={() => buyEquip(p.id)}>장비 구입 · {EQUIPMENT[p.id]!.price}코인 / 행동 1</button>
                 </div>

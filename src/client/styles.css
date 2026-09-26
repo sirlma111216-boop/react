@@ -516,3 +516,7 @@ p { margin: 0; }
   .npc-bubble { left: 12px; right: auto; width: min(340px, calc(100% - 12px)); bottom: calc(100% + 10px); }
   .npc-bubble::after { display: block; left: 70px; bottom: -9px; transform: rotate(45deg); }
 }
+
+/* 상점 카드: 설명을 항상 표시, 수량·구입 버튼은 카드 맨 아래 */
+.product-desc { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--ink-2); border-top: 1px dashed var(--ivory-3); padding-top: 6px; }
+.product-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
