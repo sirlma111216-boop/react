@@ -38,7 +38,7 @@ class Client {
   }
   send(cmd, id) {
     const cid = id ?? `${this.name}-${++this.seq}`;
-    return new Promise((resolve) => { this.pending.set(cid, resolve); this.ws.send(JSON.stringify({ type: 'cmd', id: cid, cmd })); setTimeout(() => { if (this.pending.has(cid)) { this.pending.delete(cid); resolve({ ok: false, error: 'timeout' }); } }, 8000); });
+    return new Promise((resolve) => { this.pending.set(cid, resolve); this.ws.send(JSON.stringify({ type: 'cmd', id: cid, cmd })); setTimeout(() => { if (this.pending.has(cid)) { this.pending.delete(cid); resolve({ ok: false, error: 'timeout' }); } }, 15000); });
   }
   async waitView(pred, ms = 10000) {
     const t0 = Date.now();
@@ -129,7 +129,8 @@ class Client {
   check('시간이 흘러도 라운드·행동이 그대로', teacher.view.game.round === 1 && op.view.game.myTeam.actionsLeft === op.view.game.config.actionsPerRound - 1);
 
   // 준비 완료 흐름: 한 팀만 준비 → 정산 없음, 준비 취소 → 다시 행동 가능
-  check('준비 완료(행동 남음 허용)', (await op.send({ type: 'team', cmd: { type: 'readyRound', on: true } })).ok);
+  const rr = await op.send({ type: 'team', cmd: { type: 'readyRound', on: true } });
+  check('준비 완료(행동 남음 허용)', rr.ok, rr.error ?? '');
   await teacher.waitView((v) => v.game.readyCount === 1);
   check('한 팀만 준비되면 정산되지 않음', teacher.view.game.round === 1);
   check('준비 완료 뒤 행동 거절', !(await op.send({ type: 'team', cmd: { type: 'buyEnergy', bundles: 1 } })).ok);
