@@ -9,7 +9,7 @@ const R = (r: ReactionDefinition) => r;
 
 export const REACTIONS: Record<string, ReactionDefinition> = {
   R01: R({
-    id: 'R01', name: '물 합성', equation: '2H2(g) + O2(g) → 2H2O(g)',
+    id: 'R01', name: '물 만들기', equation: '2H2(g) + O2(g) → 2H2O(g)',
     reactants: [{ accepts: ['H2_g'], coef: 2 }, { accepts: ['O2_g'], coef: 1 }],
     products: [{ materialId: 'H2O_g', coef: 2 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -22,7 +22,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['classic', 'extended', 'industrial'], path: 'gas',
   }),
   R02: R({
-    id: 'R02', name: '물 전기분해', equation: '2H2O(l) → 2H2(g) + O2(g)',
+    id: 'R02', name: '물 쪼개기(전기분해)', equation: '2H2O(l) → 2H2(g) + O2(g)',
     reactants: [{ accepts: ['H2O_l'], coef: 2 }],
     products: [{ materialId: 'H2_g', coef: 2 }, { materialId: 'O2_g', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -38,7 +38,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'gas',
   }),
   R03: R({
-    id: 'R03', name: '과산화수소 분해', equation: '2H2O2(aq) → 2H2O(l) + O2(g)',
+    id: 'R03', name: '산소 만들기(과산화수소 분해)', equation: '2H2O2(aq) → 2H2O(l) + O2(g)',
     reactants: [{ accepts: ['H2O2_aq'], coef: 2 }],
     products: [{ materialId: 'H2O_l', coef: 2 }, { materialId: 'O2_g', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -53,7 +53,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['classic', 'extended', 'industrial'], path: 'gas',
   }),
   R04: R({
-    id: 'R04', name: '메테인 완전 연소', equation: 'CH4(g) + 2O2(g) → CO2(g) + 2H2O(g)',
+    id: 'R04', name: '메테인 태우기', equation: 'CH4(g) + 2O2(g) → CO2(g) + 2H2O(g)',
     reactants: [{ accepts: ['CH4_g'], coef: 1 }, { accepts: ['O2_g'], coef: 2 }],
     products: [{ materialId: 'CO2_g', coef: 1 }, { materialId: 'H2O_g', coef: 2 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -66,7 +66,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['classic', 'extended', 'industrial'], path: 'gas',
   }),
   R05: R({
-    id: 'R05', name: '마그네슘 연소', equation: '2Mg(s) + O2(g) → 2MgO(s)',
+    id: 'R05', name: '마그네슘 태우기', equation: '2Mg(s) + O2(g) → 2MgO(s)',
     reactants: [{ accepts: ['Mg_s'], coef: 2 }, { accepts: ['O2_g'], coef: 1 }],
     products: [{ materialId: 'MgO_s', coef: 2 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -78,7 +78,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['classic', 'extended', 'industrial'], path: 'metal',
   }),
   R06: R({
-    id: 'R06', name: '탄산수소나트륨 열분해', equation: '2NaHCO3(s) → Na2CO3(s) + CO2(g) + H2O(g)',
+    id: 'R06', name: '베이킹소다 가열하기', equation: '2NaHCO3(s) → Na2CO3(s) + CO2(g) + H2O(g)',
     reactants: [{ accepts: ['NaHCO3_s'], coef: 2 }],
     products: [{ materialId: 'Na2CO3_s', coef: 1 }, { materialId: 'CO2_g', coef: 1 }, { materialId: 'H2O_g', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -93,7 +93,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['classic', 'extended', 'industrial'], path: 'carbonate',
   }),
   R07: R({
-    id: 'R07', name: '탄산칼슘 침전', equation: 'Na2CO3(aq) + CaCl2(aq) → CaCO3(s) + 2NaCl(aq)',
+    id: 'R07', name: '탄산칼슘 만들기(침전)', equation: 'Na2CO3(aq) + CaCl2(aq) → CaCO3(s) + 2NaCl(aq)',
     reactants: [{ accepts: ['Na2CO3_s'], coef: 1, dissolve: true }, { accepts: ['CaCl2_aq', 'CaCl2_s'], coef: 1, dissolve: true }],
     products: [{ materialId: 'CaCO3_s', coef: 1 }, { materialId: 'NaCl_aq', coef: 2 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -105,7 +105,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['classic', 'extended', 'industrial'], path: 'carbonate',
   }),
   R08: R({
-    id: 'R08', name: '생석회 수화', equation: 'CaO(s) + H2O(l) → Ca(OH)2(s)',
+    id: 'R08', name: '생석회에 물 붓기', equation: 'CaO(s) + H2O(l) → Ca(OH)2(s)',
     reactants: [{ accepts: ['CaO_s'], coef: 1 }, { accepts: ['H2O_l'], coef: 1 }],
     products: [{ materialId: 'CaOH2_s', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -117,7 +117,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['classic', 'extended', 'industrial'], path: 'carbonate',
   }),
   R09: R({
-    id: 'R09', name: '석회수 탄산화', equation: 'Ca(OH)2(s) + CO2(g) → CaCO3(s) + H2O(l)',
+    id: 'R09', name: '석회수에 이산화탄소 넣기', equation: 'Ca(OH)2(s) + CO2(g) → CaCO3(s) + H2O(l)',
     reactants: [{ accepts: ['CaOH2_s'], coef: 1, dissolve: true }, { accepts: ['CO2_g'], coef: 1 }],
     products: [{ materialId: 'CaCO3_s', coef: 1 }, { materialId: 'H2O_l', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -129,7 +129,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['classic', 'extended', 'industrial'], path: 'carbonate',
   }),
   R10: R({
-    id: 'R10', name: '중화', equation: 'HCl(aq) + NaOH(aq) → NaCl(aq) + H2O(l)',
+    id: 'R10', name: '산과 염기 섞기(중화)', equation: 'HCl(aq) + NaOH(aq) → NaCl(aq) + H2O(l)',
     reactants: [{ accepts: ['HCl_aq'], coef: 1 }, { accepts: ['NaOH_aq'], coef: 1 }],
     products: [{ materialId: 'NaCl_aq', coef: 1 }, { materialId: 'H2O_l', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -141,7 +141,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'water',
   }),
   R11: R({
-    id: 'R11', name: '탄산칼슘과 염산', equation: 'CaCO3(s) + 2HCl(aq) → CaCl2(aq) + CO2(g) + H2O(l)',
+    id: 'R11', name: '탄산칼슘에 염산 붓기', equation: 'CaCO3(s) + 2HCl(aq) → CaCl2(aq) + CO2(g) + H2O(l)',
     reactants: [{ accepts: ['CaCO3_s'], coef: 1 }, { accepts: ['HCl_aq'], coef: 2 }],
     products: [{ materialId: 'CaCl2_aq', coef: 1 }, { materialId: 'CO2_g', coef: 1 }, { materialId: 'H2O_l', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -156,7 +156,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'carbonate',
   }),
   R12: R({
-    id: 'R12', name: '마그네슘과 염산', equation: 'Mg(s) + 2HCl(aq) → MgCl2(aq) + H2(g)',
+    id: 'R12', name: '마그네슘에 염산 붓기', equation: 'Mg(s) + 2HCl(aq) → MgCl2(aq) + H2(g)',
     reactants: [{ accepts: ['Mg_s'], coef: 1 }, { accepts: ['HCl_aq'], coef: 2 }],
     products: [{ materialId: 'MgCl2_aq', coef: 1 }, { materialId: 'H2_g', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -171,7 +171,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'metal',
   }),
   R13: R({
-    id: 'R13', name: '아연의 구리 치환', equation: 'Zn(s) + CuSO4(aq) → ZnSO4(aq) + Cu(s)',
+    id: 'R13', name: '아연으로 구리 꺼내기', equation: 'Zn(s) + CuSO4(aq) → ZnSO4(aq) + Cu(s)',
     reactants: [{ accepts: ['Zn_s'], coef: 1 }, { accepts: ['CuSO4_aq'], coef: 1 }],
     products: [{ materialId: 'ZnSO4_aq', coef: 1 }, { materialId: 'Cu_s', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -183,7 +183,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'metal',
   }),
   R14: R({
-    id: 'R14', name: '산화구리 환원', equation: 'CuO(s) + H2(g) → Cu(s) + H2O(g)',
+    id: 'R14', name: '산화구리에서 구리 뽑기', equation: 'CuO(s) + H2(g) → Cu(s) + H2O(g)',
     reactants: [{ accepts: ['CuO_s'], coef: 1 }, { accepts: ['H2_g'], coef: 1 }],
     products: [{ materialId: 'Cu_s', coef: 1 }, { materialId: 'H2O_g', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -198,7 +198,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'metal',
   }),
   R15: R({
-    id: 'R15', name: '탄산칼슘 열분해', equation: 'CaCO3(s) → CaO(s) + CO2(g)',
+    id: 'R15', name: '석회석 굽기', equation: 'CaCO3(s) → CaO(s) + CO2(g)',
     reactants: [{ accepts: ['CaCO3_s'], coef: 1 }],
     products: [{ materialId: 'CaO_s', coef: 1 }, { materialId: 'CO2_g', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -213,7 +213,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'carbonate',
   }),
   R16: R({
-    id: 'R16', name: '수산화구리 침전', equation: 'CuSO4(aq) + 2NaOH(aq) → Cu(OH)2(s) + Na2SO4(aq)',
+    id: 'R16', name: '수산화구리 만들기(침전)', equation: 'CuSO4(aq) + 2NaOH(aq) → Cu(OH)2(s) + Na2SO4(aq)',
     reactants: [{ accepts: ['CuSO4_aq'], coef: 1 }, { accepts: ['NaOH_aq'], coef: 2 }],
     products: [{ materialId: 'CuOH2_s', coef: 1 }, { materialId: 'Na2SO4_aq', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -225,7 +225,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'metal',
   }),
   R17: R({
-    id: 'R17', name: '수산화구리 열분해', equation: 'Cu(OH)2(s) → CuO(s) + H2O(g)',
+    id: 'R17', name: '수산화구리 가열하기', equation: 'Cu(OH)2(s) → CuO(s) + H2O(g)',
     reactants: [{ accepts: ['CuOH2_s'], coef: 1 }],
     products: [{ materialId: 'CuO_s', coef: 1 }, { materialId: 'H2O_g', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -240,7 +240,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'metal',
   }),
   R18: R({
-    id: 'R18', name: '철의 구리 치환', equation: 'Fe(s) + CuSO4(aq) → FeSO4(aq) + Cu(s)',
+    id: 'R18', name: '철로 구리 꺼내기', equation: 'Fe(s) + CuSO4(aq) → FeSO4(aq) + Cu(s)',
     reactants: [{ accepts: ['Fe_s'], coef: 1 }, { accepts: ['CuSO4_aq'], coef: 1 }],
     products: [{ materialId: 'FeSO4_aq', coef: 1 }, { materialId: 'Cu_s', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -252,7 +252,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['extended', 'industrial'], path: 'metal',
   }),
   R19: R({
-    id: 'R19', name: '염화암모늄 합성', equation: 'NH3(g) + HCl(g) → NH4Cl(s)',
+    id: 'R19', name: '염화암모늄 만들기', equation: 'NH3(g) + HCl(g) → NH4Cl(s)',
     reactants: [{ accepts: ['NH3_g'], coef: 1 }, { accepts: ['HCl_g'], coef: 1 }],
     products: [{ materialId: 'NH4Cl_s', coef: 1 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -265,7 +265,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['industrial'], path: 'gas',
   }),
   R20: R({
-    id: 'R20', name: '암모니아 합성(부분 전환)', equation: 'N2(g) + 3H2(g) ⇌ 2NH3(g)',
+    id: 'R20', name: '암모니아 만들기', equation: 'N2(g) + 3H2(g) ⇌ 2NH3(g)',
     reactants: [{ accepts: ['N2_g'], coef: 1 }, { accepts: ['H2_g'], coef: 3 }],
     products: [{ materialId: 'NH3_g', coef: 2 }],
     batchMultiplier: 2,
@@ -279,7 +279,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['industrial'], path: 'gas',
   }),
   R21: R({
-    id: 'R21', name: '알코올 발효', equation: 'C6H12O6(aq) → 2C2H5OH(aq) + 2CO2(g)',
+    id: 'R21', name: '발효로 에탄올 만들기', equation: 'C6H12O6(aq) → 2C2H5OH(aq) + 2CO2(g)',
     reactants: [{ accepts: ['glucose_aq'], coef: 1 }],
     products: [{ materialId: 'ethanol_aq', coef: 2 }, { materialId: 'CO2_g', coef: 2 }],
     batchMultiplier: 1, extentModel: { type: 'full' },
@@ -294,7 +294,7 @@ export const REACTIONS: Record<string, ReactionDefinition> = {
     modes: ['industrial'], path: 'bio',
   }),
   R22: R({
-    id: 'R22', name: '에스터화(부분 전환)', equation: 'CH3COOH(l) + C2H5OH(l) ⇌ CH3COOC2H5(l) + H2O(l)',
+    id: 'R22', name: '에스터 만들기', equation: 'CH3COOH(l) + C2H5OH(l) ⇌ CH3COOC2H5(l) + H2O(l)',
     reactants: [{ accepts: ['aceticAcid_l'], coef: 1 }, { accepts: ['ethanol_l'], coef: 1 }],
     products: [{ materialId: 'ethylAcetate_l', coef: 1 }, { materialId: 'H2O_l', coef: 1 }],
     batchMultiplier: 2,

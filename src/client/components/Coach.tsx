@@ -17,7 +17,6 @@ export interface Hint {
   step: string;
   detail: string;
   tab: CoachTab;
-  /** 강조할 대상 (reaction:R01, lot:<id>, offer, contract:<id>, shop) */
   target?: string;
 }
 
@@ -37,12 +36,10 @@ function unmetRequirements(team: TeamState, reqs: ContractRequirement[]): Contra
   });
 }
 
-/** 로트에 어떤 공정을 적용하면 요구 물질(태그 포함)이 나오는가 */
 function processFor(lot: Lot, req: ContractRequirement): string | null {
   for (const pid of applicableProcesses(lot)) {
     const res = applyProcess(pid, lot, () => 'probe');
     if (res.ok && res.outputs.some((o) => o.kind === 'pure' && o.materialId === req.materialId && o.tags.some((t) => req.tags.includes(t)))) return pid;
-    // 2단계 (예: 여과 → 결정화)
     if (res.ok) for (const o of res.outputs) for (const pid2 of applicableProcesses(o)) {
       const r2 = applyProcess(pid2, o, () => 'probe');
       if (r2.ok && r2.outputs.some((x) => x.kind === 'pure' && x.materialId === req.materialId && x.tags.some((t) => req.tags.includes(t)))) return pid;
@@ -51,79 +48,69 @@ function processFor(lot: Lot, req: ContractRequirement): string | null {
   return null;
 }
 
-const matName = (id: string) => MATERIALS[id]?.displayName ?? id;
+const nm = (id: string) => MATERIALS[id]?.displayName ?? id;
 
-/** 현재 상황에서 다음에 할 일을 한 줄로 계산한다. 최적 경로를 강제하지 않고 가장 가까운 합법 행동을 제안한다. */
+/** 지금 할 일 한 줄. 가장 가까운 합법 행동을 제안하며 최적 경로를 강제하지 않는다. */
 export function nextHint(view: ClientView, isLocal: boolean): Hint {
   const g = view.game;
   const t = g?.myTeam;
-  if (!g || !t) return { step: '관전 중', detail: '팀에 속해 있지 않습니다.', tab: 'team' };
-  const nextBtn = isLocal ? ' 준비되면 오른쪽 위 "다음 단계 ▶"를 누르세요.' : '';
-  if (g.phase === 'finished') return { step: '경기 종료', detail: '결과를 확인하세요.', tab: 'workshop' };
-  if (g.phase === 'settle') return { step: '정산 중', detail: `이번 라운드에 시작한 공정이 완료되어 재고로 들어옵니다.${nextBtn}`, tab: 'inventory' };
+  if (!g || !t) return { step: '구경 중', detail: '팀에 들어가 있지 않아요.', tab: 'team' };
+  const nextBtn = isLocal ? ' 다 했으면 위의 "다음 ▶"을 누르세요.' : '';
+  if (g.phase === 'finished') return { step: '게임 끝', detail: '결과를 확인하세요.', tab: 'workshop' };
+  if (g.phase === 'settle') return { step: '마무리', detail: `이번 라운드에 만들기 시작한 것이 완성되어 창고에 들어와요.${nextBtn}`, tab: 'inventory' };
 
   const map = mapFor(view);
   const deliverable = t.contracts.find((c) => contractSatisfiable(t, c).ok);
   const isOp = view.me.isOperator;
 
   if (g.phase === 'plan') {
-    if (t.contracts.length === 0 && t.offers.length) return { step: '① 계약 확보', detail: '"도시 주문 제안"에서 계약 하나를 확보하세요. 행동을 쓰지 않습니다. 짧은 기한·높은 보상을 고르면 좋습니다.' + nextBtn, tab: 'orders', target: 'offer' };
-    if (g.auction && !g.auction.resolved && t.contracts.length < g.config.contractLimit) return { step: '특별 계약 입찰', detail: '도시 특별 계약에 0~6코인을 비공개로 입찰할 수 있습니다. 완수할 자신이 있을 때만.' + nextBtn, tab: 'orders' };
-    return { step: '계획 단계', detail: `실행 단계가 되면 담당자가 행동 ${g.config.actionsPerRound}개를 씁니다. 지금은 카드와 재고를 살펴보세요.${nextBtn}`, tab: 'workshop' };
+    if (t.contracts.length === 0 && t.offers.length) return { step: '① 주문 받기', detail: '"새 주문"에서 하나를 골라 "받기"를 누르세요. 행동을 쓰지 않아요. 기한이 넉넉하고 보상이 큰 걸 고르면 좋아요.' + nextBtn, tab: 'orders', target: 'offer' };
+    if (g.auction && !g.auction.resolved && t.contracts.length < g.config.contractLimit) return { step: '특별 주문 입찰', detail: '도시 특별 주문에 0~6코인을 몰래 써낼 수 있어요. 끝낼 자신이 있을 때만!' + nextBtn, tab: 'orders' };
+    return { step: '상의 시간', detail: `행동 시간이 되면 차례인 사람이 ${g.config.actionsPerRound}번 행동해요. 지금은 카드와 창고를 둘러보세요.${nextBtn}`, tab: 'workshop' };
   }
 
-  // execute
-  if (!isOp) return { step: '담당자 차례', detail: `이번 라운드 담당자는 ${view.players.find((p) => p.id === t.operatorId)?.nick ?? '다른 팀원'}입니다. 카드를 열어 📌 핑으로 제안하세요.`, tab: 'workshop' };
-  if (t.actionsLeft <= 0) return { step: '행동 완료', detail: `이번 라운드 행동을 모두 썼습니다. 정산을 기다리세요.${nextBtn}`, tab: 'workshop' };
-  if (deliverable) return { step: '⑤ 납품', detail: `"${deliverable.title}" 조건이 채워졌습니다. 계약 카드의 납품 버튼을 누르면 +${deliverable.reward}코인.`, tab: 'orders', target: `contract:${deliverable.id}` };
-  if (t.contracts.length === 0 && t.offers.length) return { step: '① 계약 확보', detail: '먼저 "도시 주문 제안"에서 계약을 확보하세요 (행동 소모 없음).', tab: 'orders', target: 'offer' };
+  if (!isOp) return { step: '친구 차례', detail: `이번 라운드는 ${view.players.find((p) => p.id === t.operatorId)?.nick ?? '다른 팀원'} 차례예요. 카드를 열어 👍 추천으로 도와주세요.`, tab: 'workshop' };
+  if (t.actionsLeft <= 0) return { step: '행동 끝', detail: `이번 라운드 행동을 다 썼어요.${nextBtn}`, tab: 'workshop' };
+  if (deliverable) return { step: '⑤ 배달하기', detail: `"${deliverable.title}" 준비 끝! 주문 카드의 배달 버튼을 누르면 +${deliverable.reward}코인.`, tab: 'orders', target: `contract:${deliverable.id}` };
+  if (t.contracts.length === 0 && t.offers.length) return { step: '① 주문 받기', detail: '먼저 "새 주문"에서 주문을 받으세요 (행동을 쓰지 않아요).', tab: 'orders', target: 'offer' };
 
   for (const c of t.contracts) {
     for (const req of unmetRequirements(t, c.requirements)) {
-      // 가공하면 되는 재고가 있는가
       for (const lot of t.lots) {
         const pid = processFor(lot, req);
         if (pid) {
           const p = PROCESSES[pid]!;
           const owns = !p.requiredEquipment || t.equipment.some((e) => e.id === p.requiredEquipment);
-          if (!owns) return { step: '설비 필요', detail: `${matName(req.materialId)}을(를) 얻으려면 ${EQUIPMENT[p.requiredEquipment!]!.name}이 필요합니다. "설비·촉매"에서 설치하세요.`, tab: 'orders', target: 'shop' };
-          if (t.processes.some((x) => x.kind === 'process')) return { step: '가공대 사용 중', detail: '가공대가 비면 재고를 눌러 가공하세요. 지금은 다른 반응을 실행해 두면 좋습니다.', tab: 'workshop' };
-          const label = lot.kind === 'pure' ? matName(lot.materialId!) : '혼합물';
-          return { step: '④ 가공', detail: `재고의 "${label}"을(를) 눌러 "${p.name}"을 실행하세요. 다음 정산에 ${matName(req.materialId)}이(가) 됩니다.`, tab: 'inventory', target: `lot:${lot.id}` };
+          if (!owns) return { step: '장비 필요', detail: `${nm(req.materialId)}을(를) 얻으려면 "${EQUIPMENT[p.requiredEquipment!]!.name}" 장비가 필요해요. 장비 가게에서 사세요.`, tab: 'orders', target: 'shop' };
+          const label = lot.kind === 'pure' ? nm(lot.materialId!) : '섞인 것';
+          return { step: '④ 정리하기', detail: `창고의 "${label}"을(를) 눌러 "${p.name}"를 하세요. 바로 ${nm(req.materialId)}이(가) 돼요.`, tab: 'inventory', target: `lot:${lot.id}` };
         }
       }
-      // 진행 중 공정이 만들어 줄 예정인가
       const pending = t.processes.find((p) => p.outputs.some((o) => (o.kind === 'pure' && o.materialId === req.materialId) || (o.kind === 'mixture' && o.components?.some((x) => x.materialId === req.materialId))));
       if (pending) {
         const name = pending.kind === 'reaction' ? REACTIONS[pending.defId]!.name : PROCESSES[pending.defId]!.name;
-        return { step: '③ 정산 기다리기', detail: `"${name}"이 ${pending.completesRound}라운드 정산에 완료됩니다. 남는 행동으로 다른 계약을 준비하세요.${nextBtn}`, tab: 'workshop' };
+        return { step: '③ 완성 기다리기', detail: `"${name}"이(가) ${pending.completesRound}라운드 마무리 때 완성돼요. 남은 행동으로 다른 주문을 준비해 보세요.${nextBtn}`, tab: 'workshop' };
       }
-      // 지금 실행할 수 있는 반응
       const routes = routesFor(map, req.materialId, req.tags).filter((r) => g.activeReactions.includes(r.reactionId));
       for (const r of routes) {
         const st = reactionStatus(t, r.reactionId, g);
         if (st.canRun) {
           const scale = st.scaleMax >= 2 && req.units > r.yieldPerBatch && t.energy >= st.energy * 2 ? 2 : 1;
-          return { step: '② 반응 실행', detail: `반응 카드 "${REACTIONS[r.reactionId]!.name}"을 눌러 실행 ×${scale}. ${r.processIds.length ? '완료 후 가공이 필요합니다.' : '완료되면 바로 납품할 수 있습니다.'}`, tab: 'workshop', target: `reaction:${r.reactionId}` };
+          return { step: '② 만들기', detail: `만들기 카드 "${REACTIONS[r.reactionId]!.name}"을 눌러 ${scale === 2 ? '두 배로 만들기 ×2' : '만들기 ×1'}. ${r.processIds.length ? '완성되면 정리하기가 필요해요.' : '완성되면 바로 배달할 수 있어요.'}`, tab: 'workshop', target: `reaction:${r.reactionId}` };
         }
       }
-      // 슬롯이 꽉 찼으면 기다리기
-      if (routes.length && routes.every((r) => reactionStatus(t, r.reactionId, g).reason === '빈 반응 슬롯 없음')) return { step: '반응 슬롯 대기', detail: '반응 슬롯이 모두 사용 중입니다. 정산 후 비거나, 설비 "추가 반응기"를 살 수 있습니다.', tab: 'workshop' };
-      // 원료 구매
+      if (routes.length && routes.every((r) => reactionStatus(t, r.reactionId, g).reason === '작업 자리 없음')) return { step: '작업 자리 대기', detail: '작업 자리가 모두 사용 중이에요. 마무리가 지나면 비어요. "추가 반응기" 장비를 사면 자리가 늘어요.', tab: 'workshop' };
       for (const r of routes) {
         const st = reactionStatus(t, r.reactionId, g);
-        if (st.reason === '원료 부족') {
-          const need = r.inputsPerBatch.map((i) => `${matName(i.materialId)} ${i.units}칸`).join(', ');
-          return { step: '원료 조달', detail: `"${REACTIONS[r.reactionId]!.name}" 반응에 ${need}이(가) 필요합니다. "원료 상점"에서 부족한 만큼 사세요 (행동 1).`, tab: 'orders', target: 'shop' };
-        }
-        if (st.reason.startsWith('에너지')) return { step: '에너지 충전', detail: `${st.reason}. 원료 상점 아래 "에너지 충전"으로 채우세요.`, tab: 'orders', target: 'shop' };
-        if (st.reason.startsWith('필요 설비')) return { step: '설비 필요', detail: `${REACTIONS[r.reactionId]!.name}: ${st.reason}. "설비·촉매"에서 설치하세요.`, tab: 'orders', target: 'shop' };
+        if (st.reason === '재료 부족') return { step: '재료 사기', detail: `"${REACTIONS[r.reactionId]!.name}"에 ${st.detail}이(가) 더 필요해요. 재료 가게에서 사세요 (행동 1).`, tab: 'orders', target: 'shop' };
+        if (st.reason === '에너지 부족') return { step: '에너지 충전', detail: `에너지가 부족해요 (${st.detail}). 재료 가게 아래 "에너지 충전"에서 채우세요.`, tab: 'orders', target: 'shop' };
+        if (st.reason === '장비 필요') return { step: '장비 필요', detail: `"${REACTIONS[r.reactionId]!.name}"에는 ${st.detail} 장비가 필요해요. 장비 가게에서 사세요.`, tab: 'orders', target: 'shop' };
       }
     }
   }
   const anyRun = g.activeReactions.find((rid) => reactionStatus(t, rid, g).canRun);
-  if (anyRun) return { step: '② 반응 실행', detail: `재료가 있는 반응 "${REACTIONS[anyRun]!.name}"을 실행해 볼 수 있습니다.`, tab: 'workshop', target: `reaction:${anyRun}` };
-  return { step: '다음 준비', detail: '계약을 더 확보하거나 원료 상점에서 다음 라운드 재료를 사 두세요.', tab: 'orders' };
+  if (anyRun) return { step: '② 만들기', detail: `재료가 있는 "${REACTIONS[anyRun]!.name}"을 만들어 볼 수 있어요.`, tab: 'workshop', target: `reaction:${anyRun}` };
+  return { step: '다음 준비', detail: '주문을 더 받거나 재료 가게에서 다음 라운드 재료를 사 두세요.', tab: 'orders' };
 }
 
 export function CoachBar({ view, isLocal, onGoTab }: { view: ClientView; isLocal: boolean; onGoTab: (tab: CoachTab) => void }) {
@@ -134,7 +121,7 @@ export function CoachBar({ view, isLocal, onGoTab }: { view: ClientView; isLocal
     <div className="coach" role="status" aria-live="polite">
       <span className="coach-step">💡 {hint.step}</span>
       <span className="coach-detail">{hint.detail}</span>
-      <button className="btn btn-sm btn-primary coach-go" onClick={() => onGoTab(hint.tab)}>{{ workshop: '공방으로', orders: '주문으로', inventory: '재고로', team: '팀으로' }[hint.tab]}</button>
+      <button className="btn btn-sm btn-primary coach-go" onClick={() => onGoTab(hint.tab)}>{{ workshop: '공방으로', orders: '주문으로', inventory: '창고로', team: '팀으로' }[hint.tab]}</button>
       <button className="x" style={{ width: 28, height: 28, fontSize: 14 }} aria-label="안내 숨기기" onClick={() => { setHidden(true); prefSet('coach', '0'); }}>×</button>
     </div>
   );
@@ -142,18 +129,18 @@ export function CoachBar({ view, isLocal, onGoTab }: { view: ClientView; isLocal
 
 export function HelpModal({ onClose, isLocal }: { onClose: () => void; isLocal: boolean }) {
   return (
-    <Modal title="90초 안내 — 이렇게 놀아요" onClose={onClose}>
+    <Modal title="이렇게 놀아요 (1분)" onClose={onClose}>
       <div className="stack">
-        <p>작은 화학 공방을 운영합니다. 목표는 <b>도시의 주문에 납품해서 코인을 모으는 것</b>. 아래 다섯 단계를 반복합니다.</p>
+        <p>우리 팀은 작은 <b>화학 공방</b>이에요. 도시에서 들어오는 <b>주문</b>을 만들어 <b>배달</b>하고 코인을 모읍니다. 마지막에 코인이 가장 많은 팀이 이겨요.</p>
         <ol className="help-steps">
-          <li><b>계약 확보</b> — {'"도시 주문 제안"'}(휴대전화는 <b>주문</b> 탭)에서 계약 하나를 <b>확보</b>. 행동을 쓰지 않습니다.</li>
-          <li><b>반응 실행</b> — 실행 단계에 <b>공방</b>의 반응 카드를 눌러 <b>실행 ×1/×2</b>. 재료가 있는 카드는 초록 테두리입니다.</li>
-          <li><b>정산 기다리기</b> — 라운드가 끝나면(정산) 생성물이 <b>재고</b>에 들어옵니다.</li>
-          <li><b>가공</b> — 수증기·혼합물은 재고를 눌러 <b>응축·고체 회수</b> 등으로 가공해야 납품할 수 있습니다.</li>
-          <li><b>납품</b> — 조건이 채워진 계약 카드의 <b>납품</b> 버튼. 코인이 들어옵니다.</li>
+          <li><b>주문 받기</b> — "새 주문"에서 하나를 고릅니다. (행동을 쓰지 않아요)</li>
+          <li><b>만들기</b> — 행동 시간에 <b>만들기 카드</b>를 눌러 "만들기". 재료가 있는 카드는 초록 테두리예요.</li>
+          <li><b>완성 기다리기</b> — 라운드 마무리 때 완성품이 <b>창고</b>에 들어와요.</li>
+          <li><b>정리하기</b> — 수증기는 "응축하기", 섞인 것은 "거르기"로 정리해요. 기다림 없이 바로 돼요.</li>
+          <li><b>배달하기</b> — 주문 카드에 ✓가 다 차면 <b>배달</b> 버튼!</li>
         </ol>
-        <p className="small">라운드마다 <b>계획 → 실행 → 정산</b>이 이어지고, 실행 단계에는 팀당 <b>행동 2개</b>(조달·생산·가공·납품·설비)를 씁니다. 원료가 없으면 <b>원료 상점</b>에서 사세요. 상점에서 산 물질은 그대로 납품할 수 없습니다.</p>
-        {isLocal && <p className="small" style={{ background: 'var(--amber-soft)', padding: 8, borderRadius: 8 }}>연습 모드에서는 시간이 자동으로 흐르지 않습니다. 할 일을 마치면 오른쪽 위 <b>다음 단계 ▶</b>를 눌러 진행하세요. 보드 위의 💡 안내가 다음 할 일을 알려줍니다.</p>}
+        <p className="small">라운드마다 <b>상의 시간 → 행동 시간 → 마무리</b>가 이어져요. 행동 시간에는 팀의 차례인 사람이 <b>3번</b> 행동해요(사기·만들기·정리하기·배달·장비). 재료가 없으면 <b>재료 가게</b>에서 사요. 가게에서 산 재료는 그대로 배달할 수 없어요 — 직접 만들어야 해요.</p>
+        {isLocal && <p className="small" style={{ background: 'var(--amber-soft)', padding: 8, borderRadius: 8 }}>연습에서는 시간이 저절로 흐르지 않아요. 할 일을 마치면 위의 <b>다음 ▶</b>을 누르세요. 💡 안내가 다음 할 일을 알려줘요.</p>}
         <div className="row" style={{ justifyContent: 'flex-end' }}><button className="btn btn-primary" onClick={onClose}>시작하기</button></div>
       </div>
     </Modal>

@@ -42,14 +42,15 @@ describe('경기 흐름', () => {
     expect(applyTeamCommand(g, 'T1', { type: 'react', reactionId: 'R01', scale: 2 }).ok).toBe(true);
     expect(t.energy).toBe(e0 - 2);
     expect(t.lots.find((l) => l.materialId === 'H2_g')).toBeUndefined();
-    expect(t.actionsLeft).toBe(1);
+    expect(t.actionsLeft).toBe(g.config.actionsPerRound - 1);
     settleRound(g);
     expect(t.lots.find((l) => l.materialId === 'H2O_g')?.units).toBe(4);
     beginPlan(g); beginExecute(g);
     const steam = t.lots.find((l) => l.materialId === 'H2O_g')!;
     expect(applyTeamCommand(g, 'T1', { type: 'process', processId: 'P01', lotId: steam.id }).ok).toBe(true);
-    // 가공대는 1개
+    // 정리하기는 즉시 완료: 같은 재료를 다시 정리할 수 없다
     expect(applyTeamCommand(g, 'T1', { type: 'process', processId: 'P01', lotId: steam.id }).ok).toBe(false);
+    expect(t.lots.find((l) => l.materialId === 'H2O_l' && l.tags.includes('condensed'))?.units).toBe(4);
     settleRound(g);
     const liquid = t.lots.find((l) => l.materialId === 'H2O_l' && l.tags.includes('condensed'))!;
     expect(liquid.units).toBe(4);
@@ -74,7 +75,7 @@ describe('경기 흐름', () => {
     expect(applyTeamCommand(g, 'T1', { type: 'procure', items: [{ materialId: 'CaCO3_s', units: 2 }] }).ok).toBe(true);
     const r = applyTeamCommand(g, 'T1', { type: 'deliver', contractId: t.contracts[0]!.id });
     expect(r.ok).toBe(false);
-    expect(r.error).toContain('납품 조건 부족');
+    expect(r.error).toContain('배달할 수 없어요');
   });
 
   it('조달 한도·할당량·코인·행동권을 검증한다', () => {
@@ -86,7 +87,8 @@ describe('경기 흐름', () => {
     expect(applyTeamCommand(g, 'T1', { type: 'procure', items: [{ materialId: 'H2_g', units: 4 }] }).ok).toBe(true);
     expect(applyTeamCommand(g, 'T1', { type: 'procure', items: [{ materialId: 'H2_g', units: 1 }] }).ok).toBe(false); // 라운드 할당량
     expect(applyTeamCommand(g, 'T1', { type: 'buyEnergy', bundles: 1 }).ok).toBe(true);
-    expect(applyTeamCommand(g, 'T1', { type: 'buyEnergy', bundles: 1 }).ok).toBe(false); // 행동권 소진
+    expect(applyTeamCommand(g, 'T1', { type: 'buyEnergy', bundles: 1 }).ok).toBe(true); // 3번째 행동
+    expect(applyTeamCommand(g, 'T1', { type: 'buyEnergy', bundles: 1 }).ok).toBe(false); // 행동 횟수 소진
   });
 
   it('설비는 즉시 적용되고 진행 중 공정은 소급되지 않는다', () => {

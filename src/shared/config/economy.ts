@@ -5,12 +5,12 @@ import type { EconomyConfig } from '../types';
  * `docs/DECISIONS.md` 와 `reports/balance/` 에 조정 이력을 남긴다.
  */
 export const DEFAULT_ECONOMY: EconomyConfig = {
-  version: 'econ-1.2',
+  version: 'econ-1.3',
   startCoins: 40,
   startEnergy: 6,
   energyCap: 12,
   energyPerRound: 2,
-  actionsPerRound: 2,
+  actionsPerRound: 3,
   reactionSlots: 2,
   processSlots: 1,
   contractLimit: 2,
@@ -41,9 +41,9 @@ export const DEFAULT_ECONOMY: EconomyConfig = {
   reactionEnergy: {},
   reactionTime: {},
   bundles: [
-    { id: 'gas', name: '기체 공방', items: [{ materialId: 'H2_g', units: 4 }, { materialId: 'O2_g', units: 2 }, { materialId: 'H2O2_aq', units: 4 }], extraCoins: 0, blurb: '물 합성으로 정제수 계약을 바로 노린다.' },
-    { id: 'carbonate', name: '탄산 공방', items: [{ materialId: 'NaHCO3_s', units: 4 }, { materialId: 'CaCl2_s', units: 2 }, { materialId: 'Na2CO3_s', units: 1 }], extraCoins: 2, blurb: '열분해와 침전으로 제지 계약을 노린다.' },
-    { id: 'material', name: '소재 공방', items: [{ materialId: 'Mg_s', units: 2 }, { materialId: 'O2_g', units: 2 }, { materialId: 'CaO_s', units: 1 }, { materialId: 'H2O_l', units: 2 }], extraCoins: 0, blurb: '마그네슘 연소로 세라믹 계약을 빠르게 완료한다.' },
+    { id: 'gas', name: '기체 공방', items: [{ materialId: 'H2_g', units: 4 }, { materialId: 'O2_g', units: 2 }, { materialId: 'H2O2_aq', units: 4 }], extraCoins: 0, blurb: '수소와 산소로 물을 만들어 정제수 주문을 바로 노린다.' },
+    { id: 'carbonate', name: '탄산 공방', items: [{ materialId: 'NaHCO3_s', units: 4 }, { materialId: 'CaCl2_s', units: 2 }, { materialId: 'Na2CO3_s', units: 1 }], extraCoins: 2, blurb: '베이킹소다를 가열하고 침전을 만들어 종이 공장 주문을 노린다.' },
+    { id: 'material', name: '소재 공방', items: [{ materialId: 'Mg_s', units: 2 }, { materialId: 'O2_g', units: 2 }, { materialId: 'CaO_s', units: 1 }, { materialId: 'H2O_l', units: 2 }], extraCoins: 0, blurb: '마그네슘을 태워 세라믹 주문을 가장 빨리 끝낸다.' },
   ],
 };
 

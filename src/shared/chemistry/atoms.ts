@@ -73,6 +73,12 @@ export function molarMassOf(composition: Record<string, number>): number {
   return Math.round(m * 100) / 100;
 }
 
+const SUB = '₀₁₂₃₄₅₆₇₈₉';
+/** 글자나 ')' 뒤의 숫자만 아래첨자로 바꾼다. 앞의 계수(2H2O 의 2)는 그대로. 예: "2H2O(g)" → "2H₂O(g)", "Ca(OH)2" → "Ca(OH)₂" */
+export function subscriptFormula(text: string): string {
+  return text.replace(/([A-Za-z)])(\d+)/g, (_m, a: string, d: string) => a + [...d].map((c) => SUB[Number(c)] ?? c).join(''));
+}
+
 /** 원소 질량비 (예: 물 H:O = 2:16 → 1:8) */
 export function massRatio(composition: Record<string, number>): { element: string; mass: number; percent: number }[] {
   const total = molarMassOf(composition);

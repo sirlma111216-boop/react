@@ -213,6 +213,18 @@ p { margin: 0; }
 .rcard .cost { display: flex; gap: 6px; font-size: 12px; color: var(--ink-2); }
 .pinmark { position: absolute; top: -6px; right: -6px; background: var(--amber); color: #fff; border-radius: 999px; font-size: 11px; padding: 2px 7px; font-weight: 800; box-shadow: var(--shadow-s); }
 
+.recipe { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 12.5px; }
+.ing { padding: 2px 7px; border-radius: 999px; background: var(--ivory-2); font-weight: 600; }
+.ing.have { background: var(--teal-soft); color: var(--teal); }
+.ing.need { background: #f6dcd8; color: var(--danger); }
+.ing.out { background: var(--amber-soft); color: #7a4f0b; }
+.arrow-s { color: var(--copper); font-weight: 800; }
+.eq-small { font-size: 11px; color: var(--ink-3); font-weight: 500; }
+.eq-mid { font-size: 15px; color: var(--teal); }
+.recipe-big { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 16px; }
+.fsmall { font-size: 0.8em; color: var(--ink-3); font-family: var(--mono); font-weight: 500; }
+.mat .units { font-family: var(--mono); }
+
 /* 계약 카드 */
 .ccard { background: #fff; border: 1.5px solid var(--ivory-3); border-radius: 12px; padding: 10px; display: grid; grid-template-columns: 54px 1fr; gap: 10px; align-items: start; }
 .ccard.held { border-color: var(--copper); }

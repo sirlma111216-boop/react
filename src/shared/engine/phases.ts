@@ -234,7 +234,7 @@ export function settleRound(state: GameState): void {
           if (!team.badges.includes('열회수 달인') && team.heatRecoveredThisRound >= 2) team.badges.push('열회수 달인');
         }
         const r = REACTIONS[p.defId]!;
-        pushLog(state, 'done', `${team.name}: ${r.name} 완료`, team.id);
+        pushLog(state, 'done', `${team.name}: ${r.name} 완성! 창고에 들어왔어요`, team.id);
       } else {
         team.processedCount += 1;
         if (p.outputs.some((o) => o.grade === 'recovered') && !team.badges.includes('우수 재활용')) team.badges.push('우수 재활용');
@@ -243,7 +243,7 @@ export function settleRound(state: GameState): void {
     team.processes = team.processes.filter((p) => p.completesRound > state.round);
     // 기한 만료 계약 제거 (벌금 없음)
     const expired = team.contracts.filter((c) => !c.special && c.deadlineRound < state.round + 1 && state.round < state.roundsTotal);
-    for (const c of expired) pushLog(state, 'contract', `${team.name}: ${c.title} 기한 만료`, team.id);
+    for (const c of expired) pushLog(state, 'contract', `${team.name}: ${c.title} 기한이 지나 사라졌어요`, team.id);
     team.contracts = team.contracts.filter((c) => !expired.includes(c));
     if (team.actionsLeft >= state.config.actionsPerRound) team.stalledRounds += 1;
     team.assetHistory.push(teamAsset(state, team));
@@ -273,7 +273,7 @@ export function finishGame(state: GameState): void {
   });
   state.results = results;
   state.phase = 'finished';
-  pushLog(state, 'finish', '경기 종료');
+  pushLog(state, 'finish', '게임 끝!');
 }
 
 /** 다음 단계로 전이 (서버 알람·시뮬레이터 공용). */

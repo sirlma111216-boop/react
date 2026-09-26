@@ -1,5 +1,5 @@
 import type { MaterialDefinition, Phase, CompositionClass, StructureClass } from '../types';
-import { parseFormula, molarMassOf } from './atoms';
+import { parseFormula, molarMassOf, subscriptFormula } from './atoms';
 
 interface Def {
   id: string;
@@ -93,3 +93,19 @@ export function formulaWithPhase(id: string): string {
   const m = material(id);
   return `${m.formula}(${m.phase})`;
 }
+
+/** 첨자가 적용된 화학식 (상태 포함) 예: H₂O(g) */
+export function formulaText(id: string, withPhase = true): string {
+  const m = MATERIALS[id];
+  if (!m) return id;
+  return subscriptFormula(m.formula) + (withPhase ? `(${m.phase})` : '');
+}
+
+/** 학생용 표시명: "물(수증기) H₂O" 처럼 이름을 먼저 */
+export function materialLabel(id: string): string {
+  const m = MATERIALS[id];
+  if (!m) return id;
+  return `${m.displayName} ${subscriptFormula(m.formula)}`;
+}
+
+export const nameOf = (id: string): string => MATERIALS[id]?.displayName ?? id;

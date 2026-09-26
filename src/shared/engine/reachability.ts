@@ -63,7 +63,7 @@ export function computeReachability(activeReactions: string[], shopMaterials: st
       const baseEquip = r.requiredEquipment ?? [];
       const visit = (lot: Lot, chain: string[], equip: string[]) => {
         if (lot.kind === 'pure') {
-          for (const tag of lot.tags) addRoute(lot.materialId!, tag, { reactionId: rid, processIds: chain, yieldPerBatch: lot.units, inputsPerBatch: inputs, rounds: r.time + chain.length + 1, requiredEquipment: equip });
+          for (const tag of lot.tags) addRoute(lot.materialId!, tag, { reactionId: rid, processIds: chain, yieldPerBatch: lot.units, inputsPerBatch: inputs, rounds: r.time + chain.reduce((a, pid) => a + PROCESSES[pid]!.time, 0) + 1, requiredEquipment: equip });
           if (lot.grade !== 'purchased') producible.add(lot.materialId!);
         }
         if (chain.length >= MAX_PROCESS_DEPTH) return;

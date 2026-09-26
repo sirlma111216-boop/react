@@ -11,7 +11,7 @@ import { Wordmark, Modal } from '../components/common';
 import { Spark } from './GameScreen';
 import { ResultsScreen } from './ResultsScreen';
 
-const PHASE_LABEL = { plan: '계획', execute: '실행', settle: '정산·인계', finished: '종료', setup: '준비' } as const;
+const PHASE_LABEL = { plan: '상의', execute: '행동', settle: '마무리', finished: '끝', setup: '준비' } as const;
 
 /** 교사 관전 보드: 모든 팀 진행을 한 화면에서. 교사가 팀에 참가했으면 '내 팀 보드'로 전환할 수 있다. */
 export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey }: { view: ClientView; client: GameClient; onLeave: () => void; onSwitchToTeam?: () => void; teacherKey: string | null }) {
@@ -56,26 +56,26 @@ export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey
             <div key={t.id} className="tteam" style={{ borderTopColor: t.color }}>
               <div className="thead"><Emblem shape={t.emblem} color={t.color} size={22} /><b style={{ fontSize: 15 }}>{t.name}</b><span className="tag">코인 {t.coins}</span><span className="tag">에너지 {t.energy}</span><span className="tag">행동 {t.actionsLeft}</span><span style={{ flex: 1 }} /><Spark data={t.assetHistory} color={t.color} /></div>
               <div className="row" style={{ marginBottom: 4 }}>
-                <span className="tag tag-amber">담당 {op?.nick ?? '-'}{op && !op.connected ? ' (끊김)' : ''}</span>
-                <button className="btn btn-sm btn-ghost" onClick={() => setOpTeam(t.id)}>조작권 넘기기</button>
+                <span className="tag tag-amber">차례 {op?.nick ?? '-'}{op && !op.connected ? ' (끊김)' : ''}</span>
+                <button className="btn btn-sm btn-ghost" onClick={() => setOpTeam(t.id)}>차례 넘기기</button>
                 <span className="muted small">{members.map((m) => { const p = view.players.find((x) => x.id === m); return p ? `${p.nick}${p.connected ? '' : '(끊김)'}` : ''; }).join(', ')}</span>
               </div>
-              <div className="small"><b>공정:</b> {t.processes.length ? t.processes.map((p) => `${p.kind === 'reaction' ? REACTIONS[p.defId]!.name : PROCESSES[p.defId]!.name}→${p.completesRound}R`).join(', ') : '없음'}</div>
-              <div className="small"><b>계약:</b> {t.contracts.length ? t.contracts.map((c) => `${c.title}(${c.deadlineRound}R)`).join(', ') : '없음'} · 납품 {t.delivered}</div>
-              <div className="small"><b>재고:</b> {t.lots.slice(0, 8).map((l) => l.kind === 'pure' ? `${MATERIALS[l.materialId!]!.formula}×${l.units}` : `혼합(${l.origin.reactionId})`).join(' ')}{t.lots.length > 8 ? ' …' : ''}</div>
+              <div className="small"><b>만드는 중:</b> {t.processes.length ? t.processes.map((p) => `${p.kind === 'reaction' ? REACTIONS[p.defId]!.name : PROCESSES[p.defId]!.name}→${p.completesRound}R`).join(', ') : '없음'}</div>
+              <div className="small"><b>주문:</b> {t.contracts.length ? t.contracts.map((c) => `${c.title}(${c.deadlineRound}R)`).join(', ') : '없음'} · 배달 {t.delivered}</div>
+              <div className="small"><b>창고:</b> {t.lots.slice(0, 8).map((l) => l.kind === 'pure' ? `${MATERIALS[l.materialId!]!.displayName}×${l.units}` : `섞인 것(${l.origin.reactionId})`).join(' ')}{t.lots.length > 8 ? ' …' : ''}</div>
               {t.memo && <div className="small muted">메모: {t.memo}</div>}
             </div>
           );
         })}
       </div>
       {opTeam && (
-        <Modal title="조작권 넘기기" onClose={() => setOpTeam(null)}>
+        <Modal title="차례 넘기기" onClose={() => setOpTeam(null)}>
           <div className="stack">{(view.teams.find((t) => t.id === opTeam)?.members ?? []).map((m) => { const p = view.players.find((x) => x.id === m); return <button key={m} className="btn" onClick={async () => { if (await send({ type: 'setOperator', teamId: opTeam, playerId: m })) setOpTeam(null); }}>{p?.nick ?? m} {p?.connected ? '' : '(끊김)'}</button>; })}</div>
         </Modal>
       )}
       {confirmEnd && (
         <Modal title="조기 종료" onClose={() => setConfirmEnd(false)}>
-          <p>현재 라운드를 마지막으로 정산하고 결과를 계산합니다. 되돌릴 수 없습니다.</p>
+          <p>현재 라운드를 마지막으로 마무리하고 결과를 계산합니다. 되돌릴 수 없습니다.</p>
           <div className="row" style={{ justifyContent: 'flex-end', marginTop: 12 }}><button className="btn btn-ghost" onClick={() => setConfirmEnd(false)}>취소</button><button className="btn btn-danger" onClick={async () => { if (await send({ type: 'endGame' })) setConfirmEnd(false); }}>종료</button></div>
         </Modal>
       )}

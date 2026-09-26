@@ -32,7 +32,7 @@ export class LocalClient implements GameClient {
     this.state = createGame({
       seed: `practice-${Date.now()}`, mode, roundsTotal: rounds,
       teams: [
-        { id: 'T1', name: '내 공방', color: '#1F6F78', emblem: 'circle', bundleId: 'gas' },
+        { id: 'T1', name: '우리 공방', color: '#1F6F78', emblem: 'circle', bundleId: 'gas' },
         { id: 'T2', name: 'AI 공방', color: '#B87346', emblem: 'hexagon', bundleId: 'material' },
       ],
     });
@@ -101,6 +101,8 @@ export class LocalClient implements GameClient {
       if (g.phase !== 'setup') return { ok: false, error: '이미 시작했습니다.' };
       applyTeamCommand(g, 'T2', { type: 'chooseBundle', bundleId: 'material' });
       startGame(g);
+      g.teams['T1']!.operatorId = 'me';
+      g.teams['T2']!.operatorId = 'ai';
       this.schedule(PLAN_MS);
       return { ok: true };
     }

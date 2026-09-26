@@ -1,24 +1,35 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { imageUrl, markMissing } from '../lib/assets';
-import { MATERIALS, PHASE_LABEL } from '../../shared/chemistry/materials';
+import { MATERIALS, PHASE_LABEL, formulaText } from '../../shared/chemistry/materials';
+import { subscriptFormula } from '../../shared/chemistry/atoms';
 import { useAppState } from '../lib/store';
 
-/** 화학식 렌더링: 숫자를 아래첨자로, 상태 기호는 그대로 */
+/** 학생용 단계 이름 */
+export const PHASE_KO: Record<string, string> = { plan: '상의 시간', execute: '행동 시간', settle: '마무리', finished: '끝', setup: '준비' };
+
+/** 화학식 (아래첨자 적용). 예: H₂O(g) */
 export function Formula({ id, withPhase = true }: { id: string; withPhase?: boolean }) {
   const m = MATERIALS[id];
   if (!m) return <span className="formula">{id}</span>;
-  const parts: ReactNode[] = [];
-  const f = m.formula;
-  let buf = '';
-  for (let i = 0; i < f.length; i++) {
-    const ch = f[i]!;
-    if (ch >= '0' && ch <= '9' && i > 0 && f[i - 1] !== '(') {
-      if (buf) { parts.push(<span key={`t${i}`}>{buf}</span>); buf = ''; }
-      parts.push(<sub key={`s${i}`}>{ch}</sub>);
-    } else buf += ch;
-  }
-  if (buf) parts.push(<span key="tail">{buf}</span>);
-  return <span className="formula" aria-label={`${m.displayName} ${m.formula}`}>{parts}{withPhase && <span style={{ fontSize: '0.8em', opacity: 0.75 }}>({m.phase})</span>}</span>;
+  return <span className="formula" aria-label={`${m.displayName} ${m.formula}`}>{formulaText(id, withPhase)}</span>;
+}
+
+/** 반응식 문자열을 아래첨자로 표시. 예: 2H₂(g) + O₂(g) → 2H₂O(g) */
+export function Equation({ text, className }: { text: string; className?: string }) {
+  return <span className={`formula ${className ?? ''}`}>{subscriptFormula(text)}</span>;
+}
+
+/** 물질 이름을 먼저, 화학식은 작게. 예: 물(수증기) H₂O */
+export function Mat({ id, count, bold = true }: { id: string; count?: number; bold?: boolean }) {
+  const m = MATERIALS[id];
+  if (!m) return <span>{id}</span>;
+  return (
+    <span className="mat">
+      {bold ? <b>{m.displayName}</b> : m.displayName}
+      {count !== undefined && <span className="units"> ×{count}</span>}
+      <span className="fsmall"> {formulaText(id, false)}</span>
+    </span>
+  );
 }
 
 export function MaterialName({ id }: { id: string }) {
@@ -69,7 +80,7 @@ export function ActionIcon({ size = 18 }: { size?: number }) {
   return <svg className="ico" width={size} height={size} viewBox="0 0 24 24" aria-hidden><rect x="3" y="3" width="18" height="18" rx="5" fill="#B87346" /><path d="M8 12l3 3 5-6" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" /></svg>;
 }
 
-/** 재고 칸 토큰 (상태별 모양) */
+/** 재고 토큰 (상태별 모양) */
 export function Tokens({ materialId, units }: { materialId: string; units: number }) {
   const ph = MATERIALS[materialId]?.phase ?? 's';
   const cls = ph === 'g' ? 'token gas' : ph === 'l' ? 'token liq' : ph === 'aq' ? 'token aq' : 'token';

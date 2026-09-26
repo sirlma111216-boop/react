@@ -23,22 +23,22 @@ export function ResultsScreen({ view, onLeave, teacherExport }: { view: ClientVi
     <div className="screen">
       <div className={`bg-full ${bg ? '' : 'bg-fallback-results'}`} style={bg ? { backgroundImage: `url(${bg})` } : undefined} />
       <div className="bg-content results">
-        <div className="center" style={{ marginBottom: 16 }}><h1 style={{ color: 'var(--teal)', fontSize: 30 }}>생산의 하루가 끝났습니다</h1><p className="muted">최종 자산 = 코인 + 유료 설비 잔존가치(50%). 개인 순위는 없습니다.</p></div>
+        <div className="center" style={{ marginBottom: 16 }}><h1 style={{ color: 'var(--teal)', fontSize: 30 }}>오늘의 공방 문을 닫습니다</h1><p className="muted">최종 점수 = 코인 + 산 장비 값의 절반. 개인 순위는 없어요.</p></div>
         {results.map((r) => {
           const t = view.teams.find((x) => x.id === r.teamId);
           return (
             <div key={r.teamId} className={`rank-row ${r.rank === 1 ? 'first' : ''}`} style={myTeamId === r.teamId ? { outline: '2px solid var(--teal-2)' } : undefined}>
               <span className="rank-num">{r.rank}</span>
               <Emblem shape={t?.emblem ?? 'circle'} color={t?.color ?? '#888'} size={30} />
-              <div><b style={{ fontSize: 16 }}>{r.name}</b><div className="muted small">납품 {r.delivered}건 · 매출 {r.revenue} · 주요 경로 {r.topReaction ? REACTIONS[r.topReaction]?.name ?? r.topReaction : '-'}{r.badges.length ? ` · ${r.badges.join(', ')}` : ''}</div></div>
-              <div className="center"><div className="muted small">코인 {r.coins} + 설비 {r.salvage}</div></div>
+              <div><b style={{ fontSize: 16 }}>{r.name}</b><div className="muted small">배달 {r.delivered}건 · 번 코인 {r.revenue} · 가장 많이 만든 것 {r.topReaction ? REACTIONS[r.topReaction]?.name ?? r.topReaction : '-'}{r.badges.length ? ` · ${r.badges.join(', ')}` : ''}</div></div>
+              <div className="center"><div className="muted small">코인 {r.coins} + 장비 {r.salvage}</div></div>
               <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--copper)', fontFamily: 'var(--mono)' }}>{r.asset}</div>
             </div>
           );
         })}
         <AssetChart series={series} />
         {myTeam && myTeam.deliveredContracts.length > 0 && (
-          <div className="card" style={{ marginTop: 12 }}><div className="card-title">우리 팀의 납품 기록</div><ul className="small" style={{ margin: 0, paddingLeft: 16 }}>{myTeam.deliveredContracts.map((d, i) => <li key={i}>R{d.round} {CONTRACTS[d.templateId]?.title ?? d.templateId} +{d.reward}{d.special ? ' (특별 계약)' : ''}</li>)}</ul></div>
+          <div className="card" style={{ marginTop: 12 }}><div className="card-title">우리 팀의 배달 기록</div><ul className="small" style={{ margin: 0, paddingLeft: 16 }}>{myTeam.deliveredContracts.map((d, i) => <li key={i}>R{d.round} {CONTRACTS[d.templateId]?.title ?? d.templateId} +{d.reward}{d.special ? ' (특별 주문)' : ''}</li>)}</ul></div>
         )}
         <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
           <button className="btn btn-ghost" onClick={() => download('json')}>JSON 내려받기</button>
@@ -59,7 +59,7 @@ function AssetChart({ series }: { series: { name: string; color: string; data: n
   const x = (i: number) => pad + (i / Math.max(1, maxLen - 1)) * (w - pad * 2);
   const y = (v: number) => h - pad - (v / maxV) * (h - pad * 2);
   return (
-    <svg className="chart" viewBox={`0 0 ${w} ${h}`} role="img" aria-label="팀별 자산 추이" style={{ marginTop: 12 }}>
+    <svg className="chart" viewBox={`0 0 ${w} ${h}`} role="img" aria-label="팀별 코인 변화" style={{ marginTop: 12 }}>
       <line x1={pad} y1={h - pad} x2={w - pad} y2={h - pad} stroke="#c9c1b0" />
       <line x1={pad} y1={pad} x2={pad} y2={h - pad} stroke="#c9c1b0" />
       {[0, 0.5, 1].map((f) => <text key={f} x={pad - 4} y={y(maxV * f) + 4} fontSize="10" textAnchor="end" fill="#7d8889">{Math.round(maxV * f)}</text>)}
