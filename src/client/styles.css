@@ -507,3 +507,12 @@ p { margin: 0; }
   .device-img { width: 60px; height: 60px; }
 }
 .filter-note { background: rgba(255,255,255,0.92); padding: 4px 10px; border-radius: 999px; color: var(--ink-2); }
+
+/* V3.1: NPC 중간 크기, 장소 화면 왼쪽 아래 모서리에 밀착, 말풍선은 머리 위 */
+@media (min-width: 1001px) {
+  .orders-grid, .store-grid, .shipping-grid { grid-template-columns: clamp(260px, 24%, 380px) minmax(0, 1fr) 300px; }
+  .npc { top: auto; right: auto; left: -12px; bottom: -12px; width: calc(100% + 12px); height: clamp(340px, 62%, 540px); justify-content: flex-start; }
+  .npc-img { height: 100%; width: auto; max-width: 100%; object-position: left bottom; animation: none; }
+  .npc-bubble { left: 12px; right: auto; width: min(340px, calc(100% - 12px)); bottom: calc(100% + 10px); }
+  .npc-bubble::after { display: block; left: 70px; bottom: -9px; transform: rotate(45deg); }
+}
