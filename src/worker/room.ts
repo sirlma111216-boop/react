@@ -4,7 +4,7 @@ import type { GameState, ModeId, TeamCommand, TeamState } from '../shared/types'
 import type { ClientEnvelope, ClientView, PlayerPublic, PlayerRole, RoomCommand, ServerMessage, TeamPublic } from '../shared/protocol';
 import { sanitizeName, TEAM_NAME_MAX } from '../shared/protocol';
 import { createGame, TEAM_COLORS, TEAM_EMBLEMS } from '../shared/engine/state';
-import { advancePhase, startGame } from '../shared/engine/phases';
+import { advancePhase, startGame, settleAndOpenNextRound, allTeamsReady } from '../shared/engine/phases';
 import { applyTeamCommand } from '../shared/engine/commands';
 import { projectGame, stripTeam, teamCategory } from '../shared/projection';
 import { PHASE_SECONDS, DEFAULT_ECONOMY } from '../shared/config/economy';
@@ -35,6 +35,16 @@ interface Team {
   operatorStart: number;
 }
 
+/** 관측 기록 (제한시간을 부과하지 않는 진단용). 개인 공개 순위에 쓰지 않는다. */
+interface ObsEvent {
+  t: number;
+  round: number;
+  teamId: string | null;
+  playerId: string | null;
+  type: string;
+  detail: string;
+}
+
 interface RoomMeta {
   code: string;
   createdAt: number;
@@ -47,6 +57,8 @@ interface RoomMeta {
   teacherNick: string;
   teacherToken: string;
   teacherPlayerId: string;
+  /** manual: 준비 완료로 진행 (새 방 기본). timed: 구버전 시간제 방 */
+  turnMode: 'manual' | 'timed';
   timerScale: number;
   phaseEndsAt: number | null;
   pausedRemaining: number | null;
@@ -56,6 +68,10 @@ interface RoomMeta {
   cmdOrder: string[];
   joinTimes: number[];
   operatorGraceAt: number | null;
+  /** 정산 진행 중 플래그 (경합 방지) */
+  settling: boolean;
+  obs: ObsEvent[];
+  schemaVersion: number;
 }
 
 const LOBBY_IDLE_MS = 2 * 60 * 60 * 1000;
@@ -66,6 +82,8 @@ const MAX_TEAMS = 8;
 const TEAM_MAX_MEMBERS = 8;
 const OPERATOR_GRACE_MS = 15_000;
 const BROADCAST_DELAY_MS = 120;
+const OBS_MAX = 600;
+const SCHEMA_VERSION = 2;
 
 const isFinished = (g: GameState): boolean => g.phase === 'finished';
 function runToFinish(g: GameState): void {
@@ -99,19 +117,34 @@ export class RoomDurableObject extends DurableObject<Env> {
         this.ctx.storage.get<Record<string, Team>>('teams'),
         this.ctx.storage.get<Omit<GameState, 'teams'>>('game:core'),
       ]);
-      this.meta = meta ?? null;
+      this.meta = meta ? this.migrateMeta(meta) : null;
       this.players = players ?? {};
       this.teams = teams ?? {};
       if (core) {
         const teamsMap: Record<string, TeamState> = {};
         for (const id of core.teamOrder) {
           const t = await this.ctx.storage.get<TeamState>(`game:team:${id}`);
-          if (t) teamsMap[id] = t;
+          if (t) teamsMap[id] = { ...t, roundReady: t.roundReady ?? false } as TeamState;
         }
-        this.game = { ...core, teams: teamsMap } as GameState;
+        const g = { ...core, teams: teamsMap } as GameState;
+        // 구버전 저장 상태 보정 (자동 리셋 없이 기본값만 채운다)
+        g.turnMode ??= 'timed';
+        g.market ??= {};
+        g.marketHistory ??= {};
+        g.roundVersion ??= 0;
+        this.game = g;
       }
       this.loaded = true;
     });
+  }
+
+  private migrateMeta(m: RoomMeta): RoomMeta {
+    const out = { ...m } as RoomMeta;
+    if (!out.turnMode) out.turnMode = 'timed'; // schemaVersion 1 방은 시간제였다
+    out.settling ??= false;
+    out.obs ??= [];
+    out.schemaVersion ??= 1;
+    return out;
   }
 
   private async save(): Promise<void> {
@@ -124,6 +157,13 @@ export class RoomDurableObject extends DurableObject<Env> {
       for (const [id, t] of Object.entries(teams)) entries[`game:team:${id}`] = t;
     }
     await this.ctx.storage.put(entries);
+  }
+
+  private observe(type: string, detail: string, playerId: string | null = null, teamId: string | null = null): void {
+    const meta = this.meta;
+    if (!meta) return;
+    meta.obs.push({ t: Date.now(), round: this.game?.round ?? 0, teamId, playerId, type, detail: detail.slice(0, 80) });
+    if (meta.obs.length > OBS_MAX) meta.obs.splice(0, meta.obs.length - OBS_MAX);
   }
 
   // ---------- HTTP 진입 ----------
@@ -140,8 +180,8 @@ export class RoomDurableObject extends DurableObject<Env> {
       const teacherPlayerId = 'P' + randomToken(4);
       this.meta = {
         code: body.code, createdAt: now, updatedAt: now, status: 'lobby', locked: false, mode: body.mode, presetId: body.presetId, rounds: body.rounds,
-        teacherNick: body.nick, teacherToken: randomToken(), teacherPlayerId, timerScale: 1, phaseEndsAt: null, pausedRemaining: null, origin: body.origin, finishedAt: null,
-        cmdLog: {}, cmdOrder: [], joinTimes: [], operatorGraceAt: null,
+        teacherNick: body.nick, teacherToken: randomToken(), teacherPlayerId, turnMode: 'manual', timerScale: 1, phaseEndsAt: null, pausedRemaining: null, origin: body.origin, finishedAt: null,
+        cmdLog: {}, cmdOrder: [], joinTimes: [], operatorGraceAt: null, settling: false, obs: [], schemaVersion: SCHEMA_VERSION,
       };
       this.players = { [teacherPlayerId]: { id: teacherPlayerId, nick: body.nick, role: 'teacher', token: this.meta.teacherToken, teamId: null, isLeader: false, joinedAt: now, lastSeen: now } };
       this.teams = {};
@@ -155,7 +195,7 @@ export class RoomDurableObject extends DurableObject<Env> {
     if (await this.maybeExpire()) return Response.json({ error: '만료된 방입니다.', exists: false }, { status: 410 });
 
     if (path === '/info') {
-      return Response.json({ exists: true, code: this.meta.code, status: this.meta.status, locked: this.meta.locked, mode: this.meta.mode, presetId: this.meta.presetId, rounds: this.meta.rounds, players: Object.keys(this.players).length - 1, teams: Object.keys(this.teams).length, teacherNick: this.meta.teacherNick });
+      return Response.json({ exists: true, code: this.meta.code, status: this.meta.status, locked: this.meta.locked, mode: this.meta.mode, presetId: this.meta.presetId, rounds: this.meta.rounds, players: Object.keys(this.players).length - 1, teams: Object.keys(this.teams).length, teacherNick: this.meta.teacherNick, turnMode: this.meta.turnMode });
     }
     if (path === '/join' && request.method === 'POST') {
       const body = (await request.json()) as { nick: string };
@@ -195,13 +235,28 @@ export class RoomDurableObject extends DurableObject<Env> {
 
   private exportData() {
     const g = this.game;
+    const obs = this.meta?.obs ?? [];
+    // 장소별 체류·막힘 사유·준비 대기: 팀 단위 요약 (개인 공개 순위 없음)
+    const byTeam: Record<string, { placeMoves: Record<string, number>; blocked: Record<string, number>; ready: number; unready: number; skipped: number; disconnects: number }> = {};
+    for (const e of obs) {
+      const key = e.teamId ?? '-';
+      const b = (byTeam[key] ??= { placeMoves: {}, blocked: {}, ready: 0, unready: 0, skipped: 0, disconnects: 0 });
+      if (e.type === 'place') b.placeMoves[e.detail] = (b.placeMoves[e.detail] ?? 0) + 1;
+      else if (e.type === 'blocked') b.blocked[e.detail] = (b.blocked[e.detail] ?? 0) + 1;
+      else if (e.type === 'ready') b.ready++;
+      else if (e.type === 'unready') b.unready++;
+      else if (e.type === 'skip') b.skipped++;
+      else if (e.type === 'disconnect') b.disconnects++;
+    }
     return {
-      code: this.meta?.code, mode: this.meta?.mode, presetId: this.meta?.presetId, rounds: this.meta?.rounds, createdAt: this.meta?.createdAt, status: this.meta?.status,
+      code: this.meta?.code, mode: this.meta?.mode, presetId: this.meta?.presetId, rounds: this.meta?.rounds, createdAt: this.meta?.createdAt, status: this.meta?.status, turnMode: this.meta?.turnMode,
       scienceVersion: g?.scienceVersion, buildHash: g?.buildHash, configVersion: g?.config.version, seed: g?.seed,
       teams: Object.values(this.teams).map((t) => ({ id: t.id, name: t.name, emblem: t.emblem, color: t.color, members: t.members.map((m) => this.players[m]?.nick ?? '?') })),
       results: g?.results ?? null,
       assetHistory: g ? Object.fromEntries(Object.values(g.teams).map((t) => [t.name, t.assetHistory])) : null,
       deliveries: g ? Object.fromEntries(Object.values(g.teams).map((t) => [t.name, t.deliveredContracts])) : null,
+      marketHistory: g?.marketHistory ?? null,
+      observation: { byTeam, note: '실제 경과시간은 진단용이며 게임 결과·생산·가격을 바꾸지 않는다.' },
       log: g?.log ?? [],
     };
   }
@@ -260,9 +315,11 @@ export class RoomDurableObject extends DurableObject<Env> {
     const prev = this.meta.cmdLog[key];
     if (prev) { this.sendTo(ws, { type: 'ack', id: env.id, ok: prev.ok, error: prev.error }); return; }
     const res = await this.handleCommand(player, env.cmd);
-    this.meta.cmdLog[key] = res;
-    this.meta.cmdOrder.push(key);
-    if (this.meta.cmdOrder.length > 400) { const old = this.meta.cmdOrder.splice(0, 100); for (const k of old) delete this.meta.cmdLog[k]; }
+    if (env.cmd.type !== 'observe') {
+      this.meta.cmdLog[key] = res;
+      this.meta.cmdOrder.push(key);
+      if (this.meta.cmdOrder.length > 400) { const old = this.meta.cmdOrder.splice(0, 100); for (const k of old) delete this.meta.cmdLog[k]; }
+    }
     this.sendTo(ws, { type: 'ack', id: env.id, ok: res.ok, error: res.error });
     await this.save();
     this.scheduleBroadcast();
@@ -275,8 +332,9 @@ export class RoomDurableObject extends DurableObject<Env> {
     const player = this.playerOf(ws);
     if (player && this.meta) {
       player.lastSeen = Date.now();
-      // 조작 담당자 이탈: 15초 유예 후 다음 접속자에게
-      if (this.game && this.game.phase === 'execute' && player.teamId) {
+      if (this.connectedCount(player.id) === 0) this.observe('disconnect', player.role, player.id, player.teamId);
+      // 시간제(구버전) 방에서만 15초 뒤 자동 이전. 수동 모드는 교사/팀장이 명시적으로 넘긴다.
+      if (this.meta.turnMode === 'timed' && this.game && this.game.phase === 'execute' && player.teamId) {
         const t = this.game.teams[player.teamId];
         if (t && t.operatorId === player.id && this.connectedCount(player.id) === 0) {
           this.meta.operatorGraceAt = Date.now() + OPERATOR_GRACE_MS;
@@ -339,6 +397,7 @@ export class RoomDurableObject extends DurableObject<Env> {
       return {
         id: t.id, name: t.name, color: t.color, emblem: t.emblem, leaderId: t.leaderId, members: t.members, ready: t.ready, bundleId: t.bundleId, leaseId: t.leaseId,
         contractsHeld: gt?.contracts.length ?? 0, delivered: gt?.delivered ?? 0, assetHistory: gt?.assetHistory ?? [], category: gt ? teamCategory(gt) : null, operatorId: gt?.operatorId ?? null, badges: gt?.badges ?? [],
+        roundReady: gt?.roundReady ?? false, actionsLeft: gt?.actionsLeft ?? 0, connectedCount: t.members.filter((m) => this.isConnected(m)).length,
       };
     });
     const myTeamId = p.teamId;
@@ -347,7 +406,7 @@ export class RoomDurableObject extends DurableObject<Env> {
       me: { playerId: p.id, nick: p.nick, role: p.role, teamId: myTeamId, isLeader: p.isLeader, isOperator: !!(g && myTeamId && g.teams[myTeamId]?.operatorId === p.id) },
       room: {
         code: meta.code, status: meta.status, locked: meta.locked, mode: meta.mode, presetId: meta.presetId, rounds: meta.rounds, teacherNick: meta.teacherNick, teacherPlayerId: meta.teacherPlayerId,
-        timerScale: meta.timerScale, phaseEndsAt: meta.phaseEndsAt, pausedRemaining: meta.pausedRemaining, createdAt: meta.createdAt, expiresAt: meta.createdAt + MAX_AGE_MS,
+        timerScale: meta.timerScale, turnMode: meta.turnMode, phaseEndsAt: meta.turnMode === 'manual' ? null : meta.phaseEndsAt, pausedRemaining: meta.pausedRemaining, createdAt: meta.createdAt, expiresAt: meta.createdAt + MAX_AGE_MS,
         joinUrl: `${meta.origin}/?room=${meta.code}`,
       },
       players,
@@ -368,6 +427,11 @@ export class RoomDurableObject extends DurableObject<Env> {
     const isTeacher = p.role === 'teacher';
     try {
       switch (cmd.type) {
+        case 'observe': {
+          const place = String(cmd.place ?? '').slice(0, 20);
+          if (place) this.observe('place', place, p.id, p.teamId);
+          return { ok: true };
+        }
         // ----- 교사 -----
         case 'appointLeader': {
           if (!isTeacher) return fail('교사만 팀장을 임명할 수 있습니다.');
@@ -429,7 +493,7 @@ export class RoomDurableObject extends DurableObject<Env> {
           if (teams.length < 1) return fail('팀이 하나 이상 필요합니다.');
           for (const t of Object.values(this.teams)) if (t.members.length === 0) delete this.teams[t.id];
           this.game = createGame({
-            seed: `${meta.code}-${meta.createdAt}`, mode: meta.mode, presetId: meta.presetId, roundsTotal: meta.rounds, config: DEFAULT_ECONOMY,
+            seed: `${meta.code}-${meta.createdAt}`, mode: meta.mode, presetId: meta.presetId, roundsTotal: meta.rounds, config: DEFAULT_ECONOMY, turnMode: meta.turnMode,
             teams: teams.map((t) => ({ id: t.id, name: t.name, color: t.color, emblem: t.emblem, bundleId: t.bundleId, leaseId: t.leaseId })),
           });
           for (const t of teams) {
@@ -441,61 +505,96 @@ export class RoomDurableObject extends DurableObject<Env> {
           meta.locked = true;
           for (const pl of Object.values(this.players)) if (pl.role === 'student' && !pl.teamId) pl.role = 'spectator';
           this.assignOperators();
-          await this.startPhaseTimer();
+          if (meta.turnMode === 'timed') await this.startPhaseTimer();
+          else await this.rescheduleAlarm();
+          this.observe('start', meta.turnMode);
           this.notifyDirectory('playing');
           return { ok: true };
         }
         case 'pause': {
-          if (!isTeacher) return fail('교사만 일시정지할 수 있습니다.');
-          if (meta.status !== 'playing' || meta.phaseEndsAt === null) return fail('진행 중이 아닙니다.');
-          meta.pausedRemaining = Math.max(0, meta.phaseEndsAt - Date.now());
-          meta.phaseEndsAt = null;
+          if (!isTeacher) return fail('교사만 멈출 수 있습니다.');
+          if (meta.status !== 'playing') return fail('진행 중이 아닙니다.');
+          if (meta.turnMode === 'timed') {
+            if (meta.phaseEndsAt === null) return fail('진행 중이 아닙니다.');
+            meta.pausedRemaining = Math.max(0, meta.phaseEndsAt - Date.now());
+            meta.phaseEndsAt = null;
+          }
           meta.status = 'paused';
-          await this.ctx.storage.deleteAlarm();
-          this.toast('all', '교사가 게임을 일시정지했습니다.', 'warn');
+          await this.rescheduleAlarm();
+          this.observe('pause', '');
+          this.toast('all', '선생님이 게임을 잠시 멈췄습니다.', 'warn');
           return { ok: true };
         }
         case 'resume': {
           if (!isTeacher) return fail('교사만 재개할 수 있습니다.');
-          if (meta.status !== 'paused') return fail('일시정지 상태가 아닙니다.');
-          meta.phaseEndsAt = Date.now() + (meta.pausedRemaining ?? 0);
-          meta.pausedRemaining = null;
+          if (meta.status !== 'paused') return fail('멈춤 상태가 아닙니다.');
           meta.status = 'playing';
+          if (meta.turnMode === 'timed') { meta.phaseEndsAt = Date.now() + (meta.pausedRemaining ?? 0); meta.pausedRemaining = null; }
           await this.rescheduleAlarm();
-          this.toast('all', '게임을 재개합니다.', 'info');
+          this.toast('all', '게임을 다시 시작합니다.', 'info');
+          // 멈춤 중에 모든 팀이 준비되었을 수 있다
+          await this.tryAdvanceRound();
           return { ok: true };
         }
         case 'extend': {
           if (!isTeacher) return fail('교사만 시간을 연장할 수 있습니다.');
+          if (meta.turnMode !== 'timed') return fail('수동 진행 방에는 제한시간이 없습니다.');
           const sec = Math.max(5, Math.min(120, Math.floor(Number(cmd.seconds) || 0)));
           if (meta.status === 'paused') meta.pausedRemaining = (meta.pausedRemaining ?? 0) + sec * 1000;
           else if (meta.phaseEndsAt !== null) { meta.phaseEndsAt += sec * 1000; await this.rescheduleAlarm(); }
           else return fail('진행 중이 아닙니다.');
-          this.toast('all', `교사가 ${sec}초 연장했습니다.`, 'info');
           return { ok: true };
         }
         case 'setTimerScale': {
           if (!isTeacher) return fail('교사만 조정할 수 있습니다.');
+          if (meta.turnMode !== 'timed') return fail('수동 진행 방에는 제한시간이 없습니다.');
           const s = Number(cmd.scale);
           const minScale = this.env.ENVIRONMENT === 'production' ? 0.75 : 0.05;
           if (!(s >= minScale && s <= 2)) return fail('배율은 0.75~2 사이입니다.');
           meta.timerScale = s;
           return { ok: true };
         }
+        case 'switchToManual': {
+          if (!isTeacher) return fail('교사만 전환할 수 있습니다.');
+          if (meta.turnMode === 'manual') return fail('이미 수동 진행입니다.');
+          // 안전한 경계: 행동 단계(execute) 또는 대기실에서만 전환
+          if (this.game && this.game.phase !== 'execute' && this.game.phase !== 'finished') return fail('행동 단계에서만 수동 진행으로 바꿀 수 있습니다.');
+          meta.turnMode = 'manual';
+          meta.phaseEndsAt = null; meta.pausedRemaining = null; meta.operatorGraceAt = null;
+          if (this.game) { this.game.turnMode = 'manual'; for (const t of Object.values(this.game.teams)) t.roundReady = false; }
+          await this.rescheduleAlarm();
+          this.observe('switchToManual', '');
+          this.toast('all', '이제 제한시간 없이 "준비 완료"로 진행합니다.', 'info');
+          return { ok: true };
+        }
         case 'setOperator': {
-          if (!isTeacher) return fail('교사만 조작권을 넘길 수 있습니다.');
+          if (!isTeacher && !(p.teamId === cmd.teamId && this.teams[cmd.teamId]?.leaderId === p.id)) return fail('교사나 팀장만 차례를 넘길 수 있습니다.');
           const g = this.game; const team = this.teams[cmd.teamId];
           if (!g || !team || !g.teams[team.id]) return fail('없는 팀입니다.');
           if (!team.members.includes(cmd.playerId)) return fail('그 팀의 팀원이 아닙니다.');
           g.teams[team.id]!.operatorId = cmd.playerId;
           g.version += 1;
-          this.toast([cmd.playerId], '교사가 조작권을 넘겼습니다. 지금부터 당신이 담당자입니다.', 'success');
+          this.observe('setOperator', cmd.playerId, p.id, team.id);
+          this.toast([cmd.playerId], '차례가 당신에게 넘어왔어요. 지금부터 행동할 수 있어요.', 'success');
+          return { ok: true };
+        }
+        case 'skipTeam': {
+          if (!isTeacher) return fail('교사만 건너뛸 수 있습니다.');
+          const g = this.game;
+          if (!g || g.phase !== 'execute' || meta.turnMode !== 'manual') return fail('지금은 건너뛸 수 없습니다.');
+          const gt = g.teams[cmd.teamId];
+          if (!gt) return fail('없는 팀입니다.');
+          // 남은 행동은 포기시키되, 이미 실행된 행동·예약된 입찰은 그대로 둔다
+          gt.roundReady = true;
+          g.version += 1;
+          this.observe('skip', `actionsLeft=${gt.actionsLeft}`, p.id, gt.id);
+          this.toast(this.teams[gt.id]?.members ?? [], '선생님이 이번 라운드를 건너뛰었어요.', 'warn');
+          await this.tryAdvanceRound();
           return { ok: true };
         }
         case 'endGame': {
           if (!isTeacher) return fail('교사만 종료할 수 있습니다.');
           if (!this.game || this.game.phase === 'finished') return fail('진행 중인 경기가 없습니다.');
-          // 조기 종료: 현재 라운드를 마지막으로 정산
           this.game.roundsTotal = Math.max(1, this.game.round);
           runToFinish(this.game);
           await this.onGameFinished();
@@ -505,8 +604,7 @@ export class RoomDurableObject extends DurableObject<Env> {
           if (!isTeacher) return fail('교사 전용입니다.');
           if (meta.status !== 'lobby') return fail('대기실에서만 참가할 수 있습니다.');
           if (p.teamId) return fail('이미 팀에 참가했습니다.');
-          const r = this.createTeamFor(p, cmd.name, cmd.color, cmd.emblem);
-          return r;
+          return this.createTeamFor(p, cmd.name, cmd.color, cmd.emblem);
         }
         case 'teacherLeaveTeam': {
           if (!isTeacher) return fail('교사 전용입니다.');
@@ -527,17 +625,17 @@ export class RoomDurableObject extends DurableObject<Env> {
         }
         case 'setBundle': {
           const team = this.leaderTeam(p);
-          if (!team) return fail('팀장만 시작 묶음을 고를 수 있습니다.');
+          if (!team) return fail('팀장만 시작 재료를 고를 수 있습니다.');
           if (meta.status !== 'lobby') return fail('시작 전에만 고를 수 있습니다.');
-          if (!DEFAULT_ECONOMY.bundles.some((b) => b.id === cmd.bundleId)) return fail('없는 묶음입니다.');
+          if (!DEFAULT_ECONOMY.bundles.some((b) => b.id === cmd.bundleId)) return fail('없는 시작 재료예요.');
           team.bundleId = cmd.bundleId;
           return { ok: true };
         }
         case 'setLease': {
           const team = this.leaderTeam(p);
-          if (!team) return fail('팀장만 임대 설비를 고를 수 있습니다.');
-          if (meta.mode !== 'industrial') return fail('산업 공방에서만 임대합니다.');
-          if (!EQUIPMENT[cmd.equipmentId]?.leasable) return fail('임대할 수 없는 설비입니다.');
+          if (!team) return fail('팀장만 빌릴 장비를 고를 수 있습니다.');
+          if (meta.mode !== 'industrial') return fail('산업 공방에서만 빌릴 수 있습니다.');
+          if (!EQUIPMENT[cmd.equipmentId]?.leasable) return fail('빌릴 수 없는 장비예요.');
           team.leaseId = cmd.equipmentId;
           return { ok: true };
         }
@@ -550,7 +648,7 @@ export class RoomDurableObject extends DurableObject<Env> {
         case 'reorderMembers': {
           const team = this.leaderTeam(p);
           if (!team) return fail('팀장만 순서를 정할 수 있습니다.');
-          if (meta.status !== 'lobby') return fail('첫 라운드 순서는 시작 전에만 정할 수 있습니다.');
+          if (meta.status !== 'lobby') return fail('차례 순서는 시작 전에만 정할 수 있습니다.');
           const order = (cmd.order ?? []).filter((id, i, arr) => team.members.includes(id) && arr.indexOf(id) === i);
           if (order.length !== team.members.length) return fail('순서 목록이 팀원과 맞지 않습니다.');
           team.members = order;
@@ -614,7 +712,6 @@ export class RoomDurableObject extends DurableObject<Env> {
     p.teamId = null;
   }
 
-  /** 경기 중 편입/이탈이 있어도 게임 팀 상태의 구성원 목록은 방 상태를 따른다 (자원 추가 지급 없음). */
   private syncTeamStates(): void {
     if (!this.game) return;
     for (const t of Object.values(this.teams)) {
@@ -627,21 +724,48 @@ export class RoomDurableObject extends DurableObject<Env> {
     const g = this.game;
     if (!g) return { ok: false, error: '경기가 시작되지 않았습니다.' };
     if (!p.teamId || !g.teams[p.teamId]) return { ok: false, error: '팀에 속해 있지 않습니다.' };
-    if (this.meta!.status === 'paused') return { ok: false, error: '일시정지 중입니다.' };
+    if (this.meta!.status === 'paused') return { ok: false, error: '선생님이 게임을 멈췄어요.' };
     const team = g.teams[p.teamId]!;
     const freeForAll = cmd.type === 'memo' || cmd.type === 'pin';
     if (cmd.type === 'pin') {
-      // 핑 제한: 팀당 최근 10초 6개
       const recent = team.pins.filter((x) => Date.now() - x.at < 10_000).length;
-      if (recent >= 6) return { ok: false, error: '핑이 너무 많습니다. 잠시 후 다시 시도하세요.' };
+      if (recent >= 6) return { ok: false, error: '추천이 너무 많아요. 잠시 후 다시 해 주세요.' };
       cmd = { ...cmd, playerId: p.id };
     }
-    if (!freeForAll && team.operatorId !== p.id) return { ok: false, error: '이번 라운드의 조작 담당자만 실행할 수 있습니다. 제안은 핑으로 남기세요.' };
+    if (!freeForAll && team.operatorId !== p.id) return { ok: false, error: `이번 차례는 ${this.players[team.operatorId ?? '']?.nick ?? '다른 팀원'}이에요. 👍 추천으로 제안할 수 있어요.` };
+    if (cmd.type === 'readyRound' && this.meta!.settling) return { ok: false, error: '정산 중이에요. 잠시 후 최신 상태를 보내드릴게요.' };
     const res = applyTeamCommand(g, team.id, cmd);
+    if (!res.ok) this.observe('blocked', `${cmd.type}:${(res.error ?? '').slice(0, 30)}`, p.id, team.id);
+    else if (cmd.type === 'readyRound') this.observe(cmd.on ? 'ready' : 'unready', `actionsLeft=${team.actionsLeft}`, p.id, team.id);
+    else if (cmd.type !== 'memo' && cmd.type !== 'pin') this.observe('action', cmd.type, p.id, team.id);
+    if (res.ok && cmd.type === 'readyRound' && cmd.on) await this.tryAdvanceRound();
     return { ok: res.ok, error: res.error };
   }
 
-  // ---------- 조작 담당자 순환 ----------
+  /** 수동 모드: 모든 참가 팀이 준비되면 정산을 정확히 한 번 수행하고 다음 라운드를 연다. */
+  private async tryAdvanceRound(): Promise<boolean> {
+    const meta = this.meta!;
+    const g = this.game;
+    if (!g || meta.turnMode !== 'manual' || meta.status !== 'playing' || g.phase !== 'execute' || meta.settling) return false;
+    const teamIds = Object.values(this.teams).filter((t) => t.members.length > 0).map((t) => t.id);
+    if (!allTeamsReady(g, teamIds)) return false;
+    meta.settling = true;
+    try {
+      const done = g.round;
+      settleAndOpenNextRound(g);
+      if ((g.phase as string) === 'finished') { await this.onGameFinished(); }
+      else {
+        this.assignOperators();
+        this.observe('settle', `round=${done}`);
+        this.toast('all', `${done}라운드 마무리! ${g.round}라운드가 시작됐어요.`, 'info');
+      }
+    } finally {
+      meta.settling = false;
+    }
+    return true;
+  }
+
+  // ---------- 차례 순환 ----------
   private assignOperators(): void {
     const g = this.game;
     if (!g) return;
@@ -657,7 +781,7 @@ export class RoomDurableObject extends DurableObject<Env> {
       }
       gt.operatorId = chosen ?? t.members[base]!;
       gt.operatorIndex = base;
-      if (chosen) this.toast([chosen], `${g.round}라운드 조작 담당자는 당신입니다.`, 'success');
+      if (chosen) this.toast([chosen], `${g.round}라운드는 당신 차례예요.`, 'success');
     }
   }
 
@@ -670,7 +794,7 @@ export class RoomDurableObject extends DurableObject<Env> {
       const idx = t.members.indexOf(gt.operatorId);
       for (let k = 1; k <= t.members.length; k++) {
         const cand = t.members[(idx + k) % t.members.length]!;
-        if (this.isConnected(cand)) { gt.operatorId = cand; this.toast([cand], '담당자 연결이 끊겨 조작권이 당신에게 넘어왔습니다.', 'warn'); break; }
+        if (this.isConnected(cand)) { gt.operatorId = cand; this.toast([cand], '담당자 연결이 끊겨 차례가 당신에게 넘어왔어요.', 'warn'); break; }
       }
     }
   }
@@ -688,12 +812,14 @@ export class RoomDurableObject extends DurableObject<Env> {
     await this.rescheduleAlarm();
   }
 
+  /** 알람은 시간제(구버전) 진행과 방 정리에만 쓴다. 수동 모드에서는 정리 알람만 남는다. */
   private async rescheduleAlarm(): Promise<void> {
     const meta = this.meta!;
     const cands: number[] = [];
-    if (meta.phaseEndsAt !== null && meta.status === 'playing') cands.push(meta.phaseEndsAt);
-    if (meta.operatorGraceAt !== null) cands.push(meta.operatorGraceAt);
-    // 만료 점검
+    if (meta.turnMode === 'timed') {
+      if (meta.phaseEndsAt !== null && meta.status === 'playing') cands.push(meta.phaseEndsAt);
+      if (meta.operatorGraceAt !== null) cands.push(meta.operatorGraceAt);
+    }
     if (meta.status === 'lobby') cands.push(meta.updatedAt + LOBBY_IDLE_MS);
     if (meta.status === 'finished' && meta.finishedAt) cands.push(meta.finishedAt + FINISHED_KEEP_MS);
     cands.push(meta.createdAt + MAX_AGE_MS);
@@ -705,22 +831,22 @@ export class RoomDurableObject extends DurableObject<Env> {
     const meta = this.meta;
     if (!meta || meta.status === 'expired') return;
     if (await this.maybeExpire()) return;
-    const now = Date.now();
-    if (meta.operatorGraceAt !== null && now >= meta.operatorGraceAt) {
-      meta.operatorGraceAt = null;
-      this.reassignDisconnectedOperators();
-    }
-    // 누락된 단계 경계를 순서대로 한 번씩만 처리 (늦은 알람·휴면 복귀)
-    let guard = 0;
-    while (this.game && meta.status === 'playing' && meta.phaseEndsAt !== null && now >= meta.phaseEndsAt && guard++ < 6) {
-      const boundary = meta.phaseEndsAt;
-      advancePhase(this.game);
-      if (this.game.phase === 'finished') { await this.onGameFinished(); break; }
-      if (this.game.phase === 'plan') this.assignOperators();
-      if (this.game.phase === 'execute') this.toast('all', `${this.game.round}라운드 실행 단계 시작`, 'info');
-      // 늦게 실행됐으면 밀린 만큼 이어서 계산하되, 실제 시각을 지나치게 뒤처지지 않게 한다
-      const next = boundary + this.phaseDurationMs(this.game.phase);
-      meta.phaseEndsAt = next > now ? next : now + Math.min(this.phaseDurationMs(this.game.phase), 15_000);
+    // 수동 모드: 잔존 알람이 호출되어도 라운드를 진행하지 않는다
+    if (meta.turnMode === 'timed') {
+      const now = Date.now();
+      if (meta.operatorGraceAt !== null && now >= meta.operatorGraceAt) {
+        meta.operatorGraceAt = null;
+        this.reassignDisconnectedOperators();
+      }
+      let guard = 0;
+      while (this.game && meta.status === 'playing' && meta.phaseEndsAt !== null && now >= meta.phaseEndsAt && guard++ < 6) {
+        const boundary = meta.phaseEndsAt;
+        advancePhase(this.game);
+        if (this.game.phase === 'finished') { await this.onGameFinished(); break; }
+        if (this.game.phase === 'plan') this.assignOperators();
+        const next = boundary + this.phaseDurationMs(this.game.phase);
+        meta.phaseEndsAt = next > now ? next : now + Math.min(this.phaseDurationMs(this.game.phase), 15_000);
+      }
     }
     await this.save();
     await this.rescheduleAlarm();
@@ -733,13 +859,14 @@ export class RoomDurableObject extends DurableObject<Env> {
     meta.finishedAt = Date.now();
     meta.phaseEndsAt = null;
     meta.pausedRemaining = null;
+    await this.rescheduleAlarm();
     this.notifyDirectory('finished');
-    this.toast('all', '경기가 끝났습니다. 결과를 확인하세요.', 'success');
+    this.observe('finish', '');
+    this.toast('all', '게임이 끝났어요. 결과를 확인하세요.', 'success');
   }
 
   private notifyDirectory(status: string): void {
     const meta = this.meta!;
     this.ctx.waitUntil(this.env.DIRECTORY.get(this.env.DIRECTORY.idFromName('main')).fetch(new Request('https://dir/status', { method: 'POST', body: JSON.stringify({ code: meta.code, status }) })).catch(() => {}));
   }
-
 }

@@ -6,6 +6,7 @@ import { subRng } from './rng';
 import { addLot, hasEquipment, makeIdGen, pushLog, receiveExternal, salvageValue, teamAsset } from './state';
 import { computeReachability, contractMinRounds, contractReachable, type ReachabilityMap } from './reachability';
 import { contractSatisfiable, deliverContract } from './commands';
+import { drawNextMarket, initMarket, PRICING_VERSION } from './market';
 
 const idGen = makeIdGen('C');
 const lotGen = makeIdGen('B');
@@ -62,6 +63,7 @@ function makeOffer(state: GameState, templateId: string, round: number, minRound
   return {
     id: idGen(), templateId, title: t.title, requirements: t.requirements.map((r) => ({ ...r })), reward: rewardFor(state, templateId),
     deadlineRound: Math.min(state.roundsTotal, round + minRounds + state.config.deadlineSlack), acquiredRound: round,
+    pricingVersion: PRICING_VERSION, category: t.category, bonus: 0,
   };
 }
 
@@ -121,7 +123,8 @@ function makeAuction(state: GameState, round: number, index: number, map: Reacha
   const t = CONTRACTS[cid]!;
   const contract: ContractInstance = {
     id: idGen(), templateId: cid, title: `[도시 특별] ${t.title}`, requirements: t.requirements.map((r) => ({ ...r })),
-    reward: rewardFor(state, cid, state.config.auctionBonus), deadlineRound: state.roundsTotal, acquiredRound: round, special: true,
+    reward: rewardFor(state, cid), deadlineRound: state.roundsTotal, acquiredRound: round, special: true,
+    pricingVersion: PRICING_VERSION, category: t.category, bonus: state.config.auctionBonus,
   };
   const base = subRng(state.seed, 'priority').shuffle(state.teamOrder);
   const rot = index % Math.max(1, base.length);
@@ -145,9 +148,12 @@ export function startGame(state: GameState): void {
     }
   }
   scheduleEvents(state);
+  initMarket(state);
   state.round = 0;
   state.phase = 'settle';
   beginPlan(state);
+  // 수동 모드: 상의/행동 단계를 나누지 않고 바로 행동 가능한 라운드로 연다
+  if (state.turnMode === 'manual') beginExecute(state);
 }
 
 /** 계획 단계 시작 (라운드 +1). 에너지 공급, 이벤트 적용·예고, 제안·입찰 생성. */
@@ -179,6 +185,7 @@ export function beginPlan(state: GameState): void {
     team.purchasesThisRound = {};
     team.heatRecoveredThisRound = 0;
     team.bid = 0;
+    team.roundReady = false;
     team.offers = generateOffers(state, team, map);
   }
   if (state.config.auctionRounds.includes(state.round)) {
@@ -248,7 +255,9 @@ export function settleRound(state: GameState): void {
     if (team.actionsLeft >= state.config.actionsPerRound) team.stalledRounds += 1;
     team.assetHistory.push(teamAsset(state, team));
   }
+  state.roundVersion += 1;
   if (state.round >= state.roundsTotal) finishGame(state);
+  else drawNextMarket(state, state.round + 1); // 마지막 정산에서는 시세를 새로 뽑지 않는다
   state.version += 1;
 }
 
@@ -276,9 +285,24 @@ export function finishGame(state: GameState): void {
   pushLog(state, 'finish', '게임 끝!');
 }
 
-/** 다음 단계로 전이 (서버 알람·시뮬레이터 공용). */
+/** 다음 단계로 전이 (시간제 구버전 알람·시뮬레이터 공용). */
 export function advancePhase(state: GameState): void {
   if (state.phase === 'plan') beginExecute(state);
   else if (state.phase === 'execute') settleRound(state);
   else if (state.phase === 'settle') beginPlan(state);
+}
+
+/** 수동 모드: 정산 1회 + 다음 라운드 열기 (끝났으면 finished). 호출자가 준비 상태를 확인한다. */
+export function settleAndOpenNextRound(state: GameState): void {
+  if (state.phase !== 'execute') throw new Error('행동 라운드가 아닙니다.');
+  settleRound(state);
+  if ((state.phase as string) === 'finished') return;
+  beginPlan(state);
+  beginExecute(state);
+}
+
+/** 참가 팀이 모두 준비되었는가 (팀 목록이 비어 있으면 false) */
+export function allTeamsReady(state: GameState, teamIds: string[] = state.teamOrder): boolean {
+  const ids = teamIds.filter((id) => state.teams[id]);
+  return ids.length > 0 && ids.every((id) => state.teams[id]!.roundReady);
 }

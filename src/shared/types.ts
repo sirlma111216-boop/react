@@ -165,11 +165,18 @@ export interface ContractInstance {
   templateId: string;
   title: string;
   requirements: ContractRequirement[];
+  /** 기본금 (pricingVersion 2) 또는 고정 지급액 (구버전) */
   reward: number;
   deadlineRound: number;
   acquiredRound: number;
   special?: boolean;
   bidPaid?: number;
+  /** 2 = 기본금 + 시장 가감액. 없으면 구버전 고정가 */
+  pricingVersion?: number;
+  /** 시장 카테고리 (생성 시 명시) */
+  category?: string;
+  /** 고정 특별 보너스 (시세와 무관) */
+  bonus?: number;
 }
 
 export type EventType = 'energy' | 'discount' | 'paperDemand' | 'metalDemand' | 'gasDemand' | 'transport';
@@ -291,6 +298,8 @@ export interface TeamState {
   /** 서버가 지정하는 이번 라운드 조작 담당자 */
   operatorId: string | null;
   operatorIndex: number;
+  /** 수동 라운드: 이번 라운드 준비 완료 */
+  roundReady: boolean;
   /** 연출용 배지 */
   badges: string[];
   stalledRounds: number;
@@ -355,6 +364,14 @@ export interface GameState {
   log: GameEvent[];
   results: FinalTeamResult[] | null;
   transportBonusRound: number | null;
+  /** 수동(준비 완료로 진행) 또는 시간제(구버전) */
+  turnMode: 'manual' | 'timed';
+  /** 카테고리별 시장 단계 z */
+  market: Record<string, number>;
+  /** 라운드별 z 기록 (index 0 = 1라운드) */
+  marketHistory: Record<string, number[]>;
+  /** 정산 1회마다 +1 */
+  roundVersion: number;
 }
 
 export type TeamCommand =
@@ -362,7 +379,8 @@ export type TeamCommand =
   | { type: 'buyEnergy'; bundles: number }
   | { type: 'react'; reactionId: string; scale: 1 | 2 }
   | { type: 'process'; processId: string; lotId: string }
-  | { type: 'deliver'; contractId: string }
+  | { type: 'deliver'; contractId: string; quoteVersion?: number }
+  | { type: 'readyRound'; on: boolean }
   | { type: 'equip'; equipmentId: string }
   | { type: 'takeContract'; offerId: string }
   | { type: 'cancelContract'; contractId: string }

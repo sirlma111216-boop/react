@@ -1,6 +1,6 @@
 import type { EconomyConfig, GameState, ModeId } from '../shared/types';
 import { createGame, TEAM_COLORS, TEAM_EMBLEMS } from '../shared/engine/state';
-import { startGame, beginExecute, settleRound, beginPlan, cachedReachability } from '../shared/engine/phases';
+import { startGame, settleAndOpenNextRound, cachedReachability } from '../shared/engine/phases';
 import { applyTeamCommand } from '../shared/engine/commands';
 import { verifyTeamLedger } from '../shared/engine/ledger';
 import { subRng } from '../shared/engine/rng';
@@ -72,13 +72,12 @@ export function runGame(spec: GameSpec, opts: { keepState?: boolean; verbose?: b
     let guard = 0;
     while (state.phase !== 'finished' && guard++ < 100) {
       const map = cachedReachability(state);
-      // 계획 단계
+      // 수동 라운드: 주문 받기·입찰(plan) 과 행동(execute)이 같은 라운드 안에서 이루어진다
       for (const [i, t] of spec.teams.entries()) {
         const teamId = `T${i + 1}`;
         const ctx = { rng: subRng(spec.seed, 'bot', teamId, state.round, 'plan'), map, exec: makeExec(state, teamId) };
         BOTS[t.bot].plan(state, teamId, ctx);
       }
-      beginExecute(state);
       // 실행 단계: 팀 순서를 라운드마다 회전 (동시 진행 모사)
       const order = spec.teams.map((_, i) => i);
       const rot = state.round % order.length;
@@ -89,10 +88,11 @@ export function runGame(spec: GameSpec, opts: { keepState?: boolean; verbose?: b
         const ctx = { rng: subRng(spec.seed, 'bot', teamId, state.round, 'exec'), map, exec: makeExec(state, teamId, opts.verbose ? (e) => console.log(`  ${teamId} 거절: ${e}`) : undefined) };
         BOTS[t.bot].execute(state, teamId, ctx);
       }
-      settleRound(state);
+      for (const id of state.teamOrder) applyTeamCommand(state, id, { type: 'readyRound', on: true });
+      const roundDone = state.round;
+      settleAndOpenNextRound(state);
       if (!checkInvariants(state, errors)) ledgerOk = false;
-      if (opts.verbose) console.log(`R${state.round}: ` + state.teamOrder.map((id) => `${id}=${state.teams[id]!.coins}c/${state.teams[id]!.delivered}d`).join(' '));
-      if (state.phase === 'settle') beginPlan(state);
+      if (opts.verbose) console.log(`R${roundDone}: ` + state.teamOrder.map((id) => `${id}=${state.teams[id]!.coins}c/${state.teams[id]!.delivered}d`).join(' '));
     }
     if (state.phase !== 'finished') errors.push('경기가 종료되지 않음');
     const res = state.results ?? [];

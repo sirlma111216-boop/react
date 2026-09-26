@@ -4,19 +4,17 @@ import type { GameClient } from '../lib/net';
 import { REACTIONS } from '../../shared/chemistry/reactions';
 import { PROCESSES } from '../../shared/chemistry/processes';
 import { MATERIALS } from '../../shared/chemistry/materials';
-import { useCountdown } from '../lib/useCountdown';
+import { CATEGORY_LABEL } from '../../shared/chemistry/contracts';
+import { MARKET_STEP } from '../../shared/engine/market';
 import { store } from '../lib/store';
 import { Emblem } from '../components/Emblem';
 import { Wordmark, Modal } from '../components/common';
-import { Spark } from './GameScreen';
+import { Spark } from '../components/Spark';
 import { ResultsScreen } from './ResultsScreen';
 
-const PHASE_LABEL = { plan: '상의', execute: '행동', settle: '마무리', finished: '끝', setup: '준비' } as const;
-
-/** 교사 관전 보드: 모든 팀 진행을 한 화면에서. 교사가 팀에 참가했으면 '내 팀 보드'로 전환할 수 있다. */
+/** 교사 관전 보드: 모든 팀의 준비·연결·남은 행동을 한 화면에서. 진행이 어디서 막혔는지 보인다. */
 export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey }: { view: ClientView; client: GameClient; onLeave: () => void; onSwitchToTeam?: () => void; teacherKey: string | null }) {
   const game = view.game!;
-  const seconds = useCountdown(view.room.phaseEndsAt, view.room.pausedRemaining);
   const [opTeam, setOpTeam] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const send = async (cmd: Parameters<GameClient['send']>[0]) => { const r = await client.send(cmd); if (!r.ok) store.toast(r.error ?? '실패', 'error'); return r.ok; };
@@ -28,25 +26,25 @@ export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey
   };
   if (game.phase === 'finished' && game.results) return <ResultsScreen view={view} onLeave={onLeave} teacherExport={exportAll} />;
   const teams = view.teacherTeams ?? [];
+  const manual = view.room.turnMode === 'manual';
+  const waiting = view.teams.filter((t) => !t.roundReady);
   return (
     <div className="tboard" style={{ background: 'var(--ivory)' }}>
       <header className="board-head">
         <Wordmark compact />
-        <span className="round-label">R{game.round}/{game.roundsTotal}</span>
-        <span className={`phase-pill phase-${game.phase}`}>{PHASE_LABEL[game.phase]}{view.room.status === 'paused' ? ' · 일시정지' : ''}</span>
-        <span className={`timer ${seconds <= 10 ? 'low' : ''}`}>{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}</span>
+        <span className="round-label">{game.round}/{game.roundsTotal} 라운드</span>
+        <span className={`tag ${waiting.length ? 'tag-amber' : 'tag-teal'}`}>{manual ? `준비 ${game.readyCount}/${game.teamCount} 팀` : '시간제(구버전) 방'}</span>
+        {view.room.status === 'paused' && <span className="tag tag-danger">멈춤</span>}
         <div className="tctrl">
-          {view.room.status === 'paused' ? <button className="btn btn-sm btn-primary" onClick={() => send({ type: 'resume' })}>재개</button> : <button className="btn btn-sm" onClick={() => send({ type: 'pause' })}>일시정지</button>}
-          <button className="btn btn-sm" onClick={() => send({ type: 'extend', seconds: 30 })}>+30초</button>
-          <select className="input" style={{ minHeight: 32, width: 110, padding: '2px 6px', fontSize: 13 }} value={view.room.timerScale} onChange={(e) => send({ type: 'setTimerScale', scale: Number(e.target.value) })} aria-label="타이머 배율">
-            {[0.75, 1, 1.25, 1.5, 2].map((s) => <option key={s} value={s}>타이머 ×{s}</option>)}
-          </select>
+          {view.room.status === 'paused' ? <button className="btn btn-sm btn-primary" onClick={() => send({ type: 'resume' })}>다시 시작</button> : <button className="btn btn-sm" onClick={() => send({ type: 'pause' })}>잠시 멈춤</button>}
+          {!manual && <button className="btn btn-sm btn-copper" onClick={() => send({ type: 'switchToManual' })}>수동 진행으로 전환</button>}
           <button className="btn btn-sm btn-danger" onClick={() => setConfirmEnd(true)}>조기 종료</button>
         </div>
         <span style={{ flex: 1 }} />
-        {onSwitchToTeam && <button className="btn btn-sm btn-copper" onClick={onSwitchToTeam}>내 팀 보드</button>}
+        {onSwitchToTeam && <button className="btn btn-sm btn-copper" onClick={onSwitchToTeam}>내 팀 화면</button>}
         <button className="btn btn-sm btn-ghost" onClick={onLeave}>나가기</button>
       </header>
+      {waiting.length > 0 && manual && <p className="small" style={{ margin: '0 0 6px', padding: '6px 10px', background: 'var(--amber-soft)', borderRadius: 8 }}>기다리는 팀: {waiting.map((t) => `${t.name}(남은 행동 ${t.actionsLeft}, 접속 ${t.connectedCount}명)`).join(' · ')} — 팀이 멈춰 있으면 "이번 라운드 건너뛰기"나 "차례 넘기기"를 쓰세요.</p>}
       <div className="tgrid">
         {teams.map((t) => {
           const pub = view.teams.find((x) => x.id === t.id);
@@ -54,10 +52,11 @@ export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey
           const op = view.players.find((p) => p.id === t.operatorId);
           return (
             <div key={t.id} className="tteam" style={{ borderTopColor: t.color }}>
-              <div className="thead"><Emblem shape={t.emblem} color={t.color} size={22} /><b style={{ fontSize: 15 }}>{t.name}</b><span className="tag">코인 {t.coins}</span><span className="tag">에너지 {t.energy}</span><span className="tag">행동 {t.actionsLeft}</span><span style={{ flex: 1 }} /><Spark data={t.assetHistory} color={t.color} /></div>
+              <div className="thead"><Emblem shape={t.emblem} color={t.color} size={22} /><b style={{ fontSize: 15 }}>{t.name}</b><span className={`tag ${t.roundReady ? 'tag-teal' : 'tag-amber'}`}>{t.roundReady ? '준비 완료' : `행동 ${t.actionsLeft} 남음`}</span><span className="tag">코인 {t.coins}</span><span className="tag">에너지 {t.energy}</span><span style={{ flex: 1 }} /><Spark data={t.assetHistory} color={t.color} /></div>
               <div className="row" style={{ marginBottom: 4 }}>
                 <span className="tag tag-amber">차례 {op?.nick ?? '-'}{op && !op.connected ? ' (끊김)' : ''}</span>
                 <button className="btn btn-sm btn-ghost" onClick={() => setOpTeam(t.id)}>차례 넘기기</button>
+                {manual && !t.roundReady && <button className="btn btn-sm btn-ghost" onClick={() => { if (confirm(`${t.name} 팀의 이번 라운드를 건너뛸까요? 남은 행동 ${t.actionsLeft}번은 버려져요.`)) send({ type: 'skipTeam', teamId: t.id }); }}>이번 라운드 건너뛰기</button>}
                 <span className="muted small">{members.map((m) => { const p = view.players.find((x) => x.id === m); return p ? `${p.nick}${p.connected ? '' : '(끊김)'}` : ''; }).join(', ')}</span>
               </div>
               <div className="small"><b>만드는 중:</b> {t.processes.length ? t.processes.map((p) => `${p.kind === 'reaction' ? REACTIONS[p.defId]!.name : PROCESSES[p.defId]!.name}→${p.completesRound}R`).join(', ') : '없음'}</div>
@@ -67,6 +66,11 @@ export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey
             </div>
           );
         })}
+        <div className="tteam" style={{ borderTopColor: 'var(--copper)' }}>
+          <div className="thead"><b>이번 라운드 시세</b></div>
+          <div className="row">{Object.entries(game.market).map(([c, z]) => <span key={c} className="tag">{CATEGORY_LABEL[c as keyof typeof CATEGORY_LABEL] ?? c} {z > 0 ? '+' : ''}{Math.round(z * MARKET_STEP * 100)}%</span>)}</div>
+          <p className="small muted" style={{ marginTop: 6 }}>모든 팀에 같은 시세가 적용되고, 라운드가 바뀔 때만 변해요.</p>
+        </div>
       </div>
       {opTeam && (
         <Modal title="차례 넘기기" onClose={() => setOpTeam(null)}>

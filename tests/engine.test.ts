@@ -3,11 +3,12 @@ import { createGame, TEAM_COLORS, TEAM_EMBLEMS, teamAsset } from '../src/shared/
 import { startGame, beginExecute, settleRound, beginPlan } from '../src/shared/engine/phases';
 import { applyTeamCommand, contractSatisfiable } from '../src/shared/engine/commands';
 import { verifyTeamLedger } from '../src/shared/engine/ledger';
+import { contractPayout } from '../src/shared/engine/market';
 import type { GameState } from '../src/shared/types';
 import { runGame } from '../src/sim/runner';
 
 function game(mode: 'classic' | 'extended' | 'industrial' = 'classic', n = 2, rounds = 10): GameState {
-  const g = createGame({ seed: 'test-seed', mode, roundsTotal: rounds, teams: Array.from({ length: n }, (_, i) => ({ id: `T${i + 1}`, name: `팀${i + 1}`, color: TEAM_COLORS[i]!, emblem: TEAM_EMBLEMS[i]!, bundleId: 'gas' })) });
+  const g = createGame({ seed: 'test-seed', mode, roundsTotal: rounds, turnMode: 'timed', teams: Array.from({ length: n }, (_, i) => ({ id: `T${i + 1}`, name: `팀${i + 1}`, color: TEAM_COLORS[i]!, emblem: TEAM_EMBLEMS[i]!, bundleId: 'gas' })) });
   return g;
 }
 
@@ -58,8 +59,9 @@ describe('경기 흐름', () => {
     const c = t.contracts[0]!;
     expect(contractSatisfiable(t, c).ok).toBe(true);
     const coins = t.coins;
+    const expected = contractPayout(g, c).total;
     expect(applyTeamCommand(g, 'T1', { type: 'deliver', contractId: c.id }).ok).toBe(true);
-    expect(t.coins).toBe(coins + c.reward);
+    expect(t.coins).toBe(coins + expected);
     expect(t.delivered).toBe(1);
     expect(t.firstDeliveryRound).toBe(3);
     expect(verifyTeamLedger(t).ok).toBe(true);

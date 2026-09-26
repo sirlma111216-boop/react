@@ -5,6 +5,7 @@ import { applyProcess, lotComponents, makeMixtureLot, makePureLot, PROCESSES } f
 import { EQUIPMENT } from '../chemistry/equipment';
 import { addElements, addWater } from './ledger';
 import { addLot, equipmentPrice, hasEquipment, makeIdGen, priceOf, pushLog, reactionSlots, receiveExternal } from './state';
+import { contractPayout } from './market';
 
 const idGen = makeIdGen('L');
 
@@ -160,7 +161,7 @@ export function deliverContract(state: GameState, team: TeamState, c: ContractIn
     }
   }
   team.lots = team.lots.filter((l) => l.units > 0 || l.solvent > 0);
-  let reward = c.reward;
+  let reward = contractPayout(state, c).total;
   if (state.transportBonusRound === state.round && !team.deliveredContracts.some((d) => d.round === state.round)) reward += 2;
   team.coins += reward;
   team.revenue += reward;
@@ -218,6 +219,7 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
     }
     case 'takeContract': {
       if (phase !== 'plan' && phase !== 'execute') return fail('주문은 상의 시간이나 행동 시간에 받을 수 있어요.');
+      if (team.roundReady) return fail('준비 완료 상태예요. 준비를 취소하면 다시 받을 수 있어요.');
       const offer = team.offers.find((o) => o.id === cmd.offerId);
       if (!offer) return fail('이미 사라진 주문이에요.');
       if (team.contracts.length >= cfg.contractLimit) return fail(`주문은 한 번에 ${cfg.contractLimit}개까지만 받을 수 있어요.`);
@@ -232,7 +234,7 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
       return { ok: true };
     }
     case 'cancelContract': {
-      if (phase !== 'plan') return fail('주문 취소는 상의 시간에만 할 수 있어요.');
+      if (phase !== 'plan' && !(phase === 'execute' && state.turnMode === 'manual')) return fail('주문 취소는 상의 시간에만 할 수 있어요.');
       const c = team.contracts.find((x) => x.id === cmd.contractId);
       if (!c) return fail('없는 주문이에요.');
       if (c.special) return fail('낙찰받은 특별 주문은 취소할 수 없어요.');
@@ -240,6 +242,13 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
       team.templateCounts[c.templateId] = Math.max(0, (team.templateCounts[c.templateId] ?? 1) - 1);
       team.lastCancelRound = state.round;
       pushLog(state, 'contract', `${team.name}: ${c.title} 취소`, team.id);
+      return { ok: true };
+    }
+    case 'readyRound': {
+      if (phase !== 'execute') return fail('행동 라운드가 아니에요.');
+      if (state.turnMode !== 'manual') return fail('이 방은 시간제로 진행돼요.');
+      team.roundReady = !!cmd.on;
+      pushLog(state, 'ready', `${team.name}: ${cmd.on ? '준비 완료' : '준비 취소'}`, team.id);
       return { ok: true };
     }
     case 'bid': {
@@ -259,6 +268,7 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
   }
 
   if (phase !== 'execute') return fail('행동 시간에만 할 수 있어요.');
+  if (team.roundReady) return fail('준비 완료 상태예요. 더 행동하려면 준비를 취소하세요.');
   if (team.actionsLeft <= 0) return fail('이번 라운드의 행동 횟수를 다 썼어요.');
 
   switch (cmd.type) {
@@ -368,6 +378,7 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
     case 'deliver': {
       const c = team.contracts.find((x) => x.id === cmd.contractId);
       if (!c) return fail('받지 않은 주문이에요.');
+      if (cmd.quoteVersion !== undefined && cmd.quoteVersion !== state.round) return fail('시세가 바뀌었어요. 새 금액을 확인하고 다시 눌러 주세요.');
       const r = deliverContract(state, team, c);
       if (r.ok) team.actionsLeft -= 1;
       return r;

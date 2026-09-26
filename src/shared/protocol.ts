@@ -14,6 +14,8 @@ export type RoomCommand =
   | { type: 'extend'; seconds: number }
   | { type: 'setTimerScale'; scale: number }
   | { type: 'setOperator'; teamId: string; playerId: string }
+  | { type: 'skipTeam'; teamId: string }
+  | { type: 'switchToManual' }
   | { type: 'endGame' }
   | { type: 'teacherJoinTeam'; name: string; color: string; emblem: string }
   | { type: 'teacherLeaveTeam' }
@@ -27,7 +29,9 @@ export type RoomCommand =
   // 학생
   | { type: 'joinTeam'; teamId: string }
   | { type: 'leaveTeam' }
-  | { type: 'team'; cmd: TeamCommand };
+  | { type: 'team'; cmd: TeamCommand }
+  /** 관측 기록용 (경제 명령 아님): 장소 이동 */
+  | { type: 'observe'; place: string };
 
 export interface ClientMessage {
   type: 'cmd';
@@ -71,6 +75,9 @@ export interface TeamPublic {
   category: string | null;
   operatorId: string | null;
   badges: string[];
+  roundReady: boolean;
+  actionsLeft: number;
+  connectedCount: number;
 }
 
 export interface AuctionPublic {
@@ -100,6 +107,13 @@ export interface GameView {
   log: GameEvent[];
   myTeam: TeamState | null;
   results: FinalTeamResult[] | null;
+  turnMode: 'manual' | 'timed';
+  market: Record<string, number>;
+  marketHistory: Record<string, number[]>;
+  roundVersion: number;
+  /** 준비 완료한 팀 수 / 참가 팀 수 */
+  readyCount: number;
+  teamCount: number;
   config: { contractLimit: number; actionsPerRound: number; energyCap: number; procureMaxKinds: number; procureMaxTotal: number; procureMaxPerKindPerRound: number; energyBundleCost: number; energyBundleAmount: number; energyBundleMax: number; auctionMaxBid: number; bundles: { id: string; name: string; blurb: string; items: { materialId: string; units: number }[]; extraCoins: number }[] };
 }
 
@@ -116,6 +130,7 @@ export interface ClientView {
     teacherNick: string;
     teacherPlayerId: string;
     timerScale: number;
+    turnMode: 'manual' | 'timed';
     phaseEndsAt: number | null;
     pausedRemaining: number | null;
     createdAt: number;

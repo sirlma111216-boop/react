@@ -1,6 +1,6 @@
 {
   "title": "final validation",
-  "when": "2026-09-26T01:45:40.357Z",
+  "when": "2026-09-26T04:03:15.077Z",
   "seedPrefix": "valid",
   "games": 2016,
   "configVersion": "econ-1.3",
@@ -13,7 +13,7 @@
     "byBot": {
       "random": {
         "n": 2016,
-        "asset": 11.24,
+        "asset": 11.23,
         "assetCi": [
           10.64,
           11.83
@@ -26,66 +26,66 @@
       },
       "quickcash": {
         "n": 2016,
-        "asset": 154.81,
+        "asset": 155,
         "assetCi": [
-          153.23,
-          156.39
+          153.41,
+          156.58
         ],
         "assetMedian": 158,
-        "winRate": 0.35,
+        "winRate": 0.37,
         "delivered": 5.67,
         "firstDelivery": 2,
         "stalledRate": 0.01
       },
       "planner": {
         "n": 2016,
-        "asset": 131.19,
+        "asset": 122.48,
         "assetCi": [
-          129.24,
-          133.13
+          120.67,
+          124.29
         ],
-        "assetMedian": 137,
-        "winRate": 0.15,
-        "delivered": 4.96,
+        "assetMedian": 128,
+        "winRate": 0.09,
+        "delivered": 4.49,
         "firstDelivery": 3,
-        "stalledRate": 0.03
+        "stalledRate": 0.06
       },
       "byproduct": {
         "n": 2016,
-        "asset": 138.49,
+        "asset": 138.6,
         "assetCi": [
-          136.66,
-          140.32
+          136.73,
+          140.46
         ],
-        "assetMedian": 143,
-        "winRate": 0.2,
+        "assetMedian": 144,
+        "winRate": 0.22,
         "delivered": 5.12,
         "firstDelivery": 3,
         "stalledRate": 0.03
       },
       "investor": {
         "n": 2016,
-        "asset": 133.14,
+        "asset": 133.33,
         "assetCi": [
-          131.23,
-          135.05
+          131.4,
+          135.25
         ],
         "assetMedian": 140,
-        "winRate": 0.17,
+        "winRate": 0.18,
         "delivered": 5,
         "firstDelivery": 3,
         "stalledRate": 0.02
       },
       "bidder": {
         "n": 2016,
-        "asset": 121.03,
+        "asset": 122.02,
         "assetCi": [
-          118.79,
-          123.26
+          119.77,
+          124.27
         ],
-        "assetMedian": 128,
-        "winRate": 0.14,
-        "delivered": 4.52,
+        "assetMedian": 130,
+        "winRate": 0.15,
+        "delivered": 4.54,
         "firstDelivery": 3,
         "stalledRate": 0.05
       }
@@ -93,30 +93,30 @@
     "byPosition": {
       "0": {
         "n": 2016,
-        "winRate": 0.17,
-        "winCi": [
-          0.15,
-          0.19
-        ],
-        "asset": 115.07
-      },
-      "1": {
-        "n": 2016,
         "winRate": 0.16,
         "winCi": [
           0.14,
           0.18
         ],
-        "asset": 115.71
+        "asset": 112.94
+      },
+      "1": {
+        "n": 2016,
+        "winRate": 0.17,
+        "winCi": [
+          0.15,
+          0.19
+        ],
+        "asset": 114.65
       },
       "2": {
         "n": 2016,
-        "winRate": 0.18,
+        "winRate": 0.17,
         "winCi": [
-          0.16,
+          0.15,
           0.19
         ],
-        "asset": 114.72
+        "asset": 113.87
       },
       "3": {
         "n": 2016,
@@ -125,41 +125,41 @@
           0.14,
           0.18
         ],
-        "asset": 114.62
+        "asset": 113.83
       },
       "4": {
-        "n": 2016,
-        "winRate": 0.17,
-        "winCi": [
-          0.15,
-          0.18
-        ],
-        "asset": 115.26
-      },
-      "5": {
         "n": 2016,
         "winRate": 0.18,
         "winCi": [
           0.16,
           0.19
         ],
-        "asset": 114.51
+        "asset": 114.48
+      },
+      "5": {
+        "n": 2016,
+        "winRate": 0.17,
+        "winCi": [
+          0.15,
+          0.19
+        ],
+        "asset": 112.87
       }
     },
     "byBundle": {
       "gas": {
         "n": 4032,
-        "asset": 115.26,
+        "asset": 113.52,
         "winRate": 0.18
       },
       "carbonate": {
         "n": 4032,
-        "asset": 114.13,
-        "winRate": 0.14
+        "asset": 113.13,
+        "winRate": 0.15
       },
       "material": {
         "n": 4032,
-        "asset": 115.55,
+        "asset": 114.67,
         "winRate": 0.18
       }
     },
@@ -170,7 +170,7 @@
       "templateId": "C04",
       "share": 0.19
     },
-    "plannerVsRandom": 119.95,
+    "plannerVsRandom": 111.25,
     "skilledSpreadPct": 23.44,
     "objective": 7.25,
     "objectiveParts": {
@@ -335,5 +335,5 @@
     ]
   },
   "failures": [],
-  "elapsedMs": 20646
+  "elapsedMs": 26525
 }

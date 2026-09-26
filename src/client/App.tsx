@@ -13,10 +13,15 @@ import { Toasts, ConnectionBadge } from './components/common';
 
 type Route = { kind: 'title' } | { kind: 'room'; session: StudentSession } | { kind: 'practice'; mode: ModeId };
 
+function roomCodeFromPath(): string | null {
+  const m = location.pathname.match(/^\/game\/([A-Za-z0-9]{6})/);
+  return m ? m[1]!.toUpperCase() : null;
+}
+
 export function App() {
   const [route, setRoute] = useState<Route>(() => {
     const s = loadSession();
-    const urlRoom = new URL(location.href).searchParams.get('room');
+    const urlRoom = new URL(location.href).searchParams.get('room') ?? roomCodeFromPath();
     // URL 에 다른 방 코드가 있으면 새로 입장하도록 타이틀부터
     if (s && (!urlRoom || urlRoom.toUpperCase() === s.code)) return { kind: 'room', session: s };
     return { kind: 'title' };
@@ -26,7 +31,7 @@ export function App() {
   const { view, connection, closedReason } = useAppState();
 
   useEffect(() => {
-    // 방 라우트가 아니면 WebSocket 클라이언트만 정리한다. 연습 모드는 자체 LocalClient 가 store 를 채우므로 여기서 reset 하면 빈 화면이 된다.
+    // 방 라우트가 아니면 WebSocket 클라이언트만 정리한다. 연습 모드는 자체 LocalClient 가 store 를 채운다.
     if (route.kind !== 'room') { if (client) { client.close(); setClient(null); store.reset(); } return; }
     const c = new WsClient(route.session.code, route.session.token);
     setClient(c);
@@ -43,7 +48,7 @@ export function App() {
     saveSession(null);
     setRoute({ kind: 'title' });
     audio.stopBgm();
-    history.replaceState(null, '', location.pathname);
+    history.replaceState(null, '', '/');
   };
 
   if (route.kind === 'practice') return <><PracticeScreen mode={route.mode} onLeave={() => setRoute({ kind: 'title' })} /><Toasts /></>;

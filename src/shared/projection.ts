@@ -39,6 +39,12 @@ export function projectGame(state: GameState, teamId: string | null): GameView {
     log: state.log.slice(-40),
     myTeam: myTeam ? stripTeam(myTeam) : null,
     results: state.results,
+    turnMode: state.turnMode,
+    market: state.market,
+    marketHistory: state.marketHistory,
+    roundVersion: state.roundVersion,
+    readyCount: state.teamOrder.filter((id) => state.teams[id]?.roundReady).length,
+    teamCount: state.teamOrder.length,
     config: {
       contractLimit: cfg.contractLimit, actionsPerRound: cfg.actionsPerRound, energyCap: cfg.energyCap, procureMaxKinds: cfg.procureMaxKinds, procureMaxTotal: cfg.procureMaxTotal,
       procureMaxPerKindPerRound: cfg.procureMaxPerKindPerRound, energyBundleCost: cfg.energyBundleCost, energyBundleAmount: cfg.energyBundleAmount, energyBundleMax: cfg.energyBundleMax, auctionMaxBid: cfg.auctionMaxBid,

@@ -1,46 +1,316 @@
 {
-  "version": "assets-1.0",
+  "version": "assets-2.0",
   "note": "이미지는 분위기와 물체 삽화만 담당한다. 글자·화학식·원자·팀 문양은 코드로 렌더링한다. 파일이 없으면 fallback 으로 완전히 동작한다. 원본 생성 서비스·라이선스는 사용자가 확인한다(미확인).",
   "images": [
-    { "id": "bg-title", "usage": "background", "alpha": false, "fallback": "css-gradient", "license": "unverified" },
-    { "id": "bg-lobby", "usage": "background", "alpha": false, "fallback": "css-gradient", "license": "unverified" },
-    { "id": "bg-results", "usage": "background", "alpha": false, "fallback": "css-gradient", "license": "unverified" },
-    { "id": "district-paper", "usage": "contract", "alpha": false, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "district-water", "usage": "contract", "alpha": false, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "district-energy", "usage": "contract", "alpha": false, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "district-ceramics", "usage": "contract", "alpha": false, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "district-metals", "usage": "contract", "alpha": false, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "district-bioprocess", "usage": "contract", "alpha": false, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "equipment-reactor", "usage": "equipment", "alpha": true, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "equipment-heater", "usage": "equipment", "alpha": true, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "equipment-cooler", "usage": "equipment", "alpha": true, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "equipment-filter", "usage": "equipment", "alpha": true, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "equipment-electrolyzer", "usage": "equipment", "alpha": true, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "equipment-pressure", "usage": "equipment", "alpha": true, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "equipment-purifier", "usage": "equipment", "alpha": true, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "equipment-catalyst", "usage": "equipment", "alpha": true, "fallback": "svg-icon", "license": "unverified" },
-    { "id": "card-back", "usage": "texture", "alpha": false, "fallback": "svg-pattern", "license": "unverified" },
-    { "id": "surface-paper", "usage": "texture", "alpha": false, "fallback": "css-color", "license": "unverified" }
+    {
+      "id": "bg-title",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-gradient",
+      "license": "unverified"
+    },
+    {
+      "id": "bg-lobby",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-gradient",
+      "license": "unverified"
+    },
+    {
+      "id": "bg-results",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-gradient",
+      "license": "unverified"
+    },
+    {
+      "id": "district-paper",
+      "usage": "contract",
+      "alpha": false,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "district-water",
+      "usage": "contract",
+      "alpha": false,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "district-energy",
+      "usage": "contract",
+      "alpha": false,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "district-ceramics",
+      "usage": "contract",
+      "alpha": false,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "district-metals",
+      "usage": "contract",
+      "alpha": false,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "district-bioprocess",
+      "usage": "contract",
+      "alpha": false,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "equipment-reactor",
+      "usage": "equipment",
+      "alpha": true,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "equipment-heater",
+      "usage": "equipment",
+      "alpha": true,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "equipment-cooler",
+      "usage": "equipment",
+      "alpha": true,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "equipment-filter",
+      "usage": "equipment",
+      "alpha": true,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "equipment-electrolyzer",
+      "usage": "equipment",
+      "alpha": true,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "equipment-pressure",
+      "usage": "equipment",
+      "alpha": true,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "equipment-purifier",
+      "usage": "equipment",
+      "alpha": true,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "equipment-catalyst",
+      "usage": "equipment",
+      "alpha": true,
+      "fallback": "svg-icon",
+      "license": "unverified"
+    },
+    {
+      "id": "card-back",
+      "usage": "texture",
+      "alpha": false,
+      "fallback": "svg-pattern",
+      "license": "unverified"
+    },
+    {
+      "id": "surface-paper",
+      "usage": "texture",
+      "alpha": false,
+      "fallback": "css-color",
+      "license": "unverified"
+    },
+    {
+      "id": "scene-orders-v2",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-scene",
+      "license": "unverified",
+      "place": "orders"
+    },
+    {
+      "id": "scene-workshop-v2",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-scene",
+      "license": "unverified",
+      "place": "workshop"
+    },
+    {
+      "id": "scene-store-v2",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-scene",
+      "license": "unverified",
+      "place": "store"
+    },
+    {
+      "id": "scene-shipping-v2",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-scene",
+      "license": "unverified",
+      "place": "shipping"
+    },
+    {
+      "id": "npc-scientist-v2",
+      "usage": "npc",
+      "alpha": true,
+      "fallback": "svg-silhouette",
+      "license": "unverified",
+      "place": "orders"
+    },
+    {
+      "id": "npc-merchant-v2",
+      "usage": "npc",
+      "alpha": true,
+      "fallback": "svg-silhouette",
+      "license": "unverified",
+      "place": "store"
+    },
+    {
+      "id": "npc-receiver-v2",
+      "usage": "npc",
+      "alpha": true,
+      "fallback": "svg-silhouette",
+      "license": "unverified",
+      "place": "shipping"
+    }
   ],
   "audio": [
-    { "id": "bgm-lobby", "kind": "bgm", "loop": true, "status": "missing", "fallback": "silent" },
-    { "id": "bgm-gameplay", "kind": "bgm", "loop": true, "status": "missing", "fallback": "silent" },
-    { "id": "bgm-final", "kind": "bgm", "loop": true, "status": "missing", "fallback": "silent" },
-    { "id": "sting-victory", "kind": "sting", "loop": false, "status": "missing", "fallback": "silent" },
-    { "id": "sting-complete", "kind": "sting", "loop": false, "status": "missing", "fallback": "silent" },
-    { "id": "sfx-click", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-card", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-invalid", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-turn", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-deadline", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-supply", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-reaction-start", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-reaction-done", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-gas", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-filter", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-delivery", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-auction", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-ping", "kind": "sfx", "status": "missing", "fallback": "silent" },
-    { "id": "sfx-achievement", "kind": "sfx", "status": "missing", "fallback": "silent" }
+    {
+      "id": "bgm-lobby",
+      "kind": "bgm",
+      "loop": true,
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "bgm-gameplay",
+      "kind": "bgm",
+      "loop": true,
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "bgm-final",
+      "kind": "bgm",
+      "loop": true,
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sting-victory",
+      "kind": "sting",
+      "loop": false,
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sting-complete",
+      "kind": "sting",
+      "loop": false,
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-click",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-card",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-invalid",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-turn",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-deadline",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-supply",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-reaction-start",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-reaction-done",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-gas",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-filter",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-delivery",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-auction",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-ping",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    },
+    {
+      "id": "sfx-achievement",
+      "kind": "sfx",
+      "status": "missing",
+      "fallback": "silent"
+    }
   ]
 }

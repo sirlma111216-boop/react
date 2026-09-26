@@ -28,6 +28,8 @@ export interface GameOptions {
   roundsTotal?: number;
   config?: EconomyConfig;
   teams: TeamSeed[];
+  /** 기본 manual. 시간제 구버전 검증용으로만 'timed' */
+  turnMode?: 'manual' | 'timed';
 }
 
 export function createTeam(seed: TeamSeed, config: EconomyConfig): TeamState {
@@ -62,6 +64,7 @@ export function createTeam(seed: TeamSeed, config: EconomyConfig): TeamState {
     pins: [],
     operatorId: null,
     operatorIndex: 0,
+    roundReady: false,
     badges: [],
     stalledRounds: 0,
     firstDeliveryRound: null,
@@ -133,6 +136,10 @@ export function createGame(opts: GameOptions): GameState {
     log: [],
     results: null,
     transportBonusRound: null,
+    turnMode: opts.turnMode ?? 'manual',
+    market: {},
+    marketHistory: {},
+    roundVersion: 0,
   };
 }
 

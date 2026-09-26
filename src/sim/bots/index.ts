@@ -3,6 +3,7 @@ import { Rng } from '../../shared/engine/rng';
 import { applyTeamCommand, availableCoins } from '../../shared/engine/commands';
 import { REACTIONS } from '../../shared/chemistry/reactions';
 import { hasEquipment, equipmentPrice } from '../../shared/engine/state';
+import { contractPayout } from '../../shared/engine/market';
 import { affordableEquipment, deliverable, feasibleProcesses, feasibleReactions, nextProcess, nextProcureItems, nextReaction, planForContract, type BotView, type Plan } from './helpers';
 import type { ReachabilityMap } from '../../shared/engine/reachability';
 
@@ -42,11 +43,14 @@ function currentPlans(v: BotView): Plan[] {
 }
 
 /** 계획 실행의 공통 우선순위: 납품 > 공정 > 반응 > 조달 */
-function executePlans(v: BotView, ctx: BotContext, opts: { allowEquipment?: (v: BotView) => string | null } = {}): void {
-  const { team } = v;
+function executePlans(v: BotView, ctx: BotContext, opts: { allowEquipment?: (v: BotView) => string | null; holdOnLowMarket?: boolean } = {}): void {
+  const { team, state } = v;
   let guard = 6;
   while (team.actionsLeft > 0 && guard-- > 0) {
-    const d = deliverable(team).sort((a, b) => b.reward - a.reward)[0];
+    // 시세가 낮고(z ≤ −1) 기한·라운드 여유가 있으면 한 라운드 보관하는 정책 (기회비용 기반)
+    const remaining = state.roundsTotal - state.round;
+    const candidates = deliverable(team).filter((c) => !(opts.holdOnLowMarket && contractPayout(state, c).z <= -1 && remaining >= 2 && (c.special || c.deadlineRound > state.round)));
+    const d = candidates.sort((a, b) => contractPayout(state, b).total - contractPayout(state, a).total)[0];
     if (d) { if (ctx.exec({ type: 'deliver', contractId: d.id })) continue; }
     const plans = currentPlans(v);
     let acted = false;
@@ -123,6 +127,7 @@ export const PlannerBot: Bot = {
   execute(state, teamId, ctx) {
     const v = view(state, teamId, ctx.map);
     executePlans(v, ctx, {
+      holdOnLowMarket: true,
       allowEquipment: (vv) => (vv.state.round <= 4 && !hasEquipment(vv.team, 'U01') && availableCoins(vv.team) >= equipmentPrice(vv.state, 'U01') + 12 && vv.state.activeEquipment.includes('U01') ? 'U01' : null),
     });
   },
