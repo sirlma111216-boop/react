@@ -1,5 +1,5 @@
 {
-  "builtAt": "2026-09-26T03:40:25.170Z",
+  "builtAt": "2026-09-26T10:53:49.650Z",
   "images": [
     {
       "id": "bg-title",
@@ -208,6 +208,38 @@
       "height": 1152,
       "alpha": true,
       "kb": 77
+    },
+    {
+      "id": "scene-orders-v3",
+      "status": "ok",
+      "width": 1672,
+      "height": 941,
+      "alpha": false,
+      "kb": 126
+    },
+    {
+      "id": "scene-workshop-v3",
+      "status": "ok",
+      "width": 1672,
+      "height": 941,
+      "alpha": false,
+      "kb": 136
+    },
+    {
+      "id": "scene-store-v3",
+      "status": "ok",
+      "width": 1672,
+      "height": 941,
+      "alpha": false,
+      "kb": 152
+    },
+    {
+      "id": "scene-shipping-v3",
+      "status": "ok",
+      "width": 1672,
+      "height": 941,
+      "alpha": false,
+      "kb": 106
     }
   ]
 }

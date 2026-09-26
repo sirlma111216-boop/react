@@ -1,5 +1,5 @@
 {
-  "version": "assets-2.0",
+  "version": "assets-2.1",
   "note": "이미지는 분위기와 물체 삽화만 담당한다. 글자·화학식·원자·팀 문양은 코드로 렌더링한다. 파일이 없으면 fallback 으로 완전히 동작한다. 원본 생성 서비스·라이선스는 사용자가 확인한다(미확인).",
   "images": [
     {
@@ -188,6 +188,38 @@
       "usage": "npc",
       "alpha": true,
       "fallback": "svg-silhouette",
+      "license": "unverified",
+      "place": "shipping"
+    },
+    {
+      "id": "scene-orders-v3",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-scene",
+      "license": "unverified",
+      "place": "orders"
+    },
+    {
+      "id": "scene-workshop-v3",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-scene",
+      "license": "unverified",
+      "place": "workshop"
+    },
+    {
+      "id": "scene-store-v3",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-scene",
+      "license": "unverified",
+      "place": "store"
+    },
+    {
+      "id": "scene-shipping-v3",
+      "usage": "background",
+      "alpha": false,
+      "fallback": "css-scene",
       "license": "unverified",
       "place": "shipping"
     }

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { imageUrl } from '../lib/assets';
 import type { Place } from '../lib/places';
 
-const SCENE_ID: Record<Place, string> = { orders: 'scene-orders-v2', workshop: 'scene-workshop-v2', store: 'scene-store-v2', shipping: 'scene-shipping-v2' };
+const SCENE_ID: Record<Place, string> = { orders: 'scene-orders-v3', workshop: 'scene-workshop-v3', store: 'scene-store-v3', shipping: 'scene-shipping-v3' };
 const NPC_ID: Partial<Record<Place, string>> = { orders: 'npc-scientist-v2', store: 'npc-merchant-v2', shipping: 'npc-receiver-v2' };
 const NPC_NAME: Partial<Record<Place, string>> = { orders: '연구소장 하늘', store: '상인 도운', shipping: '물류 담당 서연' };
 
