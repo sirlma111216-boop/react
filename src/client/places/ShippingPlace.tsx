@@ -84,9 +84,9 @@ export function ShippingPlace({ view, send, focusId, setFocus, canAct, goTo, hig
                     {mixtures.length === 0 && <> <button className="btn btn-sm btn-ghost" onClick={() => goTo('workshop')}>공방에서 만들기 →</button></>}
                   </div>
                 )}
-                {stamp && <div className="stamp" role="status">✔ 배달 완료 — {stamp}</div>}
               </>
             )}
+            {stamp && <div className="stamp" role="status">✔ 배달 완료 — {stamp}</div>}
           </section>
           {sel && pay && (
             <section className="panel price">

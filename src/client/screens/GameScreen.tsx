@@ -6,7 +6,7 @@ import { contractSatisfiable } from '../../shared/engine/commands';
 import { store } from '../lib/store';
 import { audio } from '../lib/audio';
 import { prefGet, prefSet } from '../lib/session';
-import { usePlaceRoute, useFocusContract, type Place } from '../lib/places';
+import { usePlaceRoute, useFocusContract, previewStore, type Place } from '../lib/places';
 import { Hud, MobileNav } from '../components/Hud';
 import { nextHint, HelpModal } from '../components/Coach';
 import { Codex } from '../components/Codex';
@@ -49,6 +49,7 @@ export function GameScreen({ view, client, onLeave, headerExtra }: { view: Clien
 
   const send = async (cmd: TeamCommand, okSfx?: string) => {
     const r = await client.send({ type: 'team', cmd });
+    previewStore.set(null); // 버튼이 사라져도 미리보기가 남지 않게
     if (!r.ok) { store.toast(r.error ?? '지금은 할 수 없어요.', 'error'); audio.sfx('sfx-invalid'); }
     else if (okSfx) audio.sfx(okSfx);
     return r.ok;
