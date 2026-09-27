@@ -8,6 +8,7 @@ import { projectGame, stripTeam, teamCategory } from '../../shared/projection';
 import { BOTS, makeExec } from '../../sim/bots';
 import { subRng } from '../../shared/engine/rng';
 import { store } from './store';
+import { supportPending } from '../../shared/engine/support';
 
 /**
  * 연습 모드: 서버 없이 브라우저 안에서 같은 엔진으로 1인 vs AI 공방.
@@ -34,7 +35,7 @@ export class LocalClient implements GameClient {
     const g = this.state;
     const teams = g.teamOrder.map((id) => {
       const t = g.teams[id]!;
-      return { id, name: t.name, color: t.color, emblem: t.emblem, leaderId: id === 'T1' ? 'me' : 'ai', members: id === 'T1' ? ['me'] : ['ai'], ready: true, bundleId: t.bundleId, leaseId: t.leaseId, contractsHeld: t.contracts.length, delivered: t.delivered, assetHistory: t.assetHistory, category: teamCategory(t), operatorId: id === 'T1' ? 'me' : 'ai', badges: t.badges, roundReady: t.roundReady, actionsLeft: t.actionsLeft, connectedCount: 1 };
+      return { id, name: t.name, color: t.color, emblem: t.emblem, leaderId: id === 'T1' ? 'me' : 'ai', members: id === 'T1' ? ['me'] : ['ai'], ready: true, bundleId: t.bundleId, leaseId: t.leaseId, contractsHeld: t.contracts.length, delivered: t.delivered, assetHistory: t.assetHistory, category: teamCategory(t), operatorId: id === 'T1' ? 'me' : 'ai', badges: t.badges, roundReady: t.roundReady, actionsLeft: t.actionsLeft, connectedCount: 1, supportPending: supportPending(g, t) };
     });
     const view: ClientView = {
       serverNow: Date.now(),
@@ -55,6 +56,7 @@ export class LocalClient implements GameClient {
   private botTurn(): void {
     const g = this.state;
     const map = cachedReachability(g);
+    BOTS.planner.support(g, 'T2', { rng: subRng(g.seed, 'ai', g.round, 'support'), map, exec: makeExec(g, 'T2') });
     BOTS.planner.plan(g, 'T2', { rng: subRng(g.seed, 'ai', g.round, 'plan'), map, exec: makeExec(g, 'T2') });
     BOTS.planner.execute(g, 'T2', { rng: subRng(g.seed, 'ai', g.round, 'exec'), map, exec: makeExec(g, 'T2') });
     applyTeamCommand(g, 'T2', { type: 'readyRound', on: true });

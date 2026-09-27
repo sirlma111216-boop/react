@@ -12,22 +12,22 @@ const REPORT_DIR = join(process.cwd(), 'reports', 'balance');
 mkdirSync(REPORT_DIR, { recursive: true });
 mkdirSync(join(REPORT_DIR, 'runs'), { recursive: true });
 
-const BUNDLES = ['gas', 'carbonate', 'material'];
 const LEASES = ['U05', 'U06', 'U07'];
 
-/** paired seeds: 같은 시드에서 정책·자리·시작 묶음을 순환 배치한 6경기 */
+/**
+ * paired seeds (V3): 같은 시드(=같은 지원품 운·시세·이벤트)에서 정책 9종을 자리 6개에 순환 배치한 9경기.
+ * 지원품은 (시드, 라운드, 팀 자리)로 정해지므로, 같은 자리의 운을 모든 정책이 한 번씩 겪는다 → 운과 정책 실력을 분리해 본다.
+ */
 function pairedSpecs(seed: string, mode: ModeId, presetId: string, rounds: number, config: EconomyConfig, teamCount = 6): GameSpec[] {
   const specs: GameSpec[] = [];
-  // 정책 회전 6 × 묶음 회전 3 = 시드당 18경기: 모든 자리가 모든 (정책, 묶음) 조합을 정확히 한 번씩 본다
-  for (let rot = 0; rot < teamCount; rot++) for (let brot = 0; brot < BUNDLES.length; brot++) {
+  for (let rot = 0; rot < BOT_IDS.length; rot++) {
     const teams = [];
     for (let pos = 0; pos < teamCount; pos++) {
       const bot = BOT_IDS[(pos + rot) % BOT_IDS.length]!;
-      const bundleId = BUNDLES[(pos + brot) % BUNDLES.length]!;
-      const leaseId = mode === 'industrial' ? LEASES[(pos + rot + brot) % LEASES.length] : undefined;
-      teams.push({ bot, bundleId, leaseId });
+      const leaseId = mode === 'industrial' ? LEASES[(pos + rot) % LEASES.length] : undefined;
+      teams.push({ bot, bundleId: 'v3', leaseId });
     }
-    specs.push({ seed: `${seed}-r${rot}b${brot}`, mode, presetId, rounds, teams, config });
+    specs.push({ seed, mode, presetId, rounds, teams, config });
   }
   return specs;
 }
@@ -51,7 +51,8 @@ function printSummary(title: string, s: Summary): void {
   console.log(`첫 납품 중앙값 ${s.firstDeliveryMedian}R, 납품 중앙값 ${s.deliveredMedian}, 막힘 비율 ${s.stalledRate}, 지배 계약 ${s.dominantTemplate?.templateId}=${s.dominantTemplate?.share}, 계획−무작위 ${s.plannerVsRandom}, 숙련 격차 ${s.skilledSpreadPct}%`);
   for (const [b, v] of Object.entries(s.byBot)) console.log(`  ${b.padEnd(10)} n=${v.n} 자산 ${v.asset} [${v.assetCi}] 중앙 ${v.assetMedian} 승률 ${v.winRate} 납품 ${v.delivered} 첫납품 ${v.firstDelivery} 막힘 ${v.stalledRate}`);
   for (const [p, v] of Object.entries(s.byPosition)) console.log(`  자리${p} n=${v.n} 승률 ${v.winRate} [${v.winCi}] 자산 ${v.asset}`);
-  for (const [b, v] of Object.entries(s.byBundle)) console.log(`  묶음 ${b.padEnd(10)} n=${v.n} 자산 ${v.asset} 승률 ${v.winRate}`);
+  console.log(`V3: 매입 수입 비중 ${s.buybackShare}, 무가공 지원품 납품 칸 비중 ${s.supportDeliveryShare}, 지원품 수입 비중 ${s.supportRevenueShare}, 반송률 ${JSON.stringify(s.returnRate)}, 같은 라운드 받은 가치 ±15% 이내 ${s.keptWithin15} (편차 p90 ${s.keptSpreadP90}), 수령 포기 ${s.forfeitRate}, 납품 종류 다양성 ${s.diversity}, 숙련 첫 납품 중앙 ${s.firstDeliverySkilledMedian}`);
+  for (const [b, r] of Object.entries(s.returnRateByBot)) console.log(`  반송률 ${b.padEnd(16)} ${JSON.stringify(r)}`);
 }
 
 interface Report { title: string; when: string; seedPrefix: string; games: number; configVersion: string; scienceVersion: string; summary: Summary; config: EconomyConfig; failures: string[]; elapsedMs: number }
@@ -66,7 +67,7 @@ function mutate(config: EconomyConfig, rng: Rng, step: number): { config: Econom
   const changes: string[] = [];
   const n = 1 + rng.int(3);
   for (let i = 0; i < n; i++) {
-    const kind = rng.int(6);
+    const kind = rng.int(7);
     if (kind === 0) {
       const mats = Object.keys(c.prices);
       const m = rng.pick(mats);
@@ -93,6 +94,11 @@ function mutate(config: EconomyConfig, rng: Rng, step: number): { config: Econom
       const d = rng.next() < 0.5 ? -1 : 1;
       const nv = Math.max(0, Math.min(6, b.extraCoins + d));
       if (nv !== b.extraCoins) { changes.push(`bundle.${b.id}.extraCoins ${b.extraCoins}→${nv}`); b.extraCoins = nv; }
+    } else if (kind === 5 && c.support) {
+      const k = rng.pick(['finished', 'process', 'basic'] as const);
+      const d = rng.next() < 0.5 ? -0.25 : 0.25;
+      const nv = Math.max(0.5, Math.min(2.5, c.support.weight[k] + d));
+      changes.push(`support.weight.${k} ${c.support.weight[k]}→${nv}`); c.support.weight[k] = nv;
     } else {
       const d = rng.next() < 0.5 ? -1 : 1;
       const nv = Math.max(4, Math.min(10, c.startEnergy + d));
@@ -195,13 +201,13 @@ if (cmd === 'smoke') {
 function renderMarkdown(r: Report, quick: Summary, long: Summary): string {
   const s = r.summary;
   const lines: string[] = [];
-  lines.push('# 밸런스 보고서 (실제 실행 결과)');
+  lines.push('# 밸런스 보고서 V3 (실제 실행 결과)');
   lines.push('');
   lines.push(`- 생성 시각: ${r.when}`);
   lines.push(`- 경제 설정 버전: ${r.configVersion}, 과학 데이터 버전: ${r.scienceVersion}`);
   lines.push(`- 검증 경기 수: ${r.games} (검증 시드 접두사 \`${r.seedPrefix}-*\`, 학습 시드 \`train-*\` 와 분리), 팀 ${s.teamsPerGame}/경기, 소요 ${Math.round(r.elapsedMs / 1000)}s`);
   lines.push(`- 오류 ${s.errors}건, 원장 불일치 ${s.ledgerFailures}경기`);
-  lines.push(`- 정책 봇 6종을 paired seeds 로 자리·시작 묶음을 순환 배치. 모든 봇은 플레이어와 같은 명령 검증을 거친다.`);
+  lines.push(`- 정책 봇 9종(즉시 납품·다단계·부산물·설비·입찰·지원 완성형 선호·기초 재료 선호·매입 악용 시도·무작위)을 paired seeds 로 자리 6개에 순환 배치(시드당 9경기). 지원품은 (시드, 라운드, 자리)로 정해지므로 같은 운을 모든 정책이 겪는다. 모든 봇은 플레이어와 같은 명령 검증을 거치며 미래 지원품·다른 팀 계획을 보지 않는다.`);
   lines.push('');
   lines.push('## 지향 지표 결과');
   lines.push('');
@@ -216,7 +222,14 @@ function renderMarkdown(r: Report, quick: Summary, long: Summary): string {
   lines.push(`| 최종 납품 중앙값 | 2~5 | ${s.deliveredMedian} |`);
   lines.push(`| 막힌 실행 단계 비율 (숙련 봇) | ≤ 10% | ${(s.stalledRate * 100).toFixed(1)}% |`);
   lines.push(`| 지배 계약 점유율 | < 50% | ${s.dominantTemplate ? `${s.dominantTemplate.templateId} ${(s.dominantTemplate.share * 100).toFixed(1)}%` : '-'} |`);
-  lines.push(`| 불법 생성·음수 재고·중복 보상 | 0 | ${s.errors + s.ledgerFailures} |`);
+  lines.push(`| 불법 생성·음수 재고·중복 보상·가치 원장 불일치 | 0 | ${s.errors + s.ledgerFailures} |`);
+  lines.push(`| 숙련 정책 첫 납품 중앙값 | 2~3라운드 | ${s.firstDeliverySkilledMedian} |`);
+  lines.push(`| 매입 수입 / 전체 코인 수입 | ≤ 15% 지속 초과 시 점검 | ${(s.buybackShare * 100).toFixed(1)}% |`);
+  lines.push(`| 무가공 지원품 납품 칸 비중 | 측정 | ${(s.supportDeliveryShare * 100).toFixed(1)}% (수입 기준 ${(s.supportRevenueShare * 100).toFixed(1)}%) |`);
+  lines.push(`| 상자 종류별 반송률 | 어느 것도 80% 미만 | ${Object.entries(s.returnRate).map(([k, v]) => `${k} ${(v * 100).toFixed(0)}%`).join(' · ')} |`);
+  lines.push(`| 같은 라운드 받은 2묶음 가치가 평균 ±15% 이내 | 시도 목표 | ${(s.keptWithin15 * 100).toFixed(0)}% (편차 90백분위 ${(s.keptSpreadP90 * 100).toFixed(0)}%) |`);
+  lines.push(`| 지원품 수령 포기 비율 | 0에 가깝게 | ${(s.forfeitRate * 100).toFixed(1)}% |`);
+  lines.push(`| 팀당 납품 종류 수(평균) | 측정 | ${s.diversity} |`);
   lines.push('');
   lines.push('## 정책별');
   lines.push('');
@@ -224,17 +237,17 @@ function renderMarkdown(r: Report, quick: Summary, long: Summary): string {
   lines.push('|---|---:|---:|---|---:|---:|---:|---:|---:|');
   for (const [b, v] of Object.entries(s.byBot)) lines.push(`| ${b} | ${v.n} | ${v.asset} | [${v.assetCi[0]}, ${v.assetCi[1]}] | ${v.assetMedian} | ${v.winRate} | ${v.delivered} | ${v.firstDelivery} | ${v.stalledRate} |`);
   lines.push('');
-  lines.push('## 자리별');
+  lines.push('## 정책별 상자 반송률');
+  lines.push('');
+  lines.push('| 봇 | 완성 소재 | 공정 재료 | 기초 원료 |');
+  lines.push('|---|---:|---:|---:|');
+  for (const [b, r] of Object.entries(s.returnRateByBot)) lines.push(`| ${b} | ${((r['finished'] ?? 0) * 100).toFixed(0)}% | ${((r['process'] ?? 0) * 100).toFixed(0)}% | ${((r['basic'] ?? 0) * 100).toFixed(0)}% |`);
+  lines.push('');
+  lines.push('## 자리별 (= 지원품 운 슬롯)');
   lines.push('');
   lines.push('| 자리 | n | 승률 | 95% CI | 평균 자산 |');
   lines.push('|---|---:|---:|---|---:|');
   for (const [p, v] of Object.entries(s.byPosition)) lines.push(`| ${p} | ${v.n} | ${v.winRate} | [${v.winCi[0]}, ${v.winCi[1]}] | ${v.asset} |`);
-  lines.push('');
-  lines.push('## 시작 묶음별');
-  lines.push('');
-  lines.push('| 묶음 | n | 평균 자산 | 승률 |');
-  lines.push('|---|---:|---:|---:|');
-  for (const [b, v] of Object.entries(s.byBundle)) lines.push(`| ${b} | ${v.n} | ${v.asset} | ${v.winRate} |`);
   lines.push('');
   lines.push('## 라운드 프리셋 (분리 요인, 각 300경기)');
   lines.push('');

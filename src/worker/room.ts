@@ -6,6 +6,7 @@ import { sanitizeName, TEAM_NAME_MAX } from '../shared/protocol';
 import { createGame, TEAM_COLORS, TEAM_EMBLEMS } from '../shared/engine/state';
 import { advancePhase, startGame, settleAndOpenNextRound, allTeamsReady } from '../shared/engine/phases';
 import { applyTeamCommand } from '../shared/engine/commands';
+import { chooseSupport, forfeitSupport, supportPending } from '../shared/engine/support';
 import { projectGame, stripTeam, teamCategory } from '../shared/projection';
 import { PHASE_SECONDS, DEFAULT_ECONOMY } from '../shared/config/economy';
 import { EQUIPMENT } from '../shared/chemistry/equipment';
@@ -132,6 +133,8 @@ export class RoomDurableObject extends DurableObject<Env> {
         g.market ??= {};
         g.marketHistory ??= {};
         g.roundVersion ??= 0;
+        // 규칙 버전이 없는 저장 상태는 구버전(2): 시작 묶음 그대로, 지원품·매입을 소급하지 않는다
+        g.rules ??= 2;
         this.game = g;
       }
       this.loaded = true;
@@ -398,6 +401,7 @@ export class RoomDurableObject extends DurableObject<Env> {
         id: t.id, name: t.name, color: t.color, emblem: t.emblem, leaderId: t.leaderId, members: t.members, ready: t.ready, bundleId: t.bundleId, leaseId: t.leaseId,
         contractsHeld: gt?.contracts.length ?? 0, delivered: gt?.delivered ?? 0, assetHistory: gt?.assetHistory ?? [], category: gt ? teamCategory(gt) : null, operatorId: gt?.operatorId ?? null, badges: gt?.badges ?? [],
         roundReady: gt?.roundReady ?? false, actionsLeft: gt?.actionsLeft ?? 0, connectedCount: t.members.filter((m) => this.isConnected(m)).length,
+        supportPending: !!(g && gt && supportPending(g, gt)),
       };
     });
     const myTeamId = p.teamId;
@@ -584,12 +588,37 @@ export class RoomDurableObject extends DurableObject<Env> {
           if (!g || g.phase !== 'execute' || meta.turnMode !== 'manual') return fail('지금은 건너뛸 수 없습니다.');
           const gt = g.teams[cmd.teamId];
           if (!gt) return fail('없는 팀입니다.');
-          // 남은 행동은 포기시키되, 이미 실행된 행동·예약된 입찰은 그대로 둔다
+          // 남은 행동은 포기시키되, 이미 실행된 행동·예약된 입찰은 그대로 둔다.
+          // 고르지 않은 연구지원품은 몰래 추첨하지 않고 '이번 라운드 수령 포기'로 명확히 처리한다
+          if (forfeitSupport(g, gt, '교사가 라운드를 건너뜀')) this.toast(this.teams[gt.id]?.members ?? [], '선생님이 이번 라운드를 건너뛰어 연구지원품 수령을 포기했어요.', 'warn');
           gt.roundReady = true;
           g.version += 1;
           this.observe('skip', `actionsLeft=${gt.actionsLeft}`, p.id, gt.id);
           this.toast(this.teams[gt.id]?.members ?? [], '선생님이 이번 라운드를 건너뛰었어요.', 'warn');
           await this.tryAdvanceRound();
+          return { ok: true };
+        }
+        case 'teacherSupport': {
+          if (!isTeacher) return fail('교사만 대신 고를 수 있습니다.');
+          const g = this.game;
+          const gt = g?.teams[cmd.teamId];
+          if (!g || !gt || !gt.support) return fail('이번 라운드 지원품이 없습니다.');
+          const r = chooseSupport(g, gt, gt.support.grantId, cmd.returnIndex, 'teacher');
+          if (!r.ok) return fail(r.error ?? '실패');
+          g.version += 1;
+          this.observe('supportByTeacher', String(cmd.returnIndex), p.id, gt.id);
+          this.toast(this.teams[gt.id]?.members ?? [], '선생님이 이번 라운드 연구지원품을 대신 골랐어요.', 'info');
+          return { ok: true };
+        }
+        case 'forfeitSupport': {
+          if (!isTeacher) return fail('교사만 할 수 있습니다.');
+          const g = this.game;
+          const gt = g?.teams[cmd.teamId];
+          if (!g || !gt) return fail('없는 팀입니다.');
+          if (!forfeitSupport(g, gt, '교사 진행')) return fail('고를 지원품이 없습니다.');
+          g.version += 1;
+          this.observe('supportForfeit', '', p.id, gt.id);
+          this.toast(this.teams[gt.id]?.members ?? [], '선생님이 진행을 위해 이번 라운드 연구지원품 수령을 포기했어요.', 'warn');
           return { ok: true };
         }
         case 'endGame': {
@@ -757,7 +786,7 @@ export class RoomDurableObject extends DurableObject<Env> {
       else {
         this.assignOperators();
         this.observe('settle', `round=${done}`);
-        this.toast('all', `${done}라운드 마무리! ${g.round}라운드가 시작됐어요.`, 'info');
+        this.toast('all', `${done}라운드 마무리! ${g.round}라운드가 시작됐어요.${(g.rules ?? 2) >= 3 ? ' 공방에 연구지원품이 도착했어요.' : ''}`, 'info');
       }
     } finally {
       meta.settling = false;

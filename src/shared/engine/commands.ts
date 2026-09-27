@@ -1,11 +1,14 @@
-import type { CommandResult, ContractInstance, GameState, Lot, ReactionDefinition, RunningProcess, TeamCommand, TeamState } from '../types';
+import type { CommandResult, ContractInstance, ContractRequirement, GameState, Lot, ReactionDefinition, RunningProcess, TeamCommand, TeamState } from '../types';
 import { REACTIONS } from '../chemistry/reactions';
 import { MATERIALS } from '../chemistry/materials';
 import { applyProcess, lotComponents, makeMixtureLot, makePureLot, PROCESSES } from '../chemistry/processes';
 import { EQUIPMENT } from '../chemistry/equipment';
 import { addElements, addWater } from './ledger';
-import { addLot, equipmentPrice, hasEquipment, makeIdGen, priceOf, pushLog, reactionSlots, receiveExternal } from './state';
+import { addLot, equipmentPrice, hasEquipment, isV3, makeIdGen, priceOf, pushLog, reactionSlots, receiveExternal } from './state';
 import { contractPayout } from './market';
+import { distributeBasis, MC, takeBasis } from './value';
+import { chooseSupport, supportPending } from './support';
+import { sellSurplus } from './buyback';
 
 const idGen = makeIdGen('L');
 
@@ -42,7 +45,8 @@ export function pickReactantLots(team: TeamState, r: ReactionDefinition, scale: 
   let dissolveWater = 0;
   r.reactants.forEach((spec, slot) => {
     let need = spec.coef * r.batchMultiplier * scale;
-    const order = { purchased: 0, recovered: 1, produced: 2, contract: 3 } as const;
+    // 원료로는 산 것·지원받은 것을 먼저 쓰고, 납품 가능한 생산품은 가능한 한 남긴다
+    const order = { purchased: 0, support: 0, recovered: 1, produced: 2, contract: 3 } as const;
     const candidates = team.lots
       .filter((l) => l.kind === 'pure' && spec.accepts.includes(l.materialId!) && l.units - (used[l.id] ?? 0) > 0)
       .sort((a, b) => order[a.grade] - order[b.grade] || spec.accepts.indexOf(a.materialId!) - spec.accepts.indexOf(b.materialId!));
@@ -95,17 +99,20 @@ export function computeReactionOutputs(r: ReactionDefinition, scale: number, inp
   return { outputs, solventOut: 0 };
 }
 
-function consumePicks(team: TeamState, picks: { lotId: string; units: number }[]): number {
+/** 원료 로트에서 떼어 낸다. 용매 칸과 함께 경제 가치 풀(basis)도 비례해 옮긴다. */
+function consumePicks(team: TeamState, picks: { lotId: string; units: number }[]): { solvent: number; basis: number } {
   let solvent = 0;
+  let basis = 0;
   for (const p of picks) {
     const lot = team.lots.find((l) => l.id === p.lotId)!;
     const solvTake = lot.units > 0 ? Math.floor((lot.solvent * p.units) / lot.units) : 0;
+    basis += takeBasis(lot, p.units);
     lot.units -= p.units;
     lot.solvent -= solvTake;
     solvent += solvTake;
   }
   team.lots = team.lots.filter((l) => l.units > 0 || l.solvent > 0);
-  return solvent;
+  return { solvent, basis };
 }
 
 function summarizeInputs(team: TeamState, picks: { lotId: string; units: number }[], before: Lot[]): string {
@@ -122,6 +129,17 @@ export function canActNow(state: GameState): boolean {
   return state.phase === 'execute';
 }
 
+/**
+ * 이 로트를 이 납품 조건에 쓸 수 있는가 (서버·UI·봇 공통 규칙).
+ * 구매 로트는 항상 불가. 연구지원품은 조건이 allowSupport 를 명시할 때만. 품질 태그가 하나 이상 맞아야 한다. 혼합물은 불가.
+ */
+export function lotUsableFor(lot: Lot, req: ContractRequirement): boolean {
+  if (lot.kind !== 'pure' || lot.materialId !== req.materialId) return false;
+  if (lot.grade === 'purchased') return false;
+  if (lot.grade === 'support' && !req.allowSupport) return false;
+  return lot.tags.some((t) => req.tags.includes(t));
+}
+
 export function contractSatisfiable(team: TeamState, c: ContractInstance): { ok: boolean; missing: string[] } {
   const used: Record<string, number> = {};
   const missing: string[] = [];
@@ -129,8 +147,7 @@ export function contractSatisfiable(team: TeamState, c: ContractInstance): { ok:
     let need = req.units;
     for (const lot of team.lots) {
       if (need <= 0) break;
-      if (lot.kind !== 'pure' || lot.materialId !== req.materialId || lot.grade === 'purchased') continue;
-      if (!lot.tags.some((t) => req.tags.includes(t))) continue;
+      if (!lotUsableFor(lot, req)) continue;
       const avail = lot.units - (used[lot.id] ?? 0);
       const take = Math.min(avail, need);
       if (take > 0) { used[lot.id] = (used[lot.id] ?? 0) + take; need -= take; }
@@ -140,24 +157,31 @@ export function contractSatisfiable(team: TeamState, c: ContractInstance): { ok:
   return { ok: missing.length === 0, missing };
 }
 
-export const tagLabel = (t: string): string => ({ purchased: '가게에서 산 것', reaction: '직접 만든 것', condensed: '응축한 것', gasCollected: '모은 기체', filtered: '건져 낸 고체', filtrate: '남은 용액', crystallized: '결정으로 만든 것', refined: '정제한 것', recovered: '되돌려 받은 재료', solutionWater: '회수수', gasMixture: '섞인 기체', suspension: '섞인 것(고체+용액)', liquidMixture: '섞인 액체', partial: '일부만 반응' } as Record<string, string>)[t] ?? t;
+export const tagLabel = (t: string): string => ({ support: '연구지원품', purchased: '가게에서 산 것', reaction: '직접 만든 것', condensed: '응축한 것', gasCollected: '모은 기체', filtered: '건져 낸 고체', filtrate: '남은 용액', crystallized: '결정으로 만든 것', refined: '정제한 것', recovered: '되돌려 받은 재료', solutionWater: '회수수', gasMixture: '섞인 기체', suspension: '섞인 것(고체+용액)', liquidMixture: '섞인 액체', partial: '일부만 반응' } as Record<string, string>)[t] ?? t;
 
 export function deliverContract(state: GameState, team: TeamState, c: ContractInstance): CommandResult {
   const check = contractSatisfiable(team, c);
   if (!check.ok) return fail(`아직 배달할 수 없어요. 부족: ${check.missing.join(', ')}`);
+  let units = 0;
+  let supportUnits = 0;
   for (const req of c.requirements) {
     let need = req.units;
-    for (const lot of team.lots) {
+    // 직접 만든 것부터 쓰고, 지원품 완성 소재는 모자랄 때만 보탠다
+    const ordered = [...team.lots].sort((a, b) => Number(a.grade === 'support') - Number(b.grade === 'support'));
+    for (const lot of ordered) {
       if (need <= 0) break;
-      if (lot.kind !== 'pure' || lot.materialId !== req.materialId || lot.grade === 'purchased') continue;
-      if (!lot.tags.some((t) => req.tags.includes(t))) continue;
+      if (!lotUsableFor(lot, req)) continue;
       const take = Math.min(lot.units, need);
       const solvTake = lot.units > 0 ? Math.floor((lot.solvent * take) / lot.units) : 0;
+      const b = takeBasis(lot, take);
+      if (team.valueLedger) team.valueLedger.delivered += b;
       lot.units -= take;
       lot.solvent -= solvTake;
       addElements(team.elementLedger.outflow, req.materialId, take);
       if (solvTake) addWater(team.elementLedger.outflow, solvTake);
       need -= take;
+      units += take;
+      if (lot.grade === 'support') supportUnits += take;
     }
   }
   team.lots = team.lots.filter((l) => l.units > 0 || l.solvent > 0);
@@ -165,6 +189,9 @@ export function deliverContract(state: GameState, team: TeamState, c: ContractIn
   if (state.transportBonusRound === state.round && !team.deliveredContracts.some((d) => d.round === state.round)) reward += 2;
   team.coins += reward;
   team.revenue += reward;
+  team.deliveredUnits = (team.deliveredUnits ?? 0) + units;
+  team.deliveredSupportUnits = (team.deliveredSupportUnits ?? 0) + supportUnits;
+  if (supportUnits && units) team.supportRevenue = (team.supportRevenue ?? 0) + (reward * supportUnits) / units;
   team.delivered += 1;
   team.deliveredContracts.push({ round: state.round, templateId: c.templateId, reward, special: !!c.special });
   if (team.firstDeliveryRound === null) team.firstDeliveryRound = state.round;
@@ -244,12 +271,36 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
       pushLog(state, 'contract', `${team.name}: ${c.title} 취소`, team.id);
       return { ok: true };
     }
+    case 'chooseSupport': {
+      if (!isV3(state)) return fail('이 경기에는 연구지원품이 없어요.');
+      if (phase !== 'plan' && phase !== 'execute') return fail('지금은 지원품을 고를 수 없어요.');
+      return chooseSupport(state, team, cmd.grantId, cmd.returnIndex, 'operator');
+    }
+    default:
+      break;
+  }
+
+  // V3: 자기 팀 연구지원품을 고르기 전에는 경제 행동·입찰·준비 완료를 잠근다 (장소 이동·의뢰 확인·주문 받기·토론은 가능)
+  if (supportPending(state, team) && ['procure', 'buyEnergy', 'react', 'process', 'deliver', 'equip', 'bid', 'sellSurplus'].includes(cmd.type)) {
+    return fail('먼저 이번 라운드 연구지원품을 골라 주세요. (공방 → 지원품 확인)');
+  }
+  if (supportPending(state, team) && cmd.type === 'readyRound' && cmd.on) {
+    return fail('연구지원품을 고르기 전에는 준비 완료를 누를 수 없어요.');
+  }
+
+  switch (cmd.type) {
     case 'readyRound': {
       if (phase !== 'execute') return fail('행동 라운드가 아니에요.');
       if (state.turnMode !== 'manual') return fail('이 방은 시간제로 진행돼요.');
       team.roundReady = !!cmd.on;
       pushLog(state, 'ready', `${team.name}: ${cmd.on ? '준비 완료' : '준비 취소'}`, team.id);
       return { ok: true };
+    }
+    case 'sellSurplus': {
+      if (!isV3(state)) return fail('이 경기에는 재고 매입이 없어요.');
+      if (phase !== 'execute') return fail('행동 시간에만 재고를 넘길 수 있어요.');
+      if (team.roundReady) return fail('준비 완료 뒤에는 재고를 넘길 수 없어요. 준비를 취소하세요.');
+      return sellSurplus(state, team, cmd.items ?? [], cmd.expectCoins);
     }
     case 'bid': {
       if (phase !== 'plan' && phase !== 'execute') return fail('입찰은 상의 시간이나 행동 시간에만 할 수 있어요.');
@@ -290,7 +341,8 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
       if (cost > availableCoins(team)) return fail(`코인이 부족해요 (필요 ${cost}, 쓸 수 있는 코인 ${availableCoins(team)}).`);
       team.coins -= cost;
       for (const i of items) {
-        receiveExternal(team, i.materialId, i.units, 'purchase', idGen);
+        // 회수 원가 풀 = 실제 지불액 (할인 반영). 기준 가치 상한은 매입 견적 때 적용한다
+        receiveExternal(team, i.materialId, i.units, 'purchase', idGen, { basisMc: isV3(state) ? priceOf(state, i.materialId) * i.units * MC : 0 });
         team.purchasesThisRound[i.materialId] = (team.purchasesThisRound[i.materialId] ?? 0) + i.units;
       }
       team.actionsLeft -= 1;
@@ -321,12 +373,14 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
       const pick = pickReactantLots(team, r, scale);
       if (!pick.ok) return fail(pick.error);
       const before = team.lots.map((l) => ({ ...l }));
-      const inputSolvent = consumePicks(team, pick.picks);
+      const { solvent: inputSolvent, basis: pool } = consumePicks(team, pick.picks);
       if (pick.dissolveWater) {
         team.solventLedger.inflow += pick.dissolveWater;
         addWater(team.elementLedger.inflow, pick.dissolveWater);
       }
       const { outputs, solventOut } = computeReactionOutputs(r, scale, inputSolvent, pick.dissolveWater, idGen);
+      // 투입 원가 풀을 산출물에 나눈다 (부산물마다 같은 원가를 복제하지 않는다. 공정 용수·에너지는 풀을 늘리지 않는다)
+      distributeBasis(state, outputs, pool);
       team.energy -= energy;
       const time = reactionTime(state, r, team);
       const proc: RunningProcess = {
@@ -353,6 +407,7 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
       if (fee > availableCoins(team)) return fail(`수수료 ${fee}코인이 부족해요.`);
       const res = applyProcess(pdef.id, lot, idGen);
       if (!res.ok) return fail(res.error);
+      distributeBasis(state, res.outputs, lot.basis ?? 0);
       team.lots = team.lots.filter((l) => l.id !== lot.id);
       team.energy -= energy;
       team.coins -= fee;

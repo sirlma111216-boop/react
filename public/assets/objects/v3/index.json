@@ -1,0 +1,990 @@
+{
+  "builtAt": "2026-09-26T19:13:20.695Z",
+  "occupancy": 0.88,
+  "objects": [
+    {
+      "id": "aid-manganese-dioxide",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.84,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.4
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.2
+        }
+      ]
+    },
+    {
+      "id": "aid-sulfuric-acid-catalyst",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.82,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.8
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 11.1
+        }
+      ]
+    },
+    {
+      "id": "aid-yeast",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.75,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 11.4
+        }
+      ]
+    },
+    {
+      "id": "mat-acetic-acid",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.8,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.5
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 11
+        }
+      ]
+    },
+    {
+      "id": "mat-ammonia",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.9,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.3
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 9.5
+        }
+      ]
+    },
+    {
+      "id": "mat-ammonium-chloride",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.75,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.6
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.9
+        }
+      ]
+    },
+    {
+      "id": "mat-calcium-carbonate",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.86,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5.1
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 12.4
+        }
+      ]
+    },
+    {
+      "id": "mat-calcium-chloride",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.82,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.6
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.5
+        }
+      ]
+    },
+    {
+      "id": "mat-calcium-hydroxide",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.85,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.5
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.5
+        }
+      ]
+    },
+    {
+      "id": "mat-calcium-oxide",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.83,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.8
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 11.1
+        }
+      ]
+    },
+    {
+      "id": "mat-carbon-dioxide",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.87,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 9.3
+        }
+      ]
+    },
+    {
+      "id": "mat-copper-hydroxide",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.87,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 8.6
+        }
+      ]
+    },
+    {
+      "id": "mat-copper-oxide",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.83,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5.5
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 13.9
+        }
+      ]
+    },
+    {
+      "id": "mat-copper-sulfate",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.84,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.7
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.1
+        }
+      ]
+    },
+    {
+      "id": "mat-copper",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.89,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.9
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 11.2
+        }
+      ]
+    },
+    {
+      "id": "mat-ethanol",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.83,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.7
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 11.4
+        }
+      ]
+    },
+    {
+      "id": "mat-ethyl-acetate",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.83,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.3
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.5
+        }
+      ]
+    },
+    {
+      "id": "mat-glucose",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.81,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 11.1
+        }
+      ]
+    },
+    {
+      "id": "mat-hydrochloric-acid",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.79,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 3.9
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 9
+        }
+      ]
+    },
+    {
+      "id": "mat-hydrogen-chloride",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.89,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 3.3
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 7.7
+        }
+      ]
+    },
+    {
+      "id": "mat-hydrogen-peroxide",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.82,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.6
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.7
+        }
+      ]
+    },
+    {
+      "id": "mat-hydrogen",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.81,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 3.9
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 9.1
+        }
+      ]
+    },
+    {
+      "id": "mat-iron-sulfate",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.87,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.1
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 9.5
+        }
+      ]
+    },
+    {
+      "id": "mat-iron",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.91,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.3
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.8
+        }
+      ]
+    },
+    {
+      "id": "mat-magnesium-chloride",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.79,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 9.1
+        }
+      ]
+    },
+    {
+      "id": "mat-magnesium-oxide",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.66,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5.7
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 13.5
+        }
+      ]
+    },
+    {
+      "id": "mat-magnesium",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.85,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.2
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 9.3
+        }
+      ]
+    },
+    {
+      "id": "mat-methane",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.82,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5.3
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 12.6
+        }
+      ]
+    },
+    {
+      "id": "mat-nitrogen",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.9,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 3.7
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 8
+        }
+      ]
+    },
+    {
+      "id": "mat-oxygen",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.81,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5.1
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 12
+        }
+      ]
+    },
+    {
+      "id": "mat-sodium-bicarbonate",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.74,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.5
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.9
+        }
+      ]
+    },
+    {
+      "id": "mat-sodium-carbonate",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.74,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.9
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 11.5
+        }
+      ]
+    },
+    {
+      "id": "mat-sodium-chloride",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.75,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5.8
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 14.9
+        }
+      ]
+    },
+    {
+      "id": "mat-sodium-hydroxide",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.8,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 9.2
+        }
+      ]
+    },
+    {
+      "id": "mat-sodium-sulfate",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.89,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 3.8
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 8.4
+        }
+      ]
+    },
+    {
+      "id": "mat-water-vapor",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.81,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 6.1
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 14.4
+        }
+      ]
+    },
+    {
+      "id": "mat-water",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.76,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.8
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 12
+        }
+      ]
+    },
+    {
+      "id": "mat-zinc-sulfate",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.81,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.7
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.6
+        }
+      ]
+    },
+    {
+      "id": "mat-zinc",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.86,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.7
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.8
+        }
+      ]
+    },
+    {
+      "id": "mix-aqueous-mixture",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.9,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.6
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.9
+        }
+      ]
+    },
+    {
+      "id": "mix-gas-mixture",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.81,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 6.6
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 16.2
+        }
+      ]
+    },
+    {
+      "id": "mix-organic-mixture",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.84,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.5
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.3
+        }
+      ]
+    },
+    {
+      "id": "mix-precipitate-mixture",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.8,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 11.9
+        }
+      ]
+    },
+    {
+      "id": "obj-mission-board",
+      "status": "ok",
+      "width": 1983,
+      "height": 793,
+      "alpha": true,
+      "out": {
+        "width": 1000,
+        "height": 388
+      },
+      "slice": {
+        "top": 115,
+        "left": 230,
+        "right": 230,
+        "bottom": 39
+      },
+      "files": [
+        {
+          "suffix": "",
+          "px": 1000,
+          "kb": 27.7
+        }
+      ]
+    },
+    {
+      "id": "obj-recycling-crate",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.9,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5.1
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 12.4
+        },
+        {
+          "suffix": "-l",
+          "px": 512,
+          "kb": 30.3
+        }
+      ]
+    },
+    {
+      "id": "obj-support-closed",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.8,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5.7
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 13.5
+        },
+        {
+          "suffix": "-l",
+          "px": 512,
+          "kb": 36
+        }
+      ]
+    },
+    {
+      "id": "obj-support-open",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.9,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 4.6
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 10.4
+        },
+        {
+          "suffix": "-l",
+          "px": 512,
+          "kb": 25
+        }
+      ]
+    },
+    {
+      "id": "obj-support-return",
+      "status": "ok",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "occupancyBefore": 0.76,
+      "files": [
+        {
+          "suffix": "-s",
+          "px": 128,
+          "kb": 5.5
+        },
+        {
+          "suffix": "",
+          "px": 256,
+          "kb": 12.7
+        },
+        {
+          "suffix": "-l",
+          "px": 512,
+          "kb": 31
+        }
+      ]
+    }
+  ]
+}

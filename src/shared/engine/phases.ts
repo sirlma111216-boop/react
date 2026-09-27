@@ -3,7 +3,11 @@ import { CONTRACTS } from '../chemistry/contracts';
 import { EQUIPMENT } from '../chemistry/equipment';
 import { REACTIONS } from '../chemistry/reactions';
 import { subRng } from './rng';
-import { addLot, hasEquipment, makeIdGen, pushLog, receiveExternal, salvageValue, teamAsset } from './state';
+import { addLot, hasEquipment, isV3, makeIdGen, pushLog, receiveExternal, salvageValue, teamAsset } from './state';
+import { forfeitSupport, generateSupport, supportBudget } from './support';
+import { computeGameCap } from './buyback';
+import { lotComponents } from '../chemistry/processes';
+import { MATERIALS } from '../chemistry/materials';
 import { computeReachability, contractMinRounds, contractReachable, type ReachabilityMap } from './reachability';
 import { contractSatisfiable, deliverContract } from './commands';
 import { drawNextMarket, initMarket, PRICING_VERSION } from './market';
@@ -85,7 +89,9 @@ export function generateOffers(state: GameState, team: TeamState, map: Reachabil
   // 첫 라운드에는 시작 묶음으로 2~3라운드 안에 끝낼 수 있는 짧은 계약을 반드시 하나 넣는다
   if (state.round === 1) {
     const quick = shuffled.filter((cid) => CONTRACTS[cid]!.minRounds <= 3 && !CONTRACTS[cid]!.byproductOnly);
-    const bundlePref = quick.find((cid) => bundleMatches(team.bundleId, cid)) ?? quick[0];
+    // V3: 이번 라운드 지원품으로 시작할 수 있는 짧은 주문을 우선 (지원품 기준 반응 또는 완성 소재의 주문)
+    const supportPref = team.support ? quick.find((cid) => supportMatches(team, cid, map)) : undefined;
+    const bundlePref = supportPref ?? quick.find((cid) => bundleMatches(team.bundleId, cid)) ?? quick[0];
     if (bundlePref) { out.push(makeOffer(state, bundlePref, state.round, CONTRACTS[bundlePref]!.minRounds)); cats.add(CONTRACTS[bundlePref]!.category); }
   }
   for (const cid of shuffled) {
@@ -102,6 +108,18 @@ export function generateOffers(state: GameState, team: TeamState, map: Reachabil
     out.push(makeOffer(state, cid, state.round, CONTRACTS[cid]!.minRounds));
   }
   return out;
+}
+
+function supportMatches(team: TeamState, cid: string, map: ReachabilityMap): boolean {
+  const g = team.support;
+  if (!g) return false;
+  const recipes = new Set(g.bundles.map((b) => b.recipe).filter(Boolean) as string[]);
+  const finished = new Set(g.bundles.filter((b) => b.kind === 'finished').flatMap((b) => b.items.map((i) => i.materialId)));
+  return CONTRACTS[cid]!.requirements.some((req) => finished.has(req.materialId) || routesForAny(map, req.materialId, req.tags).some((r) => recipes.has(r.reactionId)));
+}
+
+function routesForAny(map: ReachabilityMap, materialId: string, tags: string[]) {
+  return tags.flatMap((t) => map.routes.get(`${materialId}|${t}`) ?? []);
 }
 
 function bundleMatches(bundleId: string | null, cid: string): boolean {
@@ -132,14 +150,21 @@ function makeAuction(state: GameState, round: number, index: number, map: Reacha
   return { id: `A${round}`, round, contract, bids: {}, resolved: false, winnerId: null, priorityOrder };
 }
 
-/** 경기 시작: 시작 묶음·임대 설비 지급, 이벤트 예정, 1라운드 계획 단계로. */
+/**
+ * 경기 시작: 임대 설비 지급, 이벤트 예정, 1라운드로.
+ * V3: 고정 시작 묶음 없이 1라운드 연구지원품으로 시작한다. 매입 누적 상한을 경기 길이에 맞춰 고정한다.
+ * 구버전(rules 2): 팀이 고른 시작 묶음을 지급한다.
+ */
 export function startGame(state: GameState): void {
   if (state.phase !== 'setup') throw new Error('이미 시작된 경기입니다.');
+  if (isV3(state)) state.buybackGameCap = computeGameCap(state);
   for (const team of Object.values(state.teams)) {
-    const bundle = state.config.bundles.find((b) => b.id === team.bundleId) ?? state.config.bundles[0]!;
-    team.bundleId = bundle.id;
-    for (const it of bundle.items) receiveExternal(team, it.materialId, it.units, 'bundle', lotGen);
-    team.coins += bundle.extraCoins;
+    if (!isV3(state)) {
+      const bundle = state.config.bundles.find((b) => b.id === team.bundleId) ?? state.config.bundles[0]!;
+      team.bundleId = bundle.id;
+      for (const it of bundle.items) receiveExternal(team, it.materialId, it.units, 'bundle', lotGen);
+      team.coins += bundle.extraCoins;
+    } else team.bundleId = null;
     if (state.mode === 'industrial') {
       const leasable = state.activeEquipment.filter((e) => EQUIPMENT[e]?.leasable);
       const lease = team.leaseId && leasable.includes(team.leaseId) ? team.leaseId : leasable[0] ?? null;
@@ -179,8 +204,11 @@ export function beginPlan(state: GameState): void {
     }
     if (ev.announceRound === state.round) pushLog(state, 'event', `다음 라운드 예고: ${ev.label}`);
   }
+  // V3: 같은 라운드 모든 팀에 공통인 종류별 가치 예산으로 팀마다 지원품 3묶음 (시드·라운드·팀 결정적)
+  const budget = isV3(state) ? supportBudget(state, map, state.round) : null;
   for (const team of Object.values(state.teams)) {
     if (state.round > 1) team.energy = Math.min(state.config.energyCap, team.energy + state.config.energyPerRound);
+    if (budget) team.support = generateSupport(state, team, map, budget);
     team.actionsLeft = state.config.actionsPerRound;
     team.purchasesThisRound = {};
     team.heatRecoveredThisRound = 0;
@@ -205,6 +233,8 @@ export function beginExecute(state: GameState): void {
 export function settleRound(state: GameState): void {
   if (state.phase !== 'execute') throw new Error('실행 단계가 아닙니다.');
   state.phase = 'settle';
+  // 고르지 않은 지원품은 이번 라운드 수령 포기 (몰래 추첨하지 않는다)
+  for (const team of Object.values(state.teams)) forfeitSupport(state, team, '라운드 마무리 전 미선택');
   // 입찰 개봉
   const auction = state.auctions.find((a) => a.round === state.round && !a.resolved);
   if (auction) {
@@ -271,7 +301,7 @@ export function finishGame(state: GameState): void {
   }
   const results: FinalTeamResult[] = Object.values(state.teams).map((t) => {
     const top = Object.entries(t.reactionUse).sort((a, b) => b[1] - a[1])[0];
-    return { teamId: t.id, name: t.name, coins: t.coins, salvage: salvageValue(state, t), asset: teamAsset(state, t), delivered: t.delivered, rank: 0, badges: t.badges, topReaction: top ? top[0] : null, revenue: t.revenue };
+    return { teamId: t.id, name: t.name, coins: t.coins, salvage: salvageValue(state, t), asset: teamAsset(state, t), delivered: t.delivered, rank: 0, badges: t.badges, topReaction: top ? top[0] : null, revenue: t.revenue, leftover: leftoverSummary(t), buybackCoins: t.buyback?.totalCoins ?? 0 };
   });
   results.sort((a, b) => b.asset - a.asset || b.delivered - a.delivered);
   let rank = 0;
@@ -283,6 +313,25 @@ export function finishGame(state: GameState): void {
   state.results = results;
   state.phase = 'finished';
   pushLog(state, 'finish', '게임 끝!');
+}
+
+/** 최종 납품 정산 뒤 남은 물품 요약. 점수에 더하지도 빼지도 않으며 자동 판매·자동 보상도 없다. */
+export function leftoverSummary(t: TeamState): NonNullable<FinalTeamResult['leftover']> {
+  const agg = new Map<string, { materialId: string | null; label: string; units: number; mixture: boolean }>();
+  for (const l of t.lots) {
+    if (l.units <= 0) continue;
+    if (l.kind === 'pure') {
+      const k = `p:${l.materialId}`;
+      const cur = agg.get(k) ?? { materialId: l.materialId!, label: MATERIALS[l.materialId!]?.displayName ?? l.materialId!, units: 0, mixture: false };
+      cur.units += l.units; agg.set(k, cur);
+    } else {
+      const label = lotComponents(l).map((c) => MATERIALS[c.materialId]?.displayName ?? c.materialId).join('+');
+      const k = `m:${label}`;
+      const cur = agg.get(k) ?? { materialId: null, label: `섞인 것(${label})`, units: 0, mixture: true };
+      cur.units += l.units; agg.set(k, cur);
+    }
+  }
+  return [...agg.values()].sort((a, b) => b.units - a.units);
 }
 
 /** 다음 단계로 전이 (시간제 구버전 알람·시뮬레이터 공용). */

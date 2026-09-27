@@ -1,7 +1,8 @@
 import type { GameState, TeamState } from './types';
 import type { AuctionPublic, GameView } from './protocol';
 import { CONTRACTS } from './chemistry/contracts';
-import { priceOf } from './engine/state';
+import { isV3, priceOf } from './engine/state';
+import { buybackConfig, gameCapOf } from './engine/buyback';
 
 /** 팀의 현재 생산 카테고리 (공개 정보) */
 export function teamCategory(team: TeamState): string | null {
@@ -50,6 +51,10 @@ export function projectGame(state: GameState, teamId: string | null): GameView {
       procureMaxPerKindPerRound: cfg.procureMaxPerKindPerRound, energyBundleCost: cfg.energyBundleCost, energyBundleAmount: cfg.energyBundleAmount, energyBundleMax: cfg.energyBundleMax, auctionMaxBid: cfg.auctionMaxBid,
       bundles: cfg.bundles,
     },
+    rules: state.rules ?? 2,
+    materialValues: cfg.materialValues ?? {},
+    buyback: isV3(state) ? { rate: buybackConfig(state).rate, roundCap: buybackConfig(state).roundCap, gameCap: gameCapOf(state), perRound: buybackConfig(state).perRound } : null,
+    reactionSlots: cfg.reactionSlots,
   };
 }
 

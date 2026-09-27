@@ -1,12 +1,14 @@
 import type { EconomyConfig } from '../types';
+import { deriveMaterialValues } from './values';
 
 /**
  * 경제 설정. 밸런스 에이전트가 조정하는 대상이다. 화학 데이터는 여기에 없다.
  * `docs/DECISIONS.md` 와 `reports/balance/` 에 조정 이력을 남긴다.
+ * V3(econ-3.x): 시작 코인 24, 고정 시작 묶음 대신 매 라운드 연구지원품, 잉여 재고 매입(상한 있음).
  */
-export const DEFAULT_ECONOMY: EconomyConfig = {
-  version: 'econ-1.3',
-  startCoins: 40,
+const BASE_ECONOMY: EconomyConfig = {
+  version: 'econ-3.0',
+  startCoins: 24,
   startEnergy: 6,
   energyCap: 12,
   energyPerRound: 2,
@@ -45,7 +47,28 @@ export const DEFAULT_ECONOMY: EconomyConfig = {
     { id: 'carbonate', name: '탄산 공방', items: [{ materialId: 'NaHCO3_s', units: 4 }, { materialId: 'CaCl2_s', units: 2 }, { materialId: 'Na2CO3_s', units: 1 }], extraCoins: 2, blurb: '베이킹소다를 가열하고 침전을 만들어 종이 공장 주문을 노린다.' },
     { id: 'material', name: '소재 공방', items: [{ materialId: 'Mg_s', units: 2 }, { materialId: 'O2_g', units: 2 }, { materialId: 'CaO_s', units: 1 }, { materialId: 'H2O_l', units: 2 }], extraCoins: 0, blurb: '마그네슘을 태워 세라믹 주문을 가장 빨리 끝낸다.' },
   ],
+  support: {
+    finishedUnits: 1,
+    processUnits: [2, 3],
+    basicUnits: [8, 10],
+    tolerance: 0.15,
+    weight: { finished: 1, process: 1.25, basic: 1 },
+    finishedExclude: ['ethylAcetate_l', 'NH4Cl_s'],
+  },
+  buyback: { rate: 0.3, roundCap: 5, gameCap: 20, baseRounds: 10, perRound: 1 },
 };
+
+/** 에너지 1의 코인 환산 (충전 묶음 가격 ÷ 양) */
+export function energyUnitCost(c: EconomyConfig): number {
+  return c.energyBundleCost / Math.max(1, c.energyBundleAmount);
+}
+
+/** 가격이 바뀌면 기준 회수가치도 따라 바뀌도록 설정에서 유도한다 (경기 시작 시 스냅숏으로 고정). */
+export function withDerivedValues(c: EconomyConfig): EconomyConfig {
+  return { ...c, materialValues: deriveMaterialValues(c.prices, energyUnitCost(c)) };
+}
+
+export const DEFAULT_ECONOMY: EconomyConfig = withDerivedValues(BASE_ECONOMY);
 
 /** 모드별 사용 가능 상점 원료 */
 export const SHOP_BY_MODE: Record<string, string[]> = {

@@ -8,7 +8,8 @@ import type { GameState } from '../src/shared/types';
 import { runGame } from '../src/sim/runner';
 
 function game(mode: 'classic' | 'extended' | 'industrial' = 'classic', n = 2, rounds = 10): GameState {
-  const g = createGame({ seed: 'test-seed', mode, roundsTotal: rounds, turnMode: 'timed', teams: Array.from({ length: n }, (_, i) => ({ id: `T${i + 1}`, name: `팀${i + 1}`, color: TEAM_COLORS[i]!, emblem: TEAM_EMBLEMS[i]!, bundleId: 'gas' })) });
+  // 구버전(rules 2) 규칙 회귀: 고정 시작 묶음. V3 흐름은 tests/v3.test.ts
+  const g = createGame({ seed: 'test-seed', mode, roundsTotal: rounds, turnMode: 'timed', rules: 2, teams: Array.from({ length: n }, (_, i) => ({ id: `T${i + 1}`, name: `팀${i + 1}`, color: TEAM_COLORS[i]!, emblem: TEAM_EMBLEMS[i]!, bundleId: 'gas' })) });
   return g;
 }
 

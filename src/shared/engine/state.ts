@@ -1,12 +1,15 @@
 import type { EconomyConfig, GameState, Lot, ModeId, TeamState } from '../types';
-import { DEFAULT_ECONOMY, SHOP_BY_MODE, cloneConfig } from '../config/economy';
+import { DEFAULT_ECONOMY, SHOP_BY_MODE, cloneConfig, withDerivedValues } from '../config/economy';
 import { findPreset } from '../chemistry/modes';
 import { makePureLot } from '../chemistry/processes';
 import { MATERIALS } from '../chemistry/materials';
 import { addElements, addWater } from './ledger';
+import { ensureValueLedger, MC, refMc } from './value';
 
 export const SCIENCE_VERSION = 'chem-1.0';
-export const ENGINE_BUILD = 'engine-1.0';
+export const ENGINE_BUILD = 'engine-3.0';
+/** 새 경기의 규칙 버전. 저장된 구버전 경기(rules 없음)는 2로 읽고 지급 방식을 소급 변경하지 않는다. */
+export const RULES_VERSION = 3;
 
 export const TEAM_COLORS = ['#1F6F78', '#B87346', '#5B7F3A', '#8C4E7A', '#C48F1F', '#4A6FB5', '#A8493E', '#4E8C7B'];
 export const TEAM_EMBLEMS = ['circle', 'triangle', 'diamond', 'hexagon', 'star', 'square', 'wave', 'leaf'] as const;
@@ -30,6 +33,8 @@ export interface GameOptions {
   teams: TeamSeed[];
   /** 기본 manual. 시간제 구버전 검증용으로만 'timed' */
   turnMode?: 'manual' | 'timed';
+  /** 기본 3(V3). 2 = 고정 시작 묶음·지원품 없음(구버전 재현·회귀 테스트용) */
+  rules?: number;
 }
 
 export function createTeam(seed: TeamSeed, config: EconomyConfig): TeamState {
@@ -71,6 +76,13 @@ export function createTeam(seed: TeamSeed, config: EconomyConfig): TeamState {
     producedCount: 0,
     processedCount: 0,
     reactionUse: {},
+    support: null,
+    supportHistory: [],
+    buyback: { lastRound: 0, totalCoins: 0, sales: [] },
+    valueLedger: { inflow: 0, delivered: 0, sold: 0 },
+    deliveredUnits: 0,
+    deliveredSupportUnits: 0,
+    supportRevenue: 0,
   };
 }
 
@@ -83,6 +95,7 @@ export function addLot(team: TeamState, lot: Lot): void {
     if (existing) {
       existing.units += lot.units;
       existing.solvent += lot.solvent;
+      if (lot.basis) existing.basis = (existing.basis ?? 0) + lot.basis;
       return;
     }
   }
@@ -93,12 +106,18 @@ export function lotMergeKey(lot: Lot): string {
   return [lot.materialId, lot.grade, [...lot.tags].sort().join('+'), lot.origin.type, lot.origin.reactionId ?? '', lot.origin.chain.join('>')].join('|');
 }
 
-/** 외부 유입(구매·시작 묶음)을 원장에 기록하며 로트를 추가한다. */
-export function receiveExternal(team: TeamState, materialId: string, units: number, originType: 'purchase' | 'bundle' | 'lease', idGen: () => string): void {
+/**
+ * 외부 유입(구매·시작 묶음·연구지원품)을 원장에 기록하며 로트를 추가한다.
+ * basisMc: 이 유입의 경제 가치 풀(밀리코인) — 구매는 실제 지불액, 지원품은 명시된 외부지원 가치.
+ */
+export function receiveExternal(team: TeamState, materialId: string, units: number, originType: 'purchase' | 'bundle' | 'lease' | 'support', idGen: () => string, opts: { basisMc?: number; tags?: string[] } = {}): void {
   const m = MATERIALS[materialId];
   if (!m) throw new Error(`물질 없음: ${materialId}`);
   const solvent = m.phase === 'aq' ? units : 0;
-  const lot = makePureLot(materialId, units, 'purchased', ['purchased'], { type: originType, chain: [] }, solvent, idGen());
+  const isSupport = originType === 'support';
+  const lot = makePureLot(materialId, units, isSupport ? 'support' : 'purchased', isSupport ? [...(opts.tags ?? [])] : ['purchased'], { type: originType, chain: [] }, solvent, idGen());
+  const basis = Math.max(0, Math.round(opts.basisMc ?? 0));
+  if (basis) { lot.basis = basis; ensureValueLedger(team).inflow += basis; }
   addElements(team.elementLedger.inflow, materialId, units);
   if (solvent) {
     addWater(team.elementLedger.inflow, solvent);
@@ -108,7 +127,9 @@ export function receiveExternal(team: TeamState, materialId: string, units: numb
 }
 
 export function createGame(opts: GameOptions): GameState {
-  const config = opts.config ? cloneConfig(opts.config) : cloneConfig(DEFAULT_ECONOMY);
+  const base = opts.config ? cloneConfig(opts.config) : cloneConfig(DEFAULT_ECONOMY);
+  // 기준 회수가치는 경기 시작 시 설정 스냅숏에 고정한다 (경기 중 가격표가 바뀌어도 매입가는 그대로)
+  const config = base.materialValues ? base : withDerivedValues(base);
   const preset = findPreset(opts.mode, opts.presetId);
   const teams: Record<string, TeamState> = {};
   for (const t of opts.teams) teams[t.id] = createTeam(t, config);
@@ -140,8 +161,20 @@ export function createGame(opts: GameOptions): GameState {
     market: {},
     marketHistory: {},
     roundVersion: 0,
+    rules: opts.rules ?? RULES_VERSION,
   };
 }
+
+/** 이 경기가 V3 규칙(연구지원품·재고 매입·가치 원장)을 쓰는가 */
+export function isV3(state: GameState): boolean {
+  return (state.rules ?? 2) >= 3;
+}
+
+/** 기준 회수가치 × 칸 (밀리코인) — 지원품 외부 가치 풀 */
+export function supportBasisMc(state: GameState, materialId: string, units: number): number {
+  return refMc(state, materialId) * units;
+}
+export { MC };
 
 export function priceOf(state: GameState, materialId: string): number {
   const base = state.config.prices[materialId] ?? 0;

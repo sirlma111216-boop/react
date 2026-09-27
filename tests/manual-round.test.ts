@@ -8,7 +8,13 @@ import type { GameState } from '../src/shared/types';
 function game(n = 2, rounds = 4): GameState {
   const g = createGame({ seed: 'manual-seed', mode: 'classic', roundsTotal: rounds, teams: Array.from({ length: n }, (_, i) => ({ id: `T${i + 1}`, name: `팀${i + 1}`, color: TEAM_COLORS[i]!, emblem: TEAM_EMBLEMS[i]!, bundleId: 'gas' })) });
   startGame(g);
+  pickSupport(g);
   return g;
+}
+
+/** V3: 라운드 처음 지원품을 고르지 않으면 행동·준비가 잠긴다 — 테스트는 매 라운드 기초 원료 상자를 제외하고 받는다 */
+function pickSupport(g: GameState): void {
+  for (const t of Object.values(g.teams)) if (t.support?.status === 'pending') expect(applyTeamCommand(g, t.id, { type: 'chooseSupport', grantId: t.support.grantId, returnIndex: 1 }).ok).toBe(true);
 }
 
 describe('수동 라운드', () => {
@@ -34,6 +40,7 @@ describe('수동 라운드', () => {
     expect(allTeamsReady(g)).toBe(true);
     const v = g.roundVersion;
     settleAndOpenNextRound(g);
+    pickSupport(g);
     expect(g.round).toBe(2);
     expect(g.roundVersion).toBe(v + 1);
     expect(g.phase).toBe('execute');
@@ -93,9 +100,11 @@ describe('시세', () => {
     const g = game(1, 2);
     applyTeamCommand(g, 'T1', { type: 'readyRound', on: true });
     settleAndOpenNextRound(g);
+    pickSupport(g);
     const hist = JSON.stringify(g.marketHistory);
     applyTeamCommand(g, 'T1', { type: 'readyRound', on: true });
     settleAndOpenNextRound(g);
+    pickSupport(g);
     expect(g.phase).toBe('finished');
     expect(JSON.stringify(g.marketHistory)).toBe(hist);
   });

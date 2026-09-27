@@ -20,6 +20,9 @@ export type RoomCommand =
   | { type: 'teacherJoinTeam'; name: string; color: string; emblem: string }
   | { type: 'teacherLeaveTeam' }
   | { type: 'disbandTeam'; teamId: string }
+  /** V3: 교사가 멈춘 팀의 지원품을 대신 고름(기록됨) 또는 이번 라운드 수령 포기 */
+  | { type: 'teacherSupport'; teamId: string; returnIndex: number }
+  | { type: 'forfeitSupport'; teamId: string }
   // 팀장
   | { type: 'createTeam'; name: string; color: string; emblem: string }
   | { type: 'setBundle'; bundleId: string }
@@ -78,6 +81,8 @@ export interface TeamPublic {
   roundReady: boolean;
   actionsLeft: number;
   connectedCount: number;
+  /** V3: 이번 라운드 지원품을 아직 고르지 않음 */
+  supportPending: boolean;
 }
 
 export interface AuctionPublic {
@@ -115,6 +120,12 @@ export interface GameView {
   readyCount: number;
   teamCount: number;
   config: { contractLimit: number; actionsPerRound: number; energyCap: number; procureMaxKinds: number; procureMaxTotal: number; procureMaxPerKindPerRound: number; energyBundleCost: number; energyBundleAmount: number; energyBundleMax: number; auctionMaxBid: number; bundles: { id: string; name: string; blurb: string; items: { materialId: string; units: number }[]; extraCoins: number }[] };
+  /** 규칙 버전 (3 = 연구지원품·재고 매입) */
+  rules: number;
+  /** V3: 경기 중 고정된 기준 회수가치·매입 규칙 (화면 견적용, 서버가 같은 함수로 다시 계산) */
+  materialValues: Record<string, number>;
+  buyback: { rate: number; roundCap: number; gameCap: number; perRound: number } | null;
+  reactionSlots: number;
 }
 
 export interface ClientView {

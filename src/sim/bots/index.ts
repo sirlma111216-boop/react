@@ -1,15 +1,18 @@
-import type { ContractInstance, GameState, TeamCommand } from '../../shared/types';
+import type { ContractInstance, GameState, SupportKind, TeamCommand } from '../../shared/types';
 import { Rng } from '../../shared/engine/rng';
 import { applyTeamCommand, availableCoins } from '../../shared/engine/commands';
 import { REACTIONS } from '../../shared/chemistry/reactions';
 import { hasEquipment, equipmentPrice } from '../../shared/engine/state';
 import { contractPayout } from '../../shared/engine/market';
+import { supportPending, replacementValue } from '../../shared/engine/support';
+import { lotSellable, quoteBuyback } from '../../shared/engine/buyback';
+import { lotUsableFor } from '../../shared/engine/commands';
 import { affordableEquipment, deliverable, feasibleProcesses, feasibleReactions, nextProcess, nextProcureItems, nextReaction, planForContract, type BotView, type Plan } from './helpers';
 import type { ReachabilityMap } from '../../shared/engine/reachability';
 
-export type BotId = 'random' | 'quickcash' | 'planner' | 'byproduct' | 'investor' | 'bidder';
-export const BOT_IDS: BotId[] = ['random', 'quickcash', 'planner', 'byproduct', 'investor', 'bidder'];
-export const BOT_LABEL: Record<BotId, string> = { random: '무작위 봇', quickcash: '즉시 현금 봇', planner: '다단계 계획 봇', byproduct: '부산물 회수 봇', investor: '설비 투자 봇', bidder: '입찰 기회 봇' };
+export type BotId = 'random' | 'quickcash' | 'planner' | 'byproduct' | 'investor' | 'bidder' | 'supportfinished' | 'supportbasic' | 'recycler';
+export const BOT_IDS: BotId[] = ['random', 'quickcash', 'planner', 'byproduct', 'investor', 'bidder', 'supportfinished', 'supportbasic', 'recycler'];
+export const BOT_LABEL: Record<BotId, string> = { random: '무작위 봇', quickcash: '즉시 납품 봇', planner: '다단계 계획 봇', byproduct: '부산물 활용 봇', investor: '설비 투자 봇', bidder: '입찰 기회 봇', supportfinished: '지원 완성형 선호 봇', supportbasic: '기초 재료 선호 봇', recycler: '매입 악용 시도 봇' };
 
 export interface BotContext {
   rng: Rng;
@@ -20,8 +23,52 @@ export interface BotContext {
 
 export interface Bot {
   id: BotId;
+  /** V3: 라운드 처음 연구지원품 1묶음 반송 (미래 지원품·다른 팀 계획은 보지 않는다) */
+  support(state: GameState, teamId: string, ctx: BotContext): void;
   plan(state: GameState, teamId: string, ctx: BotContext): void;
   execute(state: GameState, teamId: string, ctx: BotContext): void;
+}
+
+/**
+ * 지원품 묶음의 쓸모 점수: 보유·제안 주문의 계획에 필요한 원료는 상점 가격의 1.5배, 주문 조건에 맞는 완성 소재는 주문 단가만큼,
+ * 나머지는 재료 가치의 40%만 친다. 가장 쓸모없는 묶음을 반송한다.
+ */
+export function supportScores(state: GameState, teamId: string, map: ReachabilityMap): number[] {
+  const team = state.teams[teamId]!;
+  const g = team.support;
+  if (!g) return [];
+  const v = view(state, teamId, map);
+  const need: Record<string, number> = {};
+  const plans = [...team.contracts, ...team.offers.slice(0, 2)].map((c) => planForContract(v, c));
+  for (const p of plans) for (const s of p.shopping) need[s.materialId] = (need[s.materialId] ?? 0) + s.units;
+  const reqs = [...team.contracts, ...team.offers].flatMap((c) => c.requirements.map((r) => ({ r, unit: (state.config.contractRewards[c.templateId] ?? c.reward) / Math.max(1, c.requirements.reduce((a, x) => a + x.units, 0)) })));
+  return g.bundles.map((b) => {
+    let s = 0;
+    const left = { ...need };
+    for (const it of b.items) {
+      const probe = { id: 'p', kind: 'pure' as const, materialId: it.materialId, units: it.units, grade: 'support' as const, tags: it.tags, solvent: 0, origin: { type: 'support' as const, chain: [] } };
+      const req = reqs.find((x) => lotUsableFor(probe, x.r));
+      if (req) { s += req.unit * it.units; continue; }
+      const useful = Math.min(it.units, left[it.materialId] ?? 0);
+      left[it.materialId] = (left[it.materialId] ?? 0) - useful;
+      s += useful * replacementValue(state, it.materialId) * 1.5 + (it.units - useful) * replacementValue(state, it.materialId) * 0.4;
+    }
+    return s;
+  });
+}
+
+function returnIndexFor(state: GameState, teamId: string, map: ReachabilityMap, keep?: SupportKind): number {
+  const g = state.teams[teamId]!.support!;
+  const scores = supportScores(state, teamId, map);
+  let idx = -1;
+  g.bundles.forEach((b, i) => { if (keep && b.kind === keep) return; if (idx < 0 || scores[i]! < scores[idx]!) idx = i; });
+  return Math.max(0, idx);
+}
+
+function defaultSupport(state: GameState, teamId: string, ctx: BotContext, keep?: SupportKind): void {
+  const team = state.teams[teamId]!;
+  if (!supportPending(state, team)) return;
+  ctx.exec({ type: 'chooseSupport', grantId: team.support!.grantId, returnIndex: returnIndexFor(state, teamId, ctx.map, keep) });
 }
 
 const view = (state: GameState, teamId: string, map: ReachabilityMap): BotView => ({ state, team: state.teams[teamId]!, map });
@@ -82,6 +129,10 @@ function executePlans(v: BotView, ctx: BotContext, opts: { allowEquipment?: (v: 
 
 export const RandomBot: Bot = {
   id: 'random',
+  support(state, teamId, ctx) {
+    const team = state.teams[teamId]!;
+    if (supportPending(state, team)) ctx.exec({ type: 'chooseSupport', grantId: team.support!.grantId, returnIndex: ctx.rng.int(team.support!.bundles.length) });
+  },
   plan(state, teamId, ctx) {
     const team = state.teams[teamId]!;
     if (team.offers.length && team.contracts.length < state.config.contractLimit && ctx.rng.next() < 0.8) ctx.exec({ type: 'takeContract', offerId: ctx.rng.pick(team.offers).id });
@@ -109,6 +160,7 @@ export const RandomBot: Bot = {
 
 export const QuickCashBot: Bot = {
   id: 'quickcash',
+  support: (s, t, c) => defaultSupport(s, t, c),
   plan(state, teamId, ctx) {
     const v = view(state, teamId, ctx.map);
     takeBestOffers(v, ctx, (p) => (p.contract.reward - p.cost) / Math.max(1, p.rounds));
@@ -120,6 +172,7 @@ export const QuickCashBot: Bot = {
 
 export const PlannerBot: Bot = {
   id: 'planner',
+  support: (s, t, c) => defaultSupport(s, t, c),
   plan(state, teamId, ctx) {
     const v = view(state, teamId, ctx.map);
     takeBestOffers(v, ctx, (p) => (p.contract.reward - p.cost - p.energy * 0.7) * (p.rounds <= 4 ? 1.1 : 1));
@@ -135,6 +188,7 @@ export const PlannerBot: Bot = {
 
 export const ByproductBot: Bot = {
   id: 'byproduct',
+  support: (s, t, c) => defaultSupport(s, t, c),
   plan(state, teamId, ctx) {
     const v = view(state, teamId, ctx.map);
     // 이미 재고에 있는(또는 진행 중인) 부산물로 채울 수 있는 계약을 높이 평가
@@ -174,6 +228,7 @@ function equipmentRoi(v: BotView): string | null {
 
 export const InvestorBot: Bot = {
   id: 'investor',
+  support: (s, t, c) => defaultSupport(s, t, c),
   plan(state, teamId, ctx) {
     const v = view(state, teamId, ctx.map);
     takeBestOffers(v, ctx, (p) => p.contract.reward - p.cost - p.energy * 0.5);
@@ -185,6 +240,7 @@ export const InvestorBot: Bot = {
 
 export const BidderBot: Bot = {
   id: 'bidder',
+  support: (s, t, c) => defaultSupport(s, t, c),
   plan(state, teamId, ctx) {
     const v = view(state, teamId, ctx.map);
     const auction = state.auctions.find((a) => a.round === state.round && !a.resolved);
@@ -206,7 +262,70 @@ export const BidderBot: Bot = {
   },
 };
 
-export const BOTS: Record<BotId, Bot> = { random: RandomBot, quickcash: QuickCashBot, planner: PlannerBot, byproduct: ByproductBot, investor: InvestorBot, bidder: BidderBot };
+/** 지원 완성형 선호: 완성 소재 상자는 절대 반송하지 않고, 즉시 납품 정책으로 논다 */
+export const SupportFinishedBot: Bot = {
+  id: 'supportfinished',
+  support: (s, t, c) => defaultSupport(s, t, c, 'finished'),
+  plan: (s, t, c) => QuickCashBot.plan(s, t, c),
+  execute: (s, t, c) => QuickCashBot.execute(s, t, c),
+};
+
+/** 기초 재료 선호: 기초 원료 상자는 절대 반송하지 않고, 다단계 계획 정책으로 논다 */
+export const SupportBasicBot: Bot = {
+  id: 'supportbasic',
+  support: (s, t, c) => defaultSupport(s, t, c, 'basic'),
+  plan: (s, t, c) => PlannerBot.plan(s, t, c),
+  execute: (s, t, c) => PlannerBot.execute(s, t, c),
+};
+
+/**
+ * 매입 악용 시도: 즉시 납품 정책에 더해 매 라운드 (1) 가장 싼 원료를 사서 되팔아 보고 (2) 계획에 없는 재고를 한도까지 넘긴다.
+ * 매입이 생산·납품보다 유리하면 이 봇이 이긴다 — 그러면 상한·가치·빈도를 낮춘다.
+ */
+export const RecyclerBot: Bot = {
+  id: 'recycler',
+  support: (s, t, c) => defaultSupport(s, t, c),
+  plan: (s, t, c) => QuickCashBot.plan(s, t, c),
+  execute(state, teamId, ctx) {
+    const team = state.teams[teamId]!;
+    if (team.actionsLeft > 0 && (team.buyback?.lastRound ?? 0) !== state.round && ctx.rng.next() < 0.5) {
+      const cheap = [...state.shopMaterials].sort((a, b) => (state.config.prices[a] ?? 9) - (state.config.prices[b] ?? 9))[0];
+      if (cheap) ctx.exec({ type: 'procure', items: [{ materialId: cheap, units: state.config.procureMaxPerKindPerRound }] });
+    }
+    QuickCashBot.execute(state, teamId, ctx);
+    sellLeftovers(state, teamId, ctx.map, ctx);
+  },
+};
+
+/** 계획에 필요 없는 순물질 재고를 한도 안에서 가장 많이 넘긴다 */
+export function sellLeftovers(state: GameState, teamId: string, map: ReachabilityMap, ctx: BotContext): void {
+  const team = state.teams[teamId]!;
+  if ((state.rules ?? 2) < 3 || team.roundReady || (team.buyback?.lastRound ?? 0) === state.round) return;
+  const v = view(state, teamId, map);
+  const keep: Record<string, number> = {};
+  for (const c of team.contracts) {
+    const p = planForContract(v, c);
+    for (const r of p.routes) for (const i of r.route.inputsPerBatch) for (const alt of i.alternatives) keep[alt] = (keep[alt] ?? 0) + i.units * r.batches;
+    for (const req of c.requirements) keep[req.materialId] = (keep[req.materialId] ?? 0) + req.units;
+  }
+  const items: { lotId: string; units: number }[] = [];
+  for (const l of team.lots) {
+    if (!lotSellable(l)) continue;
+    const spare = l.units - (keep[l.materialId!] ?? 0);
+    if (spare > 0) { items.push({ lotId: l.id, units: spare }); keep[l.materialId!] = 0; }
+    else keep[l.materialId!] = (keep[l.materialId!] ?? 0) - l.units;
+  }
+  if (!items.length) return;
+  let q = quoteBuyback(state, team, items);
+  while (q.ok && q.coins > q.roundLeft && items.length) {
+    const last = items[items.length - 1]!;
+    if (last.units > 1) last.units -= 1; else items.pop();
+    q = quoteBuyback(state, team, items);
+  }
+  if (q.ok && q.coins > 0 && q.coins <= q.roundLeft) ctx.exec({ type: 'sellSurplus', items, expectCoins: q.coins });
+}
+
+export const BOTS: Record<BotId, Bot> = { random: RandomBot, quickcash: QuickCashBot, planner: PlannerBot, byproduct: ByproductBot, investor: InvestorBot, bidder: BidderBot, supportfinished: SupportFinishedBot, supportbasic: SupportBasicBot, recycler: RecyclerBot };
 
 /** 명령 실행 래퍼: 엔진 검증을 통과한 명령만 반영된다 (봇도 특권이 없다). */
 export function makeExec(state: GameState, teamId: string, onError?: (e: string) => void): (cmd: TeamCommand) => boolean {

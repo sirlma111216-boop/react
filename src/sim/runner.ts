@@ -3,6 +3,7 @@ import { createGame, TEAM_COLORS, TEAM_EMBLEMS } from '../shared/engine/state';
 import { startGame, settleAndOpenNextRound, cachedReachability } from '../shared/engine/phases';
 import { applyTeamCommand } from '../shared/engine/commands';
 import { verifyTeamLedger } from '../shared/engine/ledger';
+import { verifyValueLedger } from '../shared/engine/value';
 import { subRng } from '../shared/engine/rng';
 import { BOTS, makeExec, type BotId } from './bots';
 import { DEFAULT_ECONOMY } from '../shared/config/economy';
@@ -14,6 +15,8 @@ export interface GameSpec {
   rounds: number;
   teams: { bot: BotId; bundleId: string; leaseId?: string }[];
   config?: EconomyConfig;
+  /** 규칙 버전 (기본 3) */
+  rules?: number;
 }
 
 export interface TeamOutcome {
@@ -31,6 +34,15 @@ export interface TeamOutcome {
   deliveredTemplates: string[];
   equipmentBought: number;
   wonAuction: boolean;
+  /** V3 관측 */
+  buybackCoins: number;
+  deliveredUnits: number;
+  deliveredSupportUnits: number;
+  supportRevenue: number;
+  supportReturns: Record<string, number>;
+  supportForfeits: number;
+  /** 라운드별 받은 2묶음 추정가치 */
+  keptValues: number[];
 }
 
 export interface GameOutcome {
@@ -51,6 +63,9 @@ function checkInvariants(state: GameState, errors: string[]): boolean {
     if (t.coins < 0) { ok = false; errors.push(`R${state.round} ${t.id} 음수 코인`); }
     if (t.energy < 0 || t.energy > state.config.energyCap) { ok = false; errors.push(`R${state.round} ${t.id} 에너지 범위 이탈 ${t.energy}`); }
     if (t.contracts.length > state.config.contractLimit) { ok = false; errors.push(`R${state.round} ${t.id} 계약 한도 초과`); }
+    const vv = verifyValueLedger(t);
+    if (!vv.ok) { ok = false; errors.push(`R${state.round} ${t.id} 가치 원장 불일치: ${vv.detail}`); }
+    if ((t.buyback?.totalCoins ?? 0) > (state.buybackGameCap ?? Infinity)) { ok = false; errors.push(`R${state.round} ${t.id} 매입 누적 상한 초과`); }
   }
   return ok;
 }
@@ -59,7 +74,7 @@ function checkInvariants(state: GameState, errors: string[]): boolean {
 export function runGame(spec: GameSpec, opts: { keepState?: boolean; verbose?: boolean } = {}): GameOutcome {
   const errors: string[] = [];
   const state = createGame({
-    seed: spec.seed, mode: spec.mode, presetId: spec.presetId, roundsTotal: spec.rounds, config: spec.config ?? DEFAULT_ECONOMY,
+    seed: spec.seed, mode: spec.mode, presetId: spec.presetId, roundsTotal: spec.rounds, config: spec.config ?? DEFAULT_ECONOMY, rules: spec.rules ?? 3,
     teams: spec.teams.map((t, i) => ({ id: `T${i + 1}`, name: `${t.bot}-${i + 1}`, color: TEAM_COLORS[i % TEAM_COLORS.length]!, emblem: TEAM_EMBLEMS[i % TEAM_EMBLEMS.length]!, bundleId: t.bundleId, leaseId: t.leaseId ?? null })),
   });
   for (const [i, t] of spec.teams.entries()) {
@@ -72,6 +87,11 @@ export function runGame(spec: GameSpec, opts: { keepState?: boolean; verbose?: b
     let guard = 0;
     while (state.phase !== 'finished' && guard++ < 100) {
       const map = cachedReachability(state);
+      // V3: 라운드 처음 각 팀 담당자가 연구지원품을 고른다 (자기 팀 공개 정보만 본다)
+      for (const [i, t] of spec.teams.entries()) {
+        const teamId = `T${i + 1}`;
+        BOTS[t.bot].support(state, teamId, { rng: subRng(spec.seed, 'bot', teamId, state.round, 'support'), map, exec: makeExec(state, teamId) });
+      }
       // 수동 라운드: 주문 받기·입찰(plan) 과 행동(execute)이 같은 라운드 안에서 이루어진다
       for (const [i, t] of spec.teams.entries()) {
         const teamId = `T${i + 1}`;
@@ -104,6 +124,10 @@ export function runGame(spec: GameSpec, opts: { keepState?: boolean; verbose?: b
         teamId: id, position: i, bot: t.bot, bundleId: t.bundleId, asset: r?.asset ?? 0, coins: ts.coins, delivered: ts.delivered, rank: r?.rank ?? 0,
         firstDelivery: ts.firstDeliveryRound, stalledRounds: ts.stalledRounds, revenue: ts.revenue, deliveredTemplates: ts.deliveredContracts.map((d) => d.templateId),
         equipmentBought: ts.equipment.filter((e) => !e.leased).length, wonAuction: state.auctions.some((a) => a.winnerId === id),
+        buybackCoins: ts.buyback?.totalCoins ?? 0, deliveredUnits: ts.deliveredUnits ?? 0, deliveredSupportUnits: ts.deliveredSupportUnits ?? 0, supportRevenue: ts.supportRevenue ?? 0,
+        supportReturns: (ts.supportHistory ?? []).reduce((acc, h) => { if (h.returnedKind) acc[h.returnedKind] = (acc[h.returnedKind] ?? 0) + 1; return acc; }, {} as Record<string, number>),
+        supportForfeits: (ts.supportHistory ?? []).filter((h) => h.status === 'forfeited').length,
+        keptValues: (ts.supportHistory ?? []).map((h) => h.keptValue),
       };
     });
     return { spec, teams, errors, ledgerOk, rounds: state.round, finalState: opts.keepState ? state : undefined };

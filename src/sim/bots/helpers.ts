@@ -1,9 +1,9 @@
-import type { ContractInstance, GameState, TeamState } from '../../shared/types';
+import type { ContractInstance, ContractRequirement, GameState, TeamState } from '../../shared/types';
 import { REACTIONS } from '../../shared/chemistry/reactions';
 import { EQUIPMENT } from '../../shared/chemistry/equipment';
 import { PROCESSES, applicableProcesses } from '../../shared/chemistry/processes';
 import { MATERIALS } from '../../shared/chemistry/materials';
-import { contractSatisfiable, pickReactantLots, processEnergy, processFee, reactionEnergy, availableCoins } from '../../shared/engine/commands';
+import { contractSatisfiable, lotUsableFor, pickReactantLots, processEnergy, processFee, reactionEnergy, availableCoins } from '../../shared/engine/commands';
 import { hasEquipment, priceOf, reactionSlots, equipmentPrice } from '../../shared/engine/state';
 import { routesFor, type ReachabilityMap, type Route } from '../../shared/engine/reachability';
 
@@ -20,9 +20,9 @@ export function stockOf(team: TeamState, materialId: string): number {
   return n;
 }
 
-export function deliverableUnits(team: TeamState, materialId: string, tags: string[]): number {
+export function deliverableUnits(team: TeamState, req: ContractRequirement): number {
   let n = 0;
-  for (const l of team.lots) if (l.kind === 'pure' && l.materialId === materialId && l.grade !== 'purchased' && l.tags.some((t) => tags.includes(t))) n += l.units;
+  for (const l of team.lots) if (lotUsableFor(l, req)) n += l.units;
   return n;
 }
 
@@ -99,7 +99,7 @@ export function planForContract(v: BotView, c: ContractInstance): Plan {
   const virtualStock: Record<string, number> = {};
   for (const l of team.lots) if (l.kind === 'pure') virtualStock[l.materialId!] = (virtualStock[l.materialId!] ?? 0) + l.units;
   for (const req of c.requirements) {
-    const have = deliverableUnits(team, req.materialId, req.tags) + pendingUnits(team, req.materialId, req.tags);
+    const have = deliverableUnits(team, req) + pendingUnits(team, req.materialId, req.tags);
     const need = req.units - have;
     if (need <= 0) continue;
     const candidates = routesFor(map, req.materialId, req.tags).filter((r) => state.activeReactions.includes(r.reactionId));
