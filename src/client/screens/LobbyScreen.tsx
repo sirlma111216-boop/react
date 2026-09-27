@@ -5,7 +5,6 @@ import type { GameClient } from '../lib/net';
 import { TEAM_COLORS, TEAM_EMBLEMS, EMBLEM_LABEL } from '../../shared/engine/state';
 import { DEFAULT_ECONOMY } from '../../shared/config/economy';
 import { EQUIPMENT } from '../../shared/chemistry/equipment';
-import { MATERIALS } from '../../shared/chemistry/materials';
 import { MODES } from '../../shared/chemistry/modes';
 import { store } from '../lib/store';
 import { imageUrl } from '../lib/assets';
@@ -73,7 +72,7 @@ export function LobbyScreen({ view, client, onLeave }: { view: ClientView; clien
         <main className="stack">
           <div className="card">
             <div className="row-between">
-              <div><h2 style={{ color: 'var(--teal)' }}>길드 편성</h2><p className="muted small">교사가 팀장을 임명 → 팀장이 팀을 만들고 시작 재료를 고름 → 학생이 팀 선택 → 팀장이 준비 → 교사가 시작. 권장 6팀 × 5명, 팀은 2~8개.</p></div>
+              <div><h2 style={{ color: 'var(--teal)' }}>길드 편성</h2><p className="muted small">교사가 팀장을 임명 → 팀장이 팀을 만듦 → 학생이 팀 선택 → 팀장이 준비 → 교사가 시작. 권장 6팀 × 5명, 팀은 2~8개. 시작 재료는 1라운드 연구지원품으로 받아요.</p></div>
               <div className="row">
                 {canCreate && <button className="btn btn-primary" onClick={() => setCreating(true)}>{isTeacher ? '교사가 팀으로 참가' : '내 팀 만들기'}</button>}
                 {isTeacher && me.teamId && <button className="btn btn-ghost" onClick={() => send({ type: 'teacherLeaveTeam' })}>팀에서 나가기 (관전)</button>}
@@ -110,7 +109,6 @@ function TeamCard({ t, view, isMine, send }: { t: TeamPublic; view: ClientView; 
   const me = view.me;
   const isTeacher = me.role === 'teacher';
   const isLeader = t.leaderId === me.playerId;
-  const bundle = DEFAULT_ECONOMY.bundles.find((b) => b.id === t.bundleId) ?? DEFAULT_ECONOMY.bundles[0]!;
   const leasable = view.room.mode === 'industrial' ? ['U05', 'U06', 'U07'] : [];
   return (
     <div className={`team-card ${isMine ? 'mine' : ''}`}>
@@ -119,15 +117,14 @@ function TeamCard({ t, view, isMine, send }: { t: TeamPublic; view: ClientView; 
       <div className="divider" />
       {isLeader ? (
         <div className="stack">
-          <label className="label">시작 재료 (팀장이 고름, 다른 팀과 겹쳐도 됨)</label>
-          {DEFAULT_ECONOMY.bundles.map((b) => <button key={b.id} className={`btn btn-sm ${t.bundleId === b.id ? 'btn-primary' : 'btn-ghost'}`} style={{ justifyContent: 'flex-start', textAlign: 'left' }} onClick={() => send({ type: 'setBundle', bundleId: b.id })}><span><b>{b.name}</b> <span className="small" style={{ opacity: 0.85 }}>{b.items.map((i) => `${MATERIALS[i.materialId]!.displayName} ${i.units}개`).join(' · ')}{b.extraCoins ? ` +${b.extraCoins}코인` : ''}</span><div className="small" style={{ opacity: 0.8 }}>{b.blurb}</div></span></button>)}
+          <p className="small start-note">시작: 코인 {DEFAULT_ECONOMY.startCoins} · 1라운드부터 <b>길드 연구지원품</b>(세 묶음 중 1묶음 반송, 2묶음 받기)으로 시작해요. 고정 시작 재료는 없어요.</p>
           {leasable.length > 0 && <><label className="label">무료로 빌릴 장비 1개 (끝날 때 돌려받는 값 0)</label><div className="row">{leasable.map((e) => <button key={e} className={`btn btn-sm ${t.leaseId === e ? 'btn-primary' : 'btn-ghost'}`} onClick={() => send({ type: 'setLease', equipmentId: e })}>{EQUIPMENT[e]!.name}</button>)}</div></>}
           {t.members.length > 1 && <MemberOrder t={t} view={view} onReorder={(order) => send({ type: 'reorderMembers', order })} />}
           <button className={`btn ${t.ready ? 'btn-ghost' : 'btn-copper'}`} onClick={() => send({ type: 'ready', on: !t.ready })}>{t.ready ? '준비 취소' : '준비 완료'}</button>
         </div>
       ) : (
         <div className="stack">
-          <span className="small">시작 재료: <b>{bundle.name}</b>{t.leaseId ? ` · 빌린 장비 ${EQUIPMENT[t.leaseId]!.name}` : ''}</span>
+          <span className="small">시작: 1라운드 연구지원품{t.leaseId ? ` · 빌린 장비 ${EQUIPMENT[t.leaseId]!.name}` : ''}</span>
           {!me.teamId && me.role === 'student' && !isTeacher && <button className="btn btn-primary" onClick={() => send({ type: 'joinTeam', teamId: t.id })}>참가</button>}
           {isMine && !isLeader && !isTeacher && <button className="btn btn-ghost btn-sm" onClick={() => send({ type: 'leaveTeam' })}>팀 나가기</button>}
           {isTeacher && <div className="row"><TeacherLeaderSelect t={t} view={view} onSet={(pid) => send({ type: 'setTeamLeader', teamId: t.id, playerId: pid })} /><button className="btn btn-sm btn-ghost" onClick={() => { if (confirm(`${t.name} 팀을 해산할까요?`)) send({ type: 'disbandTeam', teamId: t.id }); }}>해산</button></div>}

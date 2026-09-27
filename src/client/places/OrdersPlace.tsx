@@ -9,6 +9,7 @@ import { contractPayout, payoutRange } from '../../shared/engine/market';
 import { routesFor } from '../../shared/engine/reachability';
 import { Scene, Npc } from '../components/Scene';
 import { AssetImage, Formula } from '../components/common';
+import { MaterialArt } from '../components/Art';
 import { reactionStatus } from '../components/ReactionCard';
 import { mapFor } from '../components/Coach';
 import type { Place } from '../lib/places';
@@ -61,13 +62,13 @@ export function OrdersPlace({ view, send, focusId, setFocus, canPlan, goTo }: { 
                       <span className="offer-body">
                         <span className="ctitle">{o.title}</span>
                         <span className="muted small">{tpl.blurb}</span>
-                        <span className="creq">{o.requirements.map((r, i) => <span key={i} className="tag">{MATERIALS[r.materialId]!.displayName} {r.units}개</span>)}<span className="tag tag-teal">{stepsOf(o)}단계</span>{recommended === o.id && <span className="tag tag-amber">지금 시작할 수 있어요</span>}</span>
+                        <span className="creq">{o.requirements.map((r, i) => <span key={i} className="req-chip"><MaterialArt materialId={r.materialId} size={32} badge={false} />{MATERIALS[r.materialId]!.displayName} ×{r.units}</span>)}<span className="tag tag-teal">{stepsOf(o)}단계</span>{recommended === o.id && <span className="tag tag-amber">지금 시작할 수 있어요</span>}</span>
                       </span>
                       <span className="offer-pay"><b>{o.reward}</b><span className="small muted">기본금</span><span className="small">시세 {range.min}~{range.max}</span></span>
                     </button>
                     {open && (
                       <div className="offer-detail">
-                        <p className="small">필요한 것: {o.requirements.map((r) => `${MATERIALS[r.materialId]!.displayName} ${r.units}개 (${r.tags.map(tagLabel).join('/')})`).join(', ')} · 기한 {o.deadlineRound}라운드까지</p>
+                        <p className="small">필요한 것: {o.requirements.map((r) => `${MATERIALS[r.materialId]!.displayName} ${r.units}개 (${r.tags.map(tagLabel).join('/')}${r.allowSupport ? ' · 지원 완성 소재 가능' : ' · 직접 만든 것만'})`).join(', ')} · 기한 {o.deadlineRound}라운드까지</p>
                         <p className="small muted">기본금 {o.reward}코인. 배달할 때의 시세에 따라 {range.min}~{range.max}코인을 받아요 (기본금 ±8%). 시세는 라운드가 바뀔 때만 움직여요.</p>
                         <p className="small">만드는 방법: {o.requirements.map((r) => { const rs = routesFor(map, r.materialId, r.tags).filter((x) => g.activeReactions.includes(x.reactionId)); return rs.slice(0, 2).map((x) => `${REACTIONS[x.reactionId]!.name}${x.processIds.length ? ' → 정리' : ''}`).join(' 또는 '); }).join(' · ')}</p>
                         <div className="row" style={{ justifyContent: 'flex-end' }}>
@@ -105,7 +106,7 @@ export function OrdersPlace({ view, send, focusId, setFocus, canPlan, goTo }: { 
               return (
                 <div key={c.id} className={`folder-item ${focusId === c.id ? 'focus' : ''} ${justTaken === c.id ? 'slide-in' : ''}`}>
                   <div className="row-between"><b>{c.title}</b><span className="reward">{pay.total}코인</span></div>
-                  <div className="small muted">{c.requirements.map((r) => `${MATERIALS[r.materialId]!.displayName} ${r.units}개`).join(', ')} · {c.special ? '게임 끝까지' : `${c.deadlineRound}R까지`}</div>
+                  <div className="small muted folder-reqs">{c.requirements.map((r) => <span key={r.materialId} className="req-chip sm"><MaterialArt materialId={r.materialId} size={26} badge={false} />{MATERIALS[r.materialId]!.displayName} ×{r.units}</span>)} · {c.special ? '게임 끝까지' : `${c.deadlineRound}R까지`}</div>
                   <div className="row" style={{ marginTop: 4 }}>
                     {focusId === c.id ? <span className="tag tag-amber">집중 의뢰</span> : <button className="btn btn-sm btn-ghost" onClick={() => setFocus(c.id)}>집중하기</button>}
                     {sat.ok ? <button className="btn btn-sm btn-copper" onClick={() => goTo('shipping')}>출하장에서 배달 →</button> : <button className="btn btn-sm btn-ghost" onClick={() => goTo('workshop')}>공방에서 준비하기 →</button>}

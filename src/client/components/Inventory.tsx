@@ -4,32 +4,10 @@ import { MATERIALS, PHASE_LABEL } from '../../shared/chemistry/materials';
 import { PROCESSES, applicableProcesses, applyProcess, lotComponents } from '../../shared/chemistry/processes';
 import { EQUIPMENT } from '../../shared/chemistry/equipment';
 import { tagLabel, processEnergy, processFee } from '../../shared/engine/commands';
-import { Formula, Mat, Modal, Tokens, EnergyIcon, CoinIcon } from './common';
+import { Formula, Mat, Modal, EnergyIcon, CoinIcon } from './common';
+import { MaterialArt } from './Art';
 import { ParticleView } from './Particles';
 import { lotMassGrams } from '../../shared/engine/ledger';
-
-/** 창고의 재료 한 묶음. 이름 먼저, 개수, 화학식은 작게. */
-export function LotChip({ lot, selected, onClick }: { lot: Lot; selected?: boolean; onClick: () => void }) {
-  const comps = lotComponents(lot);
-  const needsSort = lot.kind === 'mixture' || (lot.kind === 'pure' && lot.materialId === 'H2O_g');
-  return (
-    <button className={`lot ${lot.kind === 'mixture' ? 'mix' : ''} ${selected ? 'sel' : ''}`} onClick={onClick} aria-label={`창고 ${comps.map((c) => `${MATERIALS[c.materialId]!.displayName} ${c.units}개`).join(', ')}`}>
-      {lot.kind === 'pure' ? (
-        <>
-          <span className="lname"><Mat id={lot.materialId!} count={lot.units} /></span>
-          <Tokens materialId={lot.materialId!} units={lot.units} />
-          <span className="lmeta">{lot.tags.map((t) => <span key={t} className={`tag ${lot.grade === 'purchased' ? '' : 'tag-teal'}`} style={{ padding: '0 5px' }}>{tagLabel(t)}</span>)}{needsSort && <span className="tag tag-amber" style={{ padding: '0 5px' }}>응축하기 필요</span>}</span>
-        </>
-      ) : (
-        <>
-          <span className="lname">섞인 것 <span className="muted small">{lot.tags.includes('gasMixture') ? '(기체)' : lot.tags.includes('suspension') ? '(고체+용액)' : '(액체)'}</span></span>
-          <span className="lmeta">{comps.map((c) => <span key={c.materialId} className="tag tag-copper" style={{ padding: '0 5px' }}>{MATERIALS[c.materialId]!.displayName} {c.units}</span>)}</span>
-          <span className="tag tag-amber" style={{ padding: '0 5px' }}>정리하기 필요</span>
-        </>
-      )}
-    </button>
-  );
-}
 
 export function LotDetail({ lot, team, canAct, onProcess, onClose }: { lot: Lot; team: TeamState; canAct: boolean; onProcess: (pid: string) => void; onClose: () => void }) {
   const comps = lotComponents(lot);
@@ -38,12 +16,13 @@ export function LotDetail({ lot, team, canAct, onProcess, onClose }: { lot: Lot;
   return (
     <Modal title={lot.kind === 'pure' ? <Mat id={lot.materialId!} count={lot.units} /> : '섞인 것'} onClose={onClose}>
       <div className="stack">
+        <div className="lot-hero"><MaterialArt lot={lot} size={96} showPhase /><span className="small">{lot.kind === 'pure' ? '그림은 보관 용기예요. 정확한 이름·수량·상태는 글자로 표시해요.' : '섞인 것은 순물질이 아니에요. 정리하기로 나누면 쓸 수 있어요.'}</span></div>
         <div className="particles">{comps.map((c) => <ParticleView key={c.materialId} materialId={c.materialId} count={c.units} />)}</div>
         <div className="row">
           {comps.map((c) => { const m = MATERIALS[c.materialId]!; return <span key={c.materialId} className="tag tag-teal">{m.displayName} · {PHASE_LABEL[m.phase]} · {m.compositionClass === 'element' ? '홑원소 물질' : m.compositionClass === 'compound' ? '화합물' : '혼합물'} · {m.structureClass === 'ionic' ? '이온 결합' : m.structureClass === 'molecular' ? '분자' : m.structureClass === 'metallic' ? '금속' : '그물 구조'}</span>; })}
         </div>
         <p className="small">{comps.map((c) => MATERIALS[c.materialId]!.blurb).join(' ')}</p>
-        <p className="muted small">어디서 왔나: {lot.origin.type === 'purchase' ? '가게에서 삼' : lot.origin.type === 'bundle' ? '시작 재료' : lot.origin.chain.map((x) => (x.startsWith('R') ? '만들기' : PROCESSES[x]?.name ?? x)).join(' → ')} · {lot.tags.map(tagLabel).join(', ')} · 무게 약 {lotMassGrams(lot)} g{lot.solvent > 0 ? ` · 함께 있는 물 ${lot.solvent} (팔 수 없는 공정 용수)` : ''}</p>
+        <p className="muted small">어디서 왔나: {lot.origin.type === 'purchase' ? '가게에서 삼' : lot.origin.type === 'bundle' ? '시작 재료' : lot.origin.type === 'support' ? '길드 연구지원품' : lot.origin.chain.map((x) => (x.startsWith('R') ? '만들기' : PROCESSES[x]?.name ?? x)).join(' → ')} · {lot.tags.map(tagLabel).join(', ')} · 무게 약 {lotMassGrams(lot)} g{lot.solvent > 0 ? ` · 함께 있는 물 ${lot.solvent} (팔 수 없는 공정 용수)` : ''}</p>
         {lot.grade === 'purchased' && <p className="small" style={{ background: 'var(--amber-soft)', padding: 8, borderRadius: 8 }}>가게에서 산 재료는 그대로 배달할 수 없어요. 만들기나 정리하기를 거쳐야 해요.</p>}
         <div className="divider" />
         <div className="card-title">정리하기 (기다림 없이 바로 창고에 들어와요)</div>

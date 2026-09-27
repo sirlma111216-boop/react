@@ -41,7 +41,7 @@ export function GameScreen({ view, client, onLeave, headerExtra }: { view: Clien
     if (game.round !== lastRound) {
       setLastRound(game.round);
       const done = team?.processes.length ?? 0;
-      setSummary(`${game.round}라운드 시작 · 완성품이 트레이에 들어왔어요${done ? ` · 아직 만드는 중 ${done}개` : ''} · 시세가 새로 정해졌어요`);
+      setSummary(`${game.round}라운드 시작 · 완성품이 트레이에 들어왔어요${done ? ` · 아직 만드는 중 ${done}개` : ''} · 시세가 새로 정해졌어요${game.rules >= 3 ? ' · 공방에 연구지원품 도착' : ''}`);
       setTimeout(() => setSummary(null), 6000);
     }
   }, [game.round, lastRound, team?.processes.length]);
@@ -64,9 +64,11 @@ export function GameScreen({ view, client, onLeave, headerExtra }: { view: Clien
     if (deliverable) b.shipping = `배달 ${deliverable}`;
     const sortable = team.lots.filter((l) => l.kind === 'mixture' || (l.kind === 'pure' && l.materialId === 'H2O_g')).length;
     if (sortable) b.workshop = `정리 ${sortable}`;
+    // V3: 이번 라운드 지원품이 도착했으면 공방 탭에 배지 (다른 장소 화면을 강제로 바꾸지 않는다)
+    if (team.support && team.support.status === 'pending' && team.support.round === game.round) b.workshop = '지원품';
     if (team.contracts.length === 0 && team.offers.length) b.orders = `새 ${team.offers.length}`;
     return b;
-  }, [team]);
+  }, [team, game.round]);
 
   if (game.phase === 'finished' && game.results) return <ResultsScreen view={view} onLeave={onLeave} />;
 
@@ -82,7 +84,7 @@ export function GameScreen({ view, client, onLeave, headerExtra }: { view: Clien
   }
 
   const placeEl = place === 'orders' ? <OrdersPlace view={view} send={send} focusId={focusId} setFocus={setFocus} canPlan={canPlan} goTo={goTo} />
-    : place === 'workshop' ? <WorkshopPlace view={view} send={send} focusId={focusId} canAct={canAct} goTo={goTo} highlight={highlight} />
+    : place === 'workshop' ? <WorkshopPlace view={view} send={send} focusId={focusId} setFocus={setFocus} canAct={canAct} goTo={goTo} highlight={highlight} />
     : place === 'store' ? <StorePlace view={view} send={send} focusId={focusId} canAct={canAct} goTo={goTo} highlight={highlight} />
     : <ShippingPlace view={view} send={send} focusId={focusId} setFocus={setFocus} canAct={canAct} goTo={goTo} highlight={highlight} />;
 

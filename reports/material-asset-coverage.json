@@ -1,0 +1,2189 @@
+{
+  "generatedAt": "2026-09-27T01:19:43.513Z",
+  "note": "코드의 MATERIALS 정의에서 추출(문자열 검색 아님). 그림은 포장·보관 오브젝트이며 이름·화학식·수량·상태·품질은 코드가 표시한다.",
+  "summary": {
+    "materials": 39,
+    "mapped": 39,
+    "unmapped": 0,
+    "assets": 48,
+    "assetsOk": 48,
+    "assetsMissing": 0,
+    "problems": []
+  },
+  "materials": [
+    {
+      "materialId": "H2_g",
+      "name": "수소",
+      "formula": "H2",
+      "state": "g",
+      "stateLabel": "기체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-hydrogen",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "O2_g",
+      "name": "산소",
+      "formula": "O2",
+      "state": "g",
+      "stateLabel": "기체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-oxygen",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "N2_g",
+      "name": "질소",
+      "formula": "N2",
+      "state": "g",
+      "stateLabel": "기체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-nitrogen",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CH4_g",
+      "name": "메테인",
+      "formula": "CH4",
+      "state": "g",
+      "stateLabel": "기체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-methane",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CO2_g",
+      "name": "이산화탄소",
+      "formula": "CO2",
+      "state": "g",
+      "stateLabel": "기체",
+      "composition": "pure",
+      "usedIn": [
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-carbon-dioxide",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "NH3_g",
+      "name": "암모니아",
+      "formula": "NH3",
+      "state": "g",
+      "stateLabel": "기체",
+      "composition": "pure",
+      "usedIn": [
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-ammonia",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "HCl_g",
+      "name": "염화수소(기체)",
+      "formula": "HCl",
+      "state": "g",
+      "stateLabel": "기체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-hydrogen-chloride",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "H2O_g",
+      "name": "수증기",
+      "formula": "H2O",
+      "state": "g",
+      "stateLabel": "기체",
+      "composition": "pure",
+      "usedIn": [
+        "작업 카드",
+        "완성품 트레이",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-water-vapor",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "H2O_l",
+      "name": "물",
+      "formula": "H2O",
+      "state": "l",
+      "stateLabel": "액체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-water",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "H2O2_aq",
+      "name": "과산화수소수",
+      "formula": "H2O2",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-hydrogen-peroxide",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "HCl_aq",
+      "name": "염산",
+      "formula": "HCl",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-hydrochloric-acid",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "NaOH_aq",
+      "name": "수산화나트륨 수용액",
+      "formula": "NaOH",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-sodium-hydroxide",
+      "variantBadge": "수용액",
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "NaCl_aq",
+      "name": "염화나트륨 수용액",
+      "formula": "NaCl",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "작업 카드",
+        "완성품 트레이",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-sodium-chloride",
+      "variantBadge": "수용액",
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CaCl2_aq",
+      "name": "염화칼슘 수용액",
+      "formula": "CaCl2",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-calcium-chloride",
+      "variantBadge": "수용액",
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "MgCl2_aq",
+      "name": "염화마그네슘 수용액",
+      "formula": "MgCl2",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "작업 카드",
+        "완성품 트레이",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-magnesium-chloride",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "ZnSO4_aq",
+      "name": "황산아연 수용액",
+      "formula": "ZnSO4",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "작업 카드",
+        "완성품 트레이",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-zinc-sulfate",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CuSO4_aq",
+      "name": "황산구리 수용액",
+      "formula": "CuSO4",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-copper-sulfate",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "Na2SO4_aq",
+      "name": "황산나트륨 수용액",
+      "formula": "Na2SO4",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "작업 카드",
+        "완성품 트레이",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-sodium-sulfate",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "FeSO4_aq",
+      "name": "황산철(II) 수용액",
+      "formula": "FeSO4",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "작업 카드",
+        "완성품 트레이",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-iron-sulfate",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "glucose_aq",
+      "name": "포도당 수용액",
+      "formula": "C6H12O6",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-glucose",
+      "variantBadge": "수용액",
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "ethanol_aq",
+      "name": "발효액(에탄올 수용액)",
+      "formula": "C2H5OH",
+      "state": "aq",
+      "stateLabel": "수용액",
+      "composition": "pure",
+      "usedIn": [
+        "작업 카드",
+        "완성품 트레이",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-ethanol",
+      "variantBadge": "발효액",
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "Mg_s",
+      "name": "마그네슘",
+      "formula": "Mg",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-magnesium",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "MgO_s",
+      "name": "산화마그네슘",
+      "formula": "MgO",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-magnesium-oxide",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "NaHCO3_s",
+      "name": "탄산수소나트륨",
+      "formula": "NaHCO3",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-sodium-bicarbonate",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "Na2CO3_s",
+      "name": "탄산나트륨",
+      "formula": "Na2CO3",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-sodium-carbonate",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CaCl2_s",
+      "name": "염화칼슘",
+      "formula": "CaCl2",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-calcium-chloride",
+      "variantBadge": "고체",
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CaO_s",
+      "name": "산화칼슘",
+      "formula": "CaO",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-calcium-oxide",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CaOH2_s",
+      "name": "수산화칼슘",
+      "formula": "Ca(OH)2",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-calcium-hydroxide",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CaCO3_s",
+      "name": "탄산칼슘",
+      "formula": "CaCO3",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-calcium-carbonate",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "NaCl_s",
+      "name": "염화나트륨(결정)",
+      "formula": "NaCl",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-sodium-chloride",
+      "variantBadge": "결정",
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "Zn_s",
+      "name": "아연",
+      "formula": "Zn",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-zinc",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "Cu_s",
+      "name": "구리",
+      "formula": "Cu",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-copper",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CuO_s",
+      "name": "산화구리(II)",
+      "formula": "CuO",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-copper-oxide",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "CuOH2_s",
+      "name": "수산화구리(II)",
+      "formula": "Cu(OH)2",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-copper-hydroxide",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "Fe_s",
+      "name": "철",
+      "formula": "Fe",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-iron",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "NH4Cl_s",
+      "name": "염화암모늄",
+      "formula": "NH4Cl",
+      "state": "s",
+      "stateLabel": "고체",
+      "composition": "pure",
+      "usedIn": [
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-ammonium-chloride",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "ethanol_l",
+      "name": "에탄올(정제)",
+      "formula": "C2H5OH",
+      "state": "l",
+      "stateLabel": "액체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-ethanol",
+      "variantBadge": "정제",
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "aceticAcid_l",
+      "name": "아세트산",
+      "formula": "CH3COOH",
+      "state": "l",
+      "stateLabel": "액체",
+      "composition": "pure",
+      "usedIn": [
+        "상점(구입)",
+        "재료 선반",
+        "작업 카드",
+        "완성품 트레이",
+        "연구지원품",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-acetic-acid",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "ethylAcetate_l",
+      "name": "아세트산에틸",
+      "formula": "CH3COOC2H5",
+      "state": "l",
+      "stateLabel": "액체",
+      "composition": "pure",
+      "usedIn": [
+        "작업 카드",
+        "완성품 트레이",
+        "의뢰소·의뢰 보드·출하장",
+        "재고 매입",
+        "결과 잔여 재고",
+        "도감"
+      ],
+      "assetId": "mat-ethyl-acetate",
+      "variantBadge": null,
+      "imageExists": true,
+      "missingReason": null
+    }
+  ],
+  "mixtures": [
+    {
+      "materialId": "mixture:mix-gas-mixture",
+      "name": "기체 혼합물",
+      "composition": "mixture",
+      "usedIn": [
+        "완성품 트레이",
+        "작업 카드(결과)",
+        "출하장 부족 안내"
+      ],
+      "assetId": "mix-gas-mixture",
+      "variantBadge": "성분 아이콘 합성",
+      "sources": [
+        "R04:CO2_g+H2O_g",
+        "R06:CO2_g+H2O_g",
+        "R20:NH3_g+N2_g+H2_g"
+      ],
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "mixture:mix-precipitate-mixture",
+      "name": "침전 혼합물",
+      "composition": "mixture",
+      "usedIn": [
+        "완성품 트레이",
+        "작업 카드(결과)",
+        "출하장 부족 안내"
+      ],
+      "assetId": "mix-precipitate-mixture",
+      "variantBadge": "성분 아이콘 합성",
+      "sources": [
+        "R07:CaCO3_s+NaCl_aq",
+        "R09:CaCO3_s+H2O_l",
+        "R13:Cu_s+ZnSO4_aq",
+        "R16:CuOH2_s+Na2SO4_aq",
+        "R18:Cu_s+FeSO4_aq"
+      ],
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "mixture:mix-organic-mixture",
+      "name": "유기 혼합물",
+      "composition": "mixture",
+      "usedIn": [
+        "완성품 트레이",
+        "작업 카드(결과)",
+        "출하장 부족 안내"
+      ],
+      "assetId": "mix-organic-mixture",
+      "variantBadge": "성분 아이콘 합성",
+      "sources": [
+        "R22:ethylAcetate_l+H2O_l+aceticAcid_l+ethanol_l"
+      ],
+      "imageExists": true,
+      "missingReason": null
+    },
+    {
+      "materialId": "mixture:mix-aqueous-mixture",
+      "name": "미분리 수용액",
+      "composition": "mixture",
+      "usedIn": [
+        "완성품 트레이",
+        "작업 카드(결과)",
+        "출하장 부족 안내"
+      ],
+      "assetId": "mix-aqueous-mixture",
+      "variantBadge": "성분 아이콘 합성",
+      "sources": [
+        "P02 거르기 후 용질이 두 종 이상 남은 여액"
+      ],
+      "imageExists": true,
+      "missingReason": null
+    }
+  ],
+  "assets": [
+    {
+      "id": "mat-hydrogen",
+      "kind": "material",
+      "label": "수소",
+      "hint": "H2 / g",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-hydrogen-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 3.9
+        },
+        {
+          "file": "mat-hydrogen.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 9.1
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-oxygen",
+      "kind": "material",
+      "label": "산소",
+      "hint": "O2 / g",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-oxygen-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5.1
+        },
+        {
+          "file": "mat-oxygen.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 12
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-water",
+      "kind": "material",
+      "label": "물",
+      "hint": "H2O / l",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-water-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.8
+        },
+        {
+          "file": "mat-water.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 12
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-water-vapor",
+      "kind": "material",
+      "label": "수증기",
+      "hint": "H2O / g",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-water-vapor-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 6.1
+        },
+        {
+          "file": "mat-water-vapor.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 14.4
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-hydrogen-peroxide",
+      "kind": "material",
+      "label": "과산화수소수",
+      "hint": "H2O2 / aq",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-hydrogen-peroxide-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.6
+        },
+        {
+          "file": "mat-hydrogen-peroxide.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.7
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-methane",
+      "kind": "material",
+      "label": "메테인",
+      "hint": "CH4 / g",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-methane-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5.3
+        },
+        {
+          "file": "mat-methane.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 12.6
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-magnesium",
+      "kind": "material",
+      "label": "마그네슘",
+      "hint": "Mg / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-magnesium-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.2
+        },
+        {
+          "file": "mat-magnesium.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 9.3
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-magnesium-oxide",
+      "kind": "material",
+      "label": "산화마그네슘",
+      "hint": "MgO / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-magnesium-oxide-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5.7
+        },
+        {
+          "file": "mat-magnesium-oxide.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 13.5
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-sodium-bicarbonate",
+      "kind": "material",
+      "label": "탄산수소나트륨",
+      "hint": "NaHCO3 / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-sodium-bicarbonate-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.5
+        },
+        {
+          "file": "mat-sodium-bicarbonate.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.9
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-sodium-carbonate",
+      "kind": "material",
+      "label": "탄산나트륨",
+      "hint": "Na2CO3 / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-sodium-carbonate-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.9
+        },
+        {
+          "file": "mat-sodium-carbonate.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 11.5
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-carbon-dioxide",
+      "kind": "material",
+      "label": "이산화탄소",
+      "hint": "CO2 / g",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-carbon-dioxide-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4
+        },
+        {
+          "file": "mat-carbon-dioxide.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 9.3
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-calcium-chloride",
+      "kind": "material",
+      "label": "염화칼슘",
+      "hint": "CaCl2 / stock",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-calcium-chloride-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.6
+        },
+        {
+          "file": "mat-calcium-chloride.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.5
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-calcium-carbonate",
+      "kind": "material",
+      "label": "탄산칼슘",
+      "hint": "CaCO3 / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-calcium-carbonate-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5.1
+        },
+        {
+          "file": "mat-calcium-carbonate.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 12.4
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-sodium-chloride",
+      "kind": "material",
+      "label": "염화나트륨",
+      "hint": "NaCl / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-sodium-chloride-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5.8
+        },
+        {
+          "file": "mat-sodium-chloride.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 14.9
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-calcium-oxide",
+      "kind": "material",
+      "label": "산화칼슘",
+      "hint": "CaO / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-calcium-oxide-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.8
+        },
+        {
+          "file": "mat-calcium-oxide.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 11.1
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-calcium-hydroxide",
+      "kind": "material",
+      "label": "수산화칼슘",
+      "hint": "Ca(OH)2 / stock",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-calcium-hydroxide-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.5
+        },
+        {
+          "file": "mat-calcium-hydroxide.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.5
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-hydrochloric-acid",
+      "kind": "material",
+      "label": "염산 수용액",
+      "hint": "HCl / aq",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-hydrochloric-acid-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 3.9
+        },
+        {
+          "file": "mat-hydrochloric-acid.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 9
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-hydrogen-chloride",
+      "kind": "material",
+      "label": "염화수소 기체",
+      "hint": "HCl / g",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-hydrogen-chloride-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 3.3
+        },
+        {
+          "file": "mat-hydrogen-chloride.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 7.7
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-sodium-hydroxide",
+      "kind": "material",
+      "label": "수산화나트륨",
+      "hint": "NaOH / stock",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-sodium-hydroxide-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4
+        },
+        {
+          "file": "mat-sodium-hydroxide.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 9.2
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-magnesium-chloride",
+      "kind": "material",
+      "label": "염화마그네슘",
+      "hint": "MgCl2 / aq",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-magnesium-chloride-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4
+        },
+        {
+          "file": "mat-magnesium-chloride.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 9.1
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-zinc",
+      "kind": "material",
+      "label": "아연",
+      "hint": "Zn / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-zinc-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.7
+        },
+        {
+          "file": "mat-zinc.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.8
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-copper-sulfate",
+      "kind": "material",
+      "label": "황산구리(II)",
+      "hint": "CuSO4 / aq",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-copper-sulfate-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.7
+        },
+        {
+          "file": "mat-copper-sulfate.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.1
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-zinc-sulfate",
+      "kind": "material",
+      "label": "황산아연",
+      "hint": "ZnSO4 / aq",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-zinc-sulfate-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.7
+        },
+        {
+          "file": "mat-zinc-sulfate.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.6
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-copper",
+      "kind": "material",
+      "label": "구리",
+      "hint": "Cu / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-copper-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.9
+        },
+        {
+          "file": "mat-copper.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 11.2
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-copper-oxide",
+      "kind": "material",
+      "label": "산화구리(II)",
+      "hint": "CuO / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-copper-oxide-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5.5
+        },
+        {
+          "file": "mat-copper-oxide.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 13.9
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-copper-hydroxide",
+      "kind": "material",
+      "label": "수산화구리(II)",
+      "hint": "Cu(OH)2 / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-copper-hydroxide-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4
+        },
+        {
+          "file": "mat-copper-hydroxide.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 8.6
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-sodium-sulfate",
+      "kind": "material",
+      "label": "황산나트륨",
+      "hint": "Na2SO4 / aq",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-sodium-sulfate-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 3.8
+        },
+        {
+          "file": "mat-sodium-sulfate.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 8.4
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-iron",
+      "kind": "material",
+      "label": "철",
+      "hint": "Fe / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-iron-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.3
+        },
+        {
+          "file": "mat-iron.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.8
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-iron-sulfate",
+      "kind": "material",
+      "label": "황산철(II)",
+      "hint": "FeSO4 / aq",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-iron-sulfate-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.1
+        },
+        {
+          "file": "mat-iron-sulfate.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 9.5
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-nitrogen",
+      "kind": "material",
+      "label": "질소",
+      "hint": "N2 / g",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-nitrogen-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 3.7
+        },
+        {
+          "file": "mat-nitrogen.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 8
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-ammonia",
+      "kind": "material",
+      "label": "암모니아",
+      "hint": "NH3 / g",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-ammonia-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.3
+        },
+        {
+          "file": "mat-ammonia.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 9.5
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-ammonium-chloride",
+      "kind": "material",
+      "label": "염화암모늄",
+      "hint": "NH4Cl / s",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-ammonium-chloride-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.6
+        },
+        {
+          "file": "mat-ammonium-chloride.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.9
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-glucose",
+      "kind": "material",
+      "label": "포도당",
+      "hint": "C6H12O6 / stock",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-glucose-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5
+        },
+        {
+          "file": "mat-glucose.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 11.1
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-ethanol",
+      "kind": "material",
+      "label": "에탄올",
+      "hint": "C2H5OH / stock",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-ethanol-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.7
+        },
+        {
+          "file": "mat-ethanol.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 11.4
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-acetic-acid",
+      "kind": "material",
+      "label": "아세트산",
+      "hint": "CH3COOH / stock",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-acetic-acid-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.5
+        },
+        {
+          "file": "mat-acetic-acid.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 11
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mat-ethyl-acetate",
+      "kind": "material",
+      "label": "아세트산에틸",
+      "hint": "CH3COOC2H5 / stock",
+      "ok": true,
+      "files": [
+        {
+          "file": "mat-ethyl-acetate-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.3
+        },
+        {
+          "file": "mat-ethyl-acetate.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.5
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "aid-manganese-dioxide",
+      "kind": "aid",
+      "label": "이산화망가니즈 촉매 소재",
+      "hint": "MnO2 / catalyst",
+      "ok": true,
+      "files": [
+        {
+          "file": "aid-manganese-dioxide-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.4
+        },
+        {
+          "file": "aid-manganese-dioxide.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.2
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "aid-sulfuric-acid-catalyst",
+      "kind": "aid",
+      "label": "산 촉매 소재",
+      "hint": "H2SO4 / catalyst",
+      "ok": true,
+      "files": [
+        {
+          "file": "aid-sulfuric-acid-catalyst-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.8
+        },
+        {
+          "file": "aid-sulfuric-acid-catalyst.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 11.1
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "aid-yeast",
+      "kind": "aid",
+      "label": "효모 공정 보조물",
+      "hint": "biological / biocatalyst",
+      "ok": true,
+      "files": [
+        {
+          "file": "aid-yeast-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5
+        },
+        {
+          "file": "aid-yeast.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 11.4
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mix-gas-mixture",
+      "kind": "mixture",
+      "label": "기체 혼합물",
+      "hint": "예: 이산화탄소 + 수증기",
+      "ok": true,
+      "files": [
+        {
+          "file": "mix-gas-mixture-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 6.6
+        },
+        {
+          "file": "mix-gas-mixture.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 16.2
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mix-precipitate-mixture",
+      "kind": "mixture",
+      "label": "침전 혼합물",
+      "hint": "예: 탄산칼슘 + 염화나트륨 수용액",
+      "ok": true,
+      "files": [
+        {
+          "file": "mix-precipitate-mixture-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5
+        },
+        {
+          "file": "mix-precipitate-mixture.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 11.9
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mix-aqueous-mixture",
+      "kind": "mixture",
+      "label": "미분리 수용액",
+      "hint": "여러 용질이 섞인 용액",
+      "ok": true,
+      "files": [
+        {
+          "file": "mix-aqueous-mixture-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.6
+        },
+        {
+          "file": "mix-aqueous-mixture.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.9
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "mix-organic-mixture",
+      "kind": "mixture",
+      "label": "유기 혼합물",
+      "hint": "예: 에스터 + 물 + 잔류 반응물",
+      "ok": true,
+      "files": [
+        {
+          "file": "mix-organic-mixture-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.5
+        },
+        {
+          "file": "mix-organic-mixture.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.3
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "obj-support-closed",
+      "kind": "object",
+      "label": "연구지원품 닫힌 상자",
+      "hint": "라운드 배송",
+      "ok": true,
+      "files": [
+        {
+          "file": "obj-support-closed-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5.7
+        },
+        {
+          "file": "obj-support-closed.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 13.5
+        },
+        {
+          "file": "obj-support-closed-l.webp",
+          "ok": true,
+          "width": 512,
+          "height": 512,
+          "alpha": true,
+          "kb": 36
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "obj-support-open",
+      "kind": "object",
+      "label": "연구지원품 열린 배송 트레이",
+      "hint": "실제 추첨 아이콘을 얹음",
+      "ok": true,
+      "files": [
+        {
+          "file": "obj-support-open-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 4.6
+        },
+        {
+          "file": "obj-support-open.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 10.4
+        },
+        {
+          "file": "obj-support-open-l.webp",
+          "ok": true,
+          "width": 512,
+          "height": 512,
+          "alpha": true,
+          "kb": 25
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "obj-support-return",
+      "kind": "object",
+      "label": "반송할 지원품 상자",
+      "hint": "반송 선택 표시",
+      "ok": true,
+      "files": [
+        {
+          "file": "obj-support-return-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5.5
+        },
+        {
+          "file": "obj-support-return.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 12.7
+        },
+        {
+          "file": "obj-support-return-l.webp",
+          "ok": true,
+          "width": 512,
+          "height": 512,
+          "alpha": true,
+          "kb": 31
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "obj-recycling-crate",
+      "kind": "object",
+      "label": "잉여 재고 회수 상자",
+      "hint": "재고 매입 바구니",
+      "ok": true,
+      "files": [
+        {
+          "file": "obj-recycling-crate-s.webp",
+          "ok": true,
+          "width": 128,
+          "height": 128,
+          "alpha": true,
+          "kb": 5.1
+        },
+        {
+          "file": "obj-recycling-crate.webp",
+          "ok": true,
+          "width": 256,
+          "height": 256,
+          "alpha": true,
+          "kb": 12.4
+        },
+        {
+          "file": "obj-recycling-crate-l.webp",
+          "ok": true,
+          "width": 512,
+          "height": 512,
+          "alpha": true,
+          "kb": 30.3
+        }
+      ],
+      "occupancy": 0.88
+    },
+    {
+      "id": "obj-mission-board",
+      "kind": "object",
+      "label": "작업대 의뢰 보드",
+      "hint": "가로형 1000px, border-image",
+      "ok": true,
+      "files": [
+        {
+          "file": "obj-mission-board.webp",
+          "ok": true,
+          "width": 1000,
+          "height": 388,
+          "alpha": true,
+          "kb": 27.7
+        }
+      ],
+      "occupancy": null
+    }
+  ]
+}

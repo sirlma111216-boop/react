@@ -38,6 +38,7 @@ export function TitleScreen({ onJoin, onPractice }: { onJoin: (r: JoinResult) =>
         )}
         <div className="row" style={{ justifyContent: 'center', marginTop: 14 }}>
           <button className="btn btn-sm btn-ghost" onClick={() => setCodex(true)}>도감·규칙</button>
+          <a className="btn btn-sm btn-ghost" href="/asset-review">에셋 검수</a>
           <button className="btn btn-sm btn-ghost" onClick={() => setAudioOpen((v) => !v)}>소리 설정</button>
         </div>
         {audioOpen && <AudioSettings />}

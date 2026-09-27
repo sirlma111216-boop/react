@@ -7,7 +7,7 @@ import { deriveMaterialValues } from './values';
  * V3(econ-3.x): 시작 코인 24, 고정 시작 묶음 대신 매 라운드 연구지원품, 잉여 재고 매입(상한 있음).
  */
 const BASE_ECONOMY: EconomyConfig = {
-  version: 'econ-3.0',
+  version: 'econ-3.2',
   startCoins: 24,
   startEnergy: 6,
   energyCap: 12,
@@ -37,7 +37,7 @@ const BASE_ECONOMY: EconomyConfig = {
     HCl_aq: 2, NaOH_aq: 2, CaCO3_s: 2, Zn_s: 4, CuSO4_aq: 4, CuO_s: 4, Fe_s: 3, N2_g: 1, glucose_aq: 4, ethanol_l: 4, aceticAcid_l: 3, HCl_g: 3,
   },
   contractRewards: {
-    C01: 30, C02: 24, C03: 26, C04: 30, C05: 18, C06: 12, C07: 48, C08: 24, C09: 36, C10: 32, C11: 42, C12: 56, C13: 36, C14: 54,
+    C01: 30, C02: 24, C03: 30, C04: 30, C05: 18, C06: 12, C07: 48, C08: 24, C09: 36, C10: 32, C11: 42, C12: 56, C13: 36, C14: 54,
   },
   equipmentPrices: { U01: 14, U02: 10, U03: 10, U04: 10, U05: 12, U06: 14, U07: 12, U08: 8, U09: 8, U10: 6 },
   reactionEnergy: {},
@@ -49,10 +49,10 @@ const BASE_ECONOMY: EconomyConfig = {
   ],
   support: {
     finishedUnits: 1,
-    processUnits: [2, 3],
+    processUnits: [3, 4],
     basicUnits: [8, 10],
     tolerance: 0.15,
-    weight: { finished: 1, process: 1.25, basic: 1 },
+    weight: { finished: 1, process: 1.25, basic: 1.25 },
     finishedExclude: ['ethylAcetate_l', 'NH4Cl_s'],
   },
   buyback: { rate: 0.3, roundCap: 5, gameCap: 20, baseRounds: 10, perRound: 1 },

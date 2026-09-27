@@ -30,7 +30,7 @@ export interface Bot {
 }
 
 /**
- * 지원품 묶음의 쓸모 점수: 보유·제안 주문의 계획에 필요한 원료는 상점 가격의 1.5배, 주문 조건에 맞는 완성 소재는 주문 단가만큼,
+ * 지원품 묶음의 쓸모 점수: 보유·제안 주문의 계획에 필요한 원료는 상점 가격의 1.5배, 주문 조건에 맞는 완성 소재는 주문 단가의 1.5배,
  * 나머지는 재료 가치의 40%만 친다. 가장 쓸모없는 묶음을 반송한다.
  */
 export function supportScores(state: GameState, teamId: string, map: ReachabilityMap): number[] {
@@ -48,7 +48,8 @@ export function supportScores(state: GameState, teamId: string, map: Reachabilit
     for (const it of b.items) {
       const probe = { id: 'p', kind: 'pure' as const, materialId: it.materialId, units: it.units, grade: 'support' as const, tags: it.tags, solvent: 0, origin: { type: 'support' as const, chain: [] } };
       const req = reqs.find((x) => lotUsableFor(probe, x.r));
-      if (req) { s += req.unit * it.units; continue; }
+      // 완성 소재는 원료값이 아니라 아낀 행동·에너지·라운드만큼 값지다 (주문 단가의 1.5배로 친다)
+      if (req) { s += req.unit * it.units * 1.5; continue; }
       const useful = Math.min(it.units, left[it.materialId] ?? 0);
       left[it.materialId] = (left[it.materialId] ?? 0) - useful;
       s += useful * replacementValue(state, it.materialId) * 1.5 + (it.units - useful) * replacementValue(state, it.materialId) * 0.4;

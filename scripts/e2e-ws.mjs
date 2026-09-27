@@ -1,5 +1,5 @@
 /**
- * 실서버(wrangler dev 또는 배포 URL) 통합 테스트 — 수동 라운드(V2).
+ * 실서버(wrangler dev 또는 배포 URL) 통합 테스트 — 수동 라운드(V2) + 연구지원품·재고 매입(V3).
  * 교사 로그인 → 방 생성 → 학생 N명 입장 → 팀장 임명 → 팀 생성·가입 → 시작 →
  * 명령·중복·권한·재접속 → 준비 완료로 라운드 진행(정산 1회 검증, 취소·멈춤·건너뛰기 경합) → 완주.
  * 사용: node scripts/e2e-ws.mjs [baseUrl] [students] [full=1]
@@ -91,7 +91,6 @@ class Client {
   const joins = await Promise.all(others.map((s, i) => s.send({ type: 'joinTeam', teamId: teamIds[i % TEAMS] })));
   check('학생 팀 가입', joins.every((j) => j.ok), `${joins.filter((j) => j.ok).length}/${others.length}`);
   check('두 번 가입 거절', !(await others[0].send({ type: 'joinTeam', teamId: teamIds[1] })).ok);
-  check('팀장 시작 재료 선택', (await leaders[0].send({ type: 'setBundle', bundleId: 'carbonate' })).ok);
   check('시간제 명령은 수동 방에서 거절', !(await teacher.send({ type: 'setTimerScale', scale: 1 })).ok);
   for (const l of leaders) await l.send({ type: 'ready', on: true });
   check('게임 시작', (await teacher.send({ type: 'start' })).ok);
@@ -103,11 +102,35 @@ class Client {
 
   // 팀별 담당자 찾기
   const opOf = (teamId) => { const gt = teacher.view.teacherTeams.find((t) => t.id === teamId); return students.find((s) => s.playerId === gt.operatorId); };
+  // V3: 담당자가 이번 라운드 연구지원품을 고른다 (기초 원료 상자 반송)
+  const pickSupport = async (o) => {
+    if (!o) return { ok: false };
+    await o.waitView((v) => v.game?.myTeam?.support?.round === v.game?.round, 5000).catch(() => {});
+    const g = o.view.game.myTeam.support;
+    if (!g || g.status !== 'pending') return { ok: true, skipped: true };
+    return o.send({ type: 'team', cmd: { type: 'chooseSupport', grantId: g.grantId, returnIndex: 2 } });
+  };
+  check('V3: 시작 코인 24 · 고정 시작 재료 없음', teacher.view.teacherTeams.every((t) => t.coins === 24 && t.lots.length === 0));
+  check('V3: 모든 팀에 지원품 3묶음 대기', teacher.view.teams.every((t) => t.supportPending) && teacher.view.teacherTeams.every((t) => t.support?.bundles?.length === 3));
   await leaders[0].waitView((v) => v.game?.phase === 'execute');
   const team0 = leaders[0].view.game.myTeam;
   const members0 = leaders[0].view.teams.find((t) => t.id === team0.id).members;
   const op = opOf(team0.id);
   const nonOp = students.find((s) => members0.includes(s.playerId) && s.playerId !== op.playerId);
+  check('V3: 지원품 선택 전 구매 잠금', !(await op.send({ type: 'team', cmd: { type: 'procure', items: [{ materialId: 'O2_g', units: 1 }] } })).ok);
+  check('V3: 지원품 선택 전 준비 완료 잠금', !(await op.send({ type: 'team', cmd: { type: 'readyRound', on: true } })).ok);
+  if (nonOp) {
+    await nonOp.waitView((v) => !!v.game?.myTeam?.support);
+    check('V3: 팀원은 같은 지원품 묶음을 본다', JSON.stringify(nonOp.view.game.myTeam.support.bundles) === JSON.stringify(team0.support.bundles));
+    check('V3: 차례 아닌 팀원의 지원품 확정 거절', !(await nonOp.send({ type: 'team', cmd: { type: 'chooseSupport', grantId: team0.support.grantId, returnIndex: 0 } })).ok);
+    check('V3: 팀원의 반송 제안 핑 허용', (await nonOp.send({ type: 'team', cmd: { type: 'pin', playerId: 'x', target: `support:${team0.support.grantId}:0`, label: '반송 제안' } })).ok);
+  }
+  const sp = await pickSupport(op);
+  check('V3: 담당자 지원품 확정', sp.ok, sp.error ?? '');
+  check('V3: 지원품 두 번 확정 거절', !(await op.send({ type: 'team', cmd: { type: 'chooseSupport', grantId: team0.support.grantId, returnIndex: 1 } })).ok);
+  for (const tid of teamIds.slice(1)) await pickSupport(opOf(tid));
+  await teacher.waitView((v) => v.teams.every((t) => !t.supportPending), 5000).catch(() => {});
+  check('V3: 모든 팀 지원품 입고(2묶음)', teacher.view.teacherTeams.every((t) => t.support?.status === 'received' && t.lots.length > 0));
   if (nonOp) check('차례 아닌 팀원의 실행 거절', !(await nonOp.send({ type: 'team', cmd: { type: 'procure', items: [{ materialId: 'O2_g', units: 1 }] } })).ok);
   if (nonOp) check('차례 아닌 팀원의 추천 허용', (await nonOp.send({ type: 'team', cmd: { type: 'pin', playerId: 'x', target: 'reaction:R01', label: '추천' } })).ok);
   if (nonOp) check('차례 아닌 팀원의 준비 완료 거절', !(await nonOp.send({ type: 'team', cmd: { type: 'readyRound', on: true } })).ok);
@@ -124,6 +147,7 @@ class Client {
   // 재접속
   op.close(); await op.closed; op.open(); await op.ready; await op.waitView((v) => !!v.game);
   check('재접속 후 상태 복구', op.view.game.myTeam.id === team0.id && op.view.game.round === 1);
+  check('V3: 재접속해도 지원품 내용·상태 그대로(재추첨 없음)', JSON.stringify(op.view.game.myTeam.support.bundles) === JSON.stringify(team0.support.bundles) && op.view.game.myTeam.support.status === 'received');
   // 벽시계 경과에도 라운드가 그대로 (5초)
   await sleep(5000);
   check('시간이 흘러도 라운드·행동이 그대로', teacher.view.game.round === 1 && op.view.game.myTeam.actionsLeft === op.view.game.config.actionsPerRound - 1);
@@ -148,22 +172,42 @@ class Client {
   check('모든 팀 준비 → 정산 정확히 1회 (2라운드)', teacher.view.game.round === 2 && teacher.view.game.roundVersion === 1);
   check('다음 라운드 준비 상태 초기화', teacher.view.game.readyCount === 0);
   check('차례가 다음 팀원으로 바뀜', teacher.view.teacherTeams.some((t) => t.operatorId !== op.playerId) || TEAMS === 0);
-  // 교사 건너뛰기 + 중복 준비 동시 도착
+  check('V3: 2라운드 새 지원품 대기', teacher.view.teams.every((t) => t.supportPending));
+  // 교사 건너뛰기(지원품 미선택 → 수령 포기) + 중복 준비 동시 도착
   const opsNow = teamIds.map(opOf);
+  for (const o of opsNow.slice(1)) await pickSupport(o);
   await Promise.all([teacher.send({ type: 'skipTeam', teamId: teamIds[0] }), ...opsNow.slice(1).map((o) => o.send({ type: 'team', cmd: { type: 'readyRound', on: true } })), ...opsNow.slice(1).map((o) => o.send({ type: 'team', cmd: { type: 'readyRound', on: true } }))]);
   await teacher.waitView((v) => v.game.round === 3, 8000);
   await sleep(600);
   check('건너뛰기+동시 준비 → 정산 1회 (3라운드)', teacher.view.game.round === 3 && teacher.view.game.roundVersion === 2);
+  check('V3: 건너뛴 팀은 2라운드 지원품 수령 포기로 기록', (teacher.view.teacherTeams.find((t) => t.id === teamIds[0]).supportHistory ?? []).some((h) => h.round === 2 && h.status === 'forfeited'));
+  // 교사 대리 선택 (기록됨)
+  check('V3: 교사 지원품 대리 선택', (await teacher.send({ type: 'teacherSupport', teamId: teamIds[0], returnIndex: 1 })).ok);
+  await teacher.waitView((v) => v.teacherTeams.find((t) => t.id === teamIds[0]).support?.resolvedBy === 'teacher', 5000).catch(() => {});
+  check('V3: 대리 선택은 교사로 기록', teacher.view.teacherTeams.find((t) => t.id === teamIds[0]).support?.resolvedBy === 'teacher');
+  check('V3: 학생의 대리 선택 명령 거절', !(await students[0].send({ type: 'teacherSupport', teamId: teamIds[1], returnIndex: 0 })).ok);
+  for (const tid of teamIds.slice(1)) await pickSupport(opOf(tid));
+  // 재고 매입: 라운드 1회
+  {
+    const so = opOf(teamIds[1]);
+    await so.waitView((v) => v.game.myTeam.support?.status === 'received', 5000).catch(() => {});
+    const lots = so.view.game.myTeam.lots.filter((l) => l.kind === 'pure').sort((a, b) => b.units - a.units);
+    const items = lots.slice(0, 2).map((l) => ({ lotId: l.id, units: Math.min(l.units, 5) }));
+    const s1r = await so.send({ type: 'team', cmd: { type: 'sellSurplus', items } });
+    check('V3: 재고 매입 응답(성공 또는 0코인·한도 안내)', s1r.ok || /0코인|한도/.test(s1r.error ?? ''), s1r.error ?? '');
+    if (s1r.ok) check('V3: 같은 라운드 두 번째 매입 거절', !(await so.send({ type: 'team', cmd: { type: 'sellSurplus', items: [{ lotId: lots[0].id, units: 1 }] } })).ok);
+  }
   check('학생의 건너뛰기 거절', !(await students[0].send({ type: 'skipTeam', teamId: teamIds[0] })).ok);
   check('견적 버전 불일치 배달 거절', (await opOf(teamIds[0]).send({ type: 'team', cmd: { type: 'deliver', contractId: 'nope', quoteVersion: 1 } })).error !== undefined);
   if (FULL) {
     let guard = 0;
     while (teacher.view.room.status !== 'finished' && guard++ < 12) {
       const round = teacher.view.game.round;
-      for (const tid of teamIds) { const o = opOf(tid); if (o) await o.send({ type: 'team', cmd: { type: 'readyRound', on: true } }); }
+      for (const tid of teamIds) { const o = opOf(tid); if (o) { await pickSupport(o); await o.send({ type: 'team', cmd: { type: 'readyRound', on: true } }); } }
       await teacher.waitView((v) => v.room.status === 'finished' || v.game.round > round, 8000).catch(() => {});
     }
     check('6라운드 완주·결과 생성', teacher.view.room.status === 'finished' && Array.isArray(teacher.view.game.results));
+    check('V3: 결과에 잔여 재고 요약(점수 영향 없음)', teacher.view.game.results.every((r) => Array.isArray(r.leftover) && r.asset === r.coins + r.salvage));
     const ops = new Set(); for (const s of students) for (const t of s.toasts) if (t.includes('당신 차례')) ops.add(s.name);
     check('차례가 여러 팀원에게 순환', ops.size > TEAMS, `${ops.size}명이 차례 알림 수신`);
     const exp = await api(`/api/rooms/${code}/export`, { headers: { 'x-teacher-key': key } });

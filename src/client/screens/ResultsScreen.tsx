@@ -5,6 +5,7 @@ import { CONTRACTS } from '../../shared/chemistry/contracts';
 import { Emblem } from '../components/Emblem';
 import { imageUrl } from '../lib/assets';
 import { audio } from '../lib/audio';
+import { MaterialArt } from '../components/Art';
 
 export function ResultsScreen({ view, onLeave, teacherExport }: { view: ClientView; onLeave: () => void; teacherExport?: () => void }) {
   const results = view.game?.results ?? [];
@@ -23,14 +24,16 @@ export function ResultsScreen({ view, onLeave, teacherExport }: { view: ClientVi
     <div className="screen">
       <div className={`bg-full ${bg ? '' : 'bg-fallback-results'}`} style={bg ? { backgroundImage: `url(${bg})` } : undefined} />
       <div className="bg-content results">
-        <div className="center" style={{ marginBottom: 16 }}><h1 style={{ color: 'var(--teal)', fontSize: 30 }}>오늘의 공방 문을 닫습니다</h1><p className="muted">최종 점수 = 코인 + 산 장비 값의 절반. 개인 순위는 없어요.</p></div>
+        <div className="center" style={{ marginBottom: 16 }}><h1 style={{ color: 'var(--teal)', fontSize: 30 }}>오늘의 공방 문을 닫습니다</h1><p className="muted">최종 점수 = 코인 + 산 장비 값의 절반. 남은 재고는 점수에 더하지도 빼지도 않아요. 개인 순위는 없어요.</p></div>
         {results.map((r) => {
           const t = view.teams.find((x) => x.id === r.teamId);
           return (
             <div key={r.teamId} className={`rank-row ${r.rank === 1 ? 'first' : ''}`} style={myTeamId === r.teamId ? { outline: '2px solid var(--teal-2)' } : undefined}>
               <span className="rank-num">{r.rank}</span>
               <Emblem shape={t?.emblem ?? 'circle'} color={t?.color ?? '#888'} size={30} />
-              <div><b style={{ fontSize: 16 }}>{r.name}</b><div className="muted small">배달 {r.delivered}건 · 번 코인 {r.revenue} · 가장 많이 만든 것 {r.topReaction ? REACTIONS[r.topReaction]?.name ?? r.topReaction : '-'}{r.badges.length ? ` · ${r.badges.join(', ')}` : ''}</div></div>
+              <div><b style={{ fontSize: 16 }}>{r.name}</b><div className="muted small">배달 {r.delivered}건 · 배달로 번 코인 {r.revenue}{r.buybackCoins ? ` · 재고 매입 ${r.buybackCoins}` : ''} · 가장 많이 만든 것 {r.topReaction ? REACTIONS[r.topReaction]?.name ?? r.topReaction : '-'}{r.badges.length ? ` · ${r.badges.join(', ')}` : ''}</div>
+                {r.leftover && r.leftover.length > 0 && <div className="leftover" aria-label="잔여 재고"><span className="small muted">잔여 재고(점수 영향 없음):</span>{r.leftover.slice(0, 8).map((x) => <span key={x.label} className="leftover-item">{x.materialId ? <MaterialArt materialId={x.materialId} size={26} badge={false} /> : null}{x.label} {x.units}</span>)}{r.leftover.length > 8 && <span className="small muted">외 {r.leftover.length - 8}종</span>}</div>}
+              </div>
               <div className="center"><div className="muted small">코인 {r.coins} + 장비 {r.salvage}</div></div>
               <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--copper)', fontFamily: 'var(--mono)' }}>{r.asset}</div>
             </div>

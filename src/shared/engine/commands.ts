@@ -157,6 +157,11 @@ export function contractSatisfiable(team: TeamState, c: ContractInstance): { ok:
   return { ok: missing.length === 0, missing };
 }
 
+/** 로트에 붙은 품질 태그 표시. 연구지원품의 'reaction' 등급은 "직접 만든 것"이 아니라 반응 생성품 등급이다. */
+export function lotTagText(lot: { grade: string; tags: string[] }): string {
+  return lot.tags.map((t) => (lot.grade === 'support' && t === 'reaction' ? '반응 생성품 등급' : tagLabel(t))).join('/');
+}
+
 export const tagLabel = (t: string): string => ({ support: '연구지원품', purchased: '가게에서 산 것', reaction: '직접 만든 것', condensed: '응축한 것', gasCollected: '모은 기체', filtered: '건져 낸 고체', filtrate: '남은 용액', crystallized: '결정으로 만든 것', refined: '정제한 것', recovered: '되돌려 받은 재료', solutionWater: '회수수', gasMixture: '섞인 기체', suspension: '섞인 것(고체+용액)', liquidMixture: '섞인 액체', partial: '일부만 반응' } as Record<string, string>)[t] ?? t;
 
 export function deliverContract(state: GameState, team: TeamState, c: ContractInstance): CommandResult {

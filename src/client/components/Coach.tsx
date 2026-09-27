@@ -5,7 +5,7 @@ import { MATERIALS } from '../../shared/chemistry/materials';
 import { PROCESSES, applyProcess, applicableProcesses } from '../../shared/chemistry/processes';
 import { EQUIPMENT } from '../../shared/chemistry/equipment';
 import { computeReachability, routesFor, type ReachabilityMap } from '../../shared/engine/reachability';
-import { contractSatisfiable } from '../../shared/engine/commands';
+import { contractSatisfiable, lotUsableFor } from '../../shared/engine/commands';
 import { reactionStatus } from './ReactionCard';
 import { Modal } from './common';
 import type { Place } from '../lib/places';
@@ -29,7 +29,7 @@ export function mapFor(view: ClientView): ReachabilityMap {
 
 export function unmetRequirements(team: TeamState, reqs: ContractRequirement[]): ContractRequirement[] {
   return reqs.filter((r) => {
-    const have = team.lots.filter((l) => l.kind === 'pure' && l.materialId === r.materialId && l.grade !== 'purchased' && l.tags.some((t) => r.tags.includes(t))).reduce((a, l) => a + l.units, 0);
+    const have = team.lots.filter((l) => lotUsableFor(l, r)).reduce((a, l) => a + l.units, 0);
     return have < r.units;
   });
 }
@@ -60,6 +60,9 @@ export function nextHint(view: ClientView, focusId: string | null): Hint {
   const isOp = view.me.isOperator;
   const opNick = view.players.find((p) => p.id === t.operatorId)?.nick ?? '다른 팀원';
   if (t.roundReady) return { step: '준비 완료', detail: `다른 팀을 기다리는 중 (${g.readyCount}/${g.teamCount}). 모두 준비되면 라운드가 마무리돼요.`, place: 'workshop', target: 'ready' };
+  if (t.support && t.support.status === 'pending' && t.support.round === g.round) return isOp
+    ? { step: '연구지원품 고르기', detail: '공방에 도착한 세 묶음 중 1묶음을 반송하고 2묶음을 받으세요. 고르기 전에는 사기·만들기·준비 완료가 잠겨요.', place: 'workshop', target: 'support' }
+    : { step: '연구지원품 상의', detail: `${opNick}님이 지원품을 고르는 중이에요. 공방에서 세 묶음을 보고 '반송 제안'을 보낼 수 있어요.`, place: 'workshop', target: 'support' };
   if (!isOp) return { step: `${opNick} 차례`, detail: '카드나 주문을 열어 👍 추천으로 도와줄 수 있어요. 창고와 장소는 자유롭게 볼 수 있어요.', place: 'workshop' };
 
   const map = mapFor(view);
@@ -113,7 +116,9 @@ export function HelpModal({ onClose, isLocal }: { onClose: () => void; isLocal: 
           <li><b>⚗️ 공방</b> — 빈 작업 자리를 눌러 <b>만들기 카드</b>로 만들고, 트레이의 완성품을 <b>정리</b>해요.</li>
           <li><b>📦 출하장</b> — 완성품을 <b>배달</b>하면 코인이 들어와요. 시세가 낮으면 다음 라운드에 팔 수도 있어요.</li>
         </ol>
-        <p className="small">라운드마다 차례인 사람이 <b>3번</b> 행동해요(사기·만들기·정리·배달·장비). 다 했으면 위의 <b>준비 완료</b>. 모든 팀이 준비되면 라운드가 마무리되고 만들던 것이 완성돼요. <b>제한시간은 없어요.</b> 가게에서 산 재료는 그대로 배달할 수 없어요.</p>
+        <p className="small">라운드마다 차례인 사람이 <b>3번</b> 행동해요(사기·만들기·정리·배달·장비). 다 했으면 위의 <b>준비 완료</b>. 모든 팀이 준비되면 라운드가 마무리(정산)되고 만들던 것이 완성돼요. <b>제한시간은 없어요.</b> 가게에서 산 재료는 그대로 배달할 수 없어요.</p>
+        <p className="small"><b>길드 연구지원품</b> — 라운드마다 공방에 세 묶음(완성 소재·공정 재료·기초 원료)이 도착해요. <b>1묶음을 반송하고 2묶음</b>을 받아요. 고르기 전에는 사기·만들기·준비 완료가 잠겨요. 행동력·코인은 들지 않아요.</p>
+        <p className="small"><b>재고 매입</b> — 남는 재료를 상점에 낮은 가격(구입가보다 싸게)에 넘길 수 있어요. 라운드에 한 번, 매입 한도가 있어요. 주 수입은 여전히 의뢰 배달이에요. 게임이 끝날 때 남은 재고는 점수에 더하지도 빼지도 않아요.</p>
         {isLocal && <p className="small" style={{ background: 'var(--amber-soft)', padding: 8, borderRadius: 8 }}>연습에서는 준비 완료를 누르면 AI 공방이 행동한 뒤 바로 라운드가 마무리돼요.</p>}
         <div className="row" style={{ justifyContent: 'flex-end' }}><button className="btn btn-primary" onClick={onClose}>시작하기</button></div>
       </div>

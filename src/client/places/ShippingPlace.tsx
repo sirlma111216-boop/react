@@ -3,7 +3,8 @@ import type { ClientView } from '../../shared/protocol';
 import type { ContractInstance, TeamCommand, TeamState } from '../../shared/types';
 import { MATERIALS } from '../../shared/chemistry/materials';
 import { CONTRACTS, CATEGORY_LABEL } from '../../shared/chemistry/contracts';
-import { contractSatisfiable, tagLabel } from '../../shared/engine/commands';
+import { contractSatisfiable, lotUsableFor, tagLabel } from '../../shared/engine/commands';
+import { MaterialArt } from '../components/Art';
 import { contractPayout, contractCategory, MARKET_STEP } from '../../shared/engine/market';
 import { Scene, Npc } from '../components/Scene';
 import { previewProps, type Place } from '../lib/places';
@@ -11,16 +12,17 @@ import { previewProps, type Place } from '../lib/places';
 type Send = (cmd: TeamCommand, sfx?: string) => Promise<boolean>;
 
 /** 서버가 고를 로트를 같은 규칙으로 미리 보여준다 (구매 로트 제외, 조건 태그 일치, 앞에서부터) */
-function plannedLots(team: TeamState, c: ContractInstance): { materialId: string; units: number; tags: string[] }[] {
-  const out: { materialId: string; units: number; tags: string[] }[] = [];
+function plannedLots(team: TeamState, c: ContractInstance): { materialId: string; units: number; tags: string[]; support: boolean }[] {
+  const out: { materialId: string; units: number; tags: string[]; support: boolean }[] = [];
   const used: Record<string, number> = {};
   for (const req of c.requirements) {
     let need = req.units;
-    for (const lot of team.lots) {
+    // 서버와 같은 순서: 직접 만든 것 → 지원품
+    for (const lot of [...team.lots].sort((a, b) => Number(a.grade === 'support') - Number(b.grade === 'support'))) {
       if (need <= 0) break;
-      if (lot.kind !== 'pure' || lot.materialId !== req.materialId || lot.grade === 'purchased' || !lot.tags.some((t) => req.tags.includes(t))) continue;
+      if (!lotUsableFor(lot, req)) continue;
       const take = Math.min(lot.units - (used[lot.id] ?? 0), need);
-      if (take > 0) { out.push({ materialId: req.materialId, units: take, tags: lot.tags }); used[lot.id] = (used[lot.id] ?? 0) + take; need -= take; }
+      if (take > 0) { out.push({ materialId: req.materialId, units: take, tags: lot.tags, support: lot.grade === 'support' }); used[lot.id] = (used[lot.id] ?? 0) + take; need -= take; }
     }
   }
   return out;
@@ -66,13 +68,16 @@ export function ShippingPlace({ view, send, focusId, setFocus, canAct, goTo, hig
                 <div className="dock-items">
                   {sel.requirements.map((req, i) => {
                     const have = planned.filter((p) => p.materialId === req.materialId).reduce((a, p) => a + p.units, 0);
+                    const sup = planned.filter((p) => p.materialId === req.materialId && p.support).reduce((a, p) => a + p.units, 0);
                     const ok = have >= req.units;
                     return (
                       <div key={i} className={`crate ${ok ? 'ok' : 'missing'}`}>
-                        <span className="crate-ico" aria-hidden>{ok ? '📦' : '▢'}</span>
+                        <MaterialArt materialId={req.materialId} size={64} className={ok ? '' : 'dim'} />
                         <b>{MATERIALS[req.materialId]!.displayName}</b>
                         <span className="small">{Math.min(have, req.units)}/{req.units}개 · {req.tags.map(tagLabel).join('/')}</span>
-                        {ok && <span className="tag tag-teal">✓ 검수 통과</span>}
+                        {sup > 0 && <span className="small muted">지원품 {sup}개 포함{req.allowSupport ? '' : ''}</span>}
+                        {!req.allowSupport && <span className="small muted">지원품 불가 · 직접 만든 것만</span>}
+                        {ok ? <span className="tag tag-teal">✓ 검수 통과</span> : <span className="tag">{req.units - Math.min(have, req.units)}개 부족</span>}
                       </div>
                     );
                   })}

@@ -9,7 +9,7 @@ const R = (r: ReactionDefinition) => r;
 
 export const REACTIONS: Record<string, ReactionDefinition> = {
   R01: R({
-    id: 'R01', name: '물 만들기', equation: '2H2(g) + O2(g) → 2H2O(g)',
+    id: 'R01', name: '수증기 만들기', equation: '2H2(g) + O2(g) → 2H2O(g)',
     reactants: [{ accepts: ['H2_g'], coef: 2 }, { accepts: ['O2_g'], coef: 1 }],
     products: [{ materialId: 'H2O_g', coef: 2 }],
     batchMultiplier: 1, extentModel: { type: 'full' },

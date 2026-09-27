@@ -1,195 +1,285 @@
 {
-  "title": "candidate-5: equip.U04 8→10",
-  "when": "2026-09-25T11:51:12.366Z",
+  "title": "candidate-5: price.H2O_l 1→2",
+  "when": "2026-09-27T01:07:32.405Z",
   "seedPrefix": "train-c5",
-  "games": 600,
-  "configVersion": "econ-1.1+c3+c5",
+  "games": 504,
+  "configVersion": "econ-3.1+c4+c5",
   "scienceVersion": "chem-1.0",
   "summary": {
-    "games": 600,
+    "games": 504,
     "teamsPerGame": 6,
     "errors": 0,
     "ledgerFailures": 0,
     "byBot": {
       "random": {
-        "n": 600,
-        "asset": 13.26,
+        "n": 336,
+        "asset": 37.97,
         "assetCi": [
-          12.14,
-          14.38
+          34.71,
+          41.23
         ],
-        "assetMedian": 9,
+        "assetMedian": 33,
         "winRate": 0,
-        "delivered": 0.59,
+        "delivered": 1.78,
         "firstDelivery": 6,
-        "stalledRate": 0.08
-      },
-      "quickcash": {
-        "n": 600,
-        "asset": 109.83,
-        "assetCi": [
-          107.44,
-          112.22
-        ],
-        "assetMedian": 112,
-        "winRate": 0.33,
-        "delivered": 3.8,
-        "firstDelivery": 4,
         "stalledRate": 0
       },
-      "planner": {
-        "n": 600,
-        "asset": 103.13,
+      "quickcash": {
+        "n": 336,
+        "asset": 199.14,
         "assetCi": [
-          100.24,
-          106.02
+          194.75,
+          203.53
         ],
-        "assetMedian": 105,
-        "winRate": 0.22,
-        "delivered": 3.74,
+        "assetMedian": 205,
+        "winRate": 0.37,
+        "delivered": 6.64,
         "firstDelivery": 2,
-        "stalledRate": 0.02
-      },
-      "byproduct": {
-        "n": 600,
-        "asset": 103.76,
-        "assetCi": [
-          101.02,
-          106.5
-        ],
-        "assetMedian": 103.5,
-        "winRate": 0.23,
-        "delivered": 3.47,
-        "firstDelivery": 4,
         "stalledRate": 0.01
       },
-      "investor": {
-        "n": 600,
-        "asset": 75.1,
+      "planner": {
+        "n": 336,
+        "asset": 158.4,
         "assetCi": [
-          72.47,
-          77.72
+          153.71,
+          163.1
         ],
-        "assetMedian": 78.5,
-        "winRate": 0.05,
-        "delivered": 2.54,
-        "firstDelivery": 4,
-        "stalledRate": 0.1
+        "assetMedian": 159,
+        "winRate": 0.07,
+        "delivered": 5.24,
+        "firstDelivery": 3,
+        "stalledRate": 0.07
       },
-      "bidder": {
-        "n": 600,
-        "asset": 96.7,
+      "byproduct": {
+        "n": 336,
+        "asset": 183.76,
         "assetCi": [
-          93.83,
-          99.56
+          178.77,
+          188.74
         ],
-        "assetMedian": 101,
-        "winRate": 0.18,
-        "delivered": 3.42,
+        "assetMedian": 190,
+        "winRate": 0.21,
+        "delivered": 6.17,
+        "firstDelivery": 3,
+        "stalledRate": 0.03
+      },
+      "investor": {
+        "n": 336,
+        "asset": 182.8,
+        "assetCi": [
+          177.63,
+          187.97
+        ],
+        "assetMedian": 190.5,
+        "winRate": 0.19,
+        "delivered": 6.07,
         "firstDelivery": 2,
         "stalledRate": 0.02
+      },
+      "bidder": {
+        "n": 336,
+        "asset": 176.6,
+        "assetCi": [
+          170.72,
+          182.48
+        ],
+        "assetMedian": 185,
+        "winRate": 0.17,
+        "delivered": 5.71,
+        "firstDelivery": 2,
+        "stalledRate": 0.03
+      },
+      "supportfinished": {
+        "n": 336,
+        "asset": 200.49,
+        "assetCi": [
+          196.04,
+          204.94
+        ],
+        "assetMedian": 207,
+        "winRate": 0.39,
+        "delivered": 6.84,
+        "firstDelivery": 2,
+        "stalledRate": 0.02
+      },
+      "supportbasic": {
+        "n": 336,
+        "asset": 156.84,
+        "assetCi": [
+          152.05,
+          161.63
+        ],
+        "assetMedian": 157,
+        "winRate": 0.07,
+        "delivered": 5.18,
+        "firstDelivery": 3,
+        "stalledRate": 0.07
+      },
+      "recycler": {
+        "n": 336,
+        "asset": 158.06,
+        "assetCi": [
+          153.75,
+          162.37
+        ],
+        "assetMedian": 158,
+        "winRate": 0.04,
+        "delivered": 5.29,
+        "firstDelivery": 2,
+        "stalledRate": 0
       }
     },
     "byPosition": {
       "0": {
-        "n": 600,
-        "winRate": 0.16,
+        "n": 504,
+        "winRate": 0.18,
         "winCi": [
-          0.13,
-          0.19
+          0.15,
+          0.21
         ],
-        "asset": 84.11
+        "asset": 163.83
       },
       "1": {
-        "n": 600,
-        "winRate": 0.17,
-        "winCi": [
-          0.14,
-          0.19
-        ],
-        "asset": 83.8
-      },
-      "2": {
-        "n": 600,
-        "winRate": 0.17,
-        "winCi": [
-          0.14,
-          0.2
-        ],
-        "asset": 83.13
-      },
-      "3": {
-        "n": 600,
+        "n": 504,
         "winRate": 0.16,
         "winCi": [
           0.13,
           0.19
         ],
-        "asset": 82.88
+        "asset": 162.23
       },
-      "4": {
-        "n": 600,
+      "2": {
+        "n": 504,
+        "winRate": 0.16,
+        "winCi": [
+          0.13,
+          0.19
+        ],
+        "asset": 156.19
+      },
+      "3": {
+        "n": 504,
         "winRate": 0.2,
         "winCi": [
           0.16,
           0.23
         ],
-        "asset": 82.95
+        "asset": 167.79
+      },
+      "4": {
+        "n": 504,
+        "winRate": 0.14,
+        "winCi": [
+          0.11,
+          0.18
+        ],
+        "asset": 156.11
       },
       "5": {
-        "n": 600,
+        "n": 504,
         "winRate": 0.17,
         "winCi": [
           0.14,
           0.2
         ],
-        "asset": 84.9
+        "asset": 163.22
       }
     },
     "byBundle": {
-      "gas": {
-        "n": 1200,
-        "asset": 58.51,
-        "winRate": 0.12
-      },
-      "carbonate": {
-        "n": 1200,
-        "asset": 92.46,
-        "winRate": 0.19
-      },
-      "material": {
-        "n": 1200,
-        "asset": 99.91,
-        "winRate": 0.2
+      "v3": {
+        "n": 3024,
+        "asset": 161.56,
+        "winRate": 0.17
       }
     },
-    "firstDeliveryMedian": 4,
-    "deliveredMedian": 3,
+    "firstDeliveryMedian": 3,
+    "deliveredMedian": 6,
     "stalledRate": 0.03,
     "dominantTemplate": {
-      "templateId": "C03",
-      "share": 0.26
+      "templateId": "C01",
+      "share": 0.19
     },
-    "plannerVsRandom": 89.87,
-    "skilledSpreadPct": 42.68,
-    "objective": -20.14,
+    "plannerVsRandom": 120.43,
+    "skilledSpreadPct": 31.85,
+    "objective": -17.48,
     "objectiveParts": {
-      "fairness": -4,
+      "fairness": -12,
       "progress": 0,
-      "firstSuccess": -8,
-      "deliveries": 0,
+      "firstSuccess": 0,
+      "buyback": 0,
+      "returnBias": 0,
+      "supportDominance": 0,
+      "deliveries": -6,
       "diversity": 0,
       "skill": 10,
-      "spread": -18.14
-    }
+      "spread": -9.48
+    },
+    "buybackShare": 0.01,
+    "supportDeliveryShare": 0.11,
+    "supportRevenueShare": 0.11,
+    "returnRate": {
+      "process": 0.42,
+      "finished": 0.46,
+      "basic": 0.11
+    },
+    "returnRateByBot": {
+      "random": {
+        "process": 0.32,
+        "finished": 0.34,
+        "basic": 0.33
+      },
+      "quickcash": {
+        "basic": 0.08,
+        "finished": 0.55,
+        "process": 0.36
+      },
+      "planner": {
+        "basic": 0.09,
+        "process": 0.37,
+        "finished": 0.55
+      },
+      "byproduct": {
+        "process": 0.38,
+        "basic": 0.08,
+        "finished": 0.54
+      },
+      "investor": {
+        "process": 0.37,
+        "basic": 0.09,
+        "finished": 0.55
+      },
+      "bidder": {
+        "process": 0.37,
+        "finished": 0.54,
+        "basic": 0.09
+      },
+      "supportfinished": {
+        "process": 0.83,
+        "basic": 0.17
+      },
+      "supportbasic": {
+        "process": 0.44,
+        "finished": 0.56
+      },
+      "recycler": {
+        "process": 0.37,
+        "finished": 0.53,
+        "basic": 0.1
+      }
+    },
+    "keptWithin15": 0.71,
+    "keptSpreadP90": 0.25,
+    "forfeitRate": 0,
+    "diversity": 4.05,
+    "firstDeliverySkilledMedian": 2
   },
   "config": {
-    "version": "econ-1.1+c3",
-    "startCoins": 40,
+    "version": "econ-3.1+c4",
+    "startCoins": 24,
     "startEnergy": 6,
     "energyCap": 12,
     "energyPerRound": 2,
-    "actionsPerRound": 2,
+    "actionsPerRound": 3,
     "reactionSlots": 2,
     "processSlots": 1,
     "contractLimit": 2,
@@ -215,7 +305,7 @@
     "prices": {
       "H2_g": 2,
       "O2_g": 1,
-      "H2O_l": 1,
+      "H2O_l": 2,
       "H2O2_aq": 3,
       "CH4_g": 3,
       "Mg_s": 3,
@@ -240,16 +330,16 @@
     "contractRewards": {
       "C01": 30,
       "C02": 24,
-      "C03": 26,
+      "C03": 30,
       "C04": 30,
       "C05": 18,
       "C06": 12,
-      "C07": 44,
+      "C07": 48,
       "C08": 24,
       "C09": 36,
       "C10": 32,
       "C11": 42,
-      "C12": 52,
+      "C12": 56,
       "C13": 36,
       "C14": 54
     },
@@ -282,11 +372,11 @@
           },
           {
             "materialId": "H2O2_aq",
-            "units": 1
+            "units": 4
           }
         ],
-        "extraCoins": 2,
-        "blurb": "물 합성으로 정제수 계약을 바로 노린다."
+        "extraCoins": 0,
+        "blurb": "수소와 산소로 물을 만들어 정제수 주문을 바로 노린다."
       },
       {
         "id": "carbonate",
@@ -306,7 +396,7 @@
           }
         ],
         "extraCoins": 2,
-        "blurb": "열분해와 침전으로 제지 계약을 노린다."
+        "blurb": "베이킹소다를 가열하고 침전을 만들어 종이 공장 주문을 노린다."
       },
       {
         "id": "material",
@@ -330,10 +420,79 @@
           }
         ],
         "extraCoins": 0,
-        "blurb": "마그네슘 연소로 세라믹 계약을 빠르게 완료한다."
+        "blurb": "마그네슘을 태워 세라믹 주문을 가장 빨리 끝낸다."
       }
-    ]
+    ],
+    "support": {
+      "finishedUnits": 1,
+      "processUnits": [
+        3,
+        4
+      ],
+      "basicUnits": [
+        8,
+        10
+      ],
+      "tolerance": 0.15,
+      "weight": {
+        "finished": 1,
+        "process": 1.25,
+        "basic": 1.25
+      },
+      "finishedExclude": [
+        "ethylAcetate_l",
+        "NH4Cl_s"
+      ]
+    },
+    "buyback": {
+      "rate": 0.3,
+      "roundCap": 5,
+      "gameCap": 20,
+      "baseRounds": 10,
+      "perRound": 1
+    },
+    "materialValues": {
+      "H2_g": 1.6,
+      "O2_g": 1,
+      "N2_g": 1,
+      "CH4_g": 3,
+      "CO2_g": 1,
+      "NH3_g": 2.2,
+      "HCl_g": 3,
+      "H2O_g": 1.1,
+      "H2O_l": 1,
+      "H2O2_aq": 3,
+      "HCl_aq": 2,
+      "NaOH_aq": 2,
+      "NaCl_aq": 1,
+      "CaCl2_aq": 2.5,
+      "MgCl2_aq": 3.5,
+      "ZnSO4_aq": 4,
+      "CuSO4_aq": 4,
+      "Na2SO4_aq": 4,
+      "FeSO4_aq": 3.5,
+      "glucose_aq": 4,
+      "ethanol_aq": 1,
+      "Mg_s": 3,
+      "MgO_s": 3.8,
+      "NaHCO3_s": 1,
+      "Na2CO3_s": 1.1,
+      "CaCl2_s": 2,
+      "CaO_s": 1.5,
+      "CaOH2_s": 2.5,
+      "CaCO3_s": 1,
+      "NaCl_s": 1,
+      "Zn_s": 4,
+      "Cu_s": 2.8,
+      "CuO_s": 2.7,
+      "CuOH2_s": 4,
+      "Fe_s": 3,
+      "NH4Cl_s": 5.2,
+      "ethanol_l": 1,
+      "aceticAcid_l": 1.7,
+      "ethylAcetate_l": 1.7
+    }
   },
   "failures": [],
-  "elapsedMs": 49324
+  "elapsedMs": 213905
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { imageUrl, markMissing } from '../lib/assets';
 import { MATERIALS, PHASE_LABEL, formulaText } from '../../shared/chemistry/materials';
 import { subscriptFormula } from '../../shared/chemistry/atoms';
@@ -7,16 +8,53 @@ import { useAppState } from '../lib/store';
 /** 학생용 단계 이름 */
 export const PHASE_KO: Record<string, string> = { plan: '상의 시간', execute: '행동 시간', settle: '마무리', finished: '끝', setup: '준비' };
 
+/** 화학식 본문을 진짜 아래첨자(<sub>)로: 원소 기호·닫는 괄호 뒤의 숫자만 첨자. 예: Ca(OH)2 → Ca(OH)<sub>2</sub> */
+export function FormulaBody({ formula }: { formula: string }) {
+  const parts: ReactNode[] = [];
+  let buf = '';
+  let i = 0;
+  while (i < formula.length) {
+    const ch = formula[i]!;
+    const prev = formula[i - 1];
+    if (/\d/.test(ch) && prev !== undefined && /[A-Za-z)]/.test(prev)) {
+      let digits = '';
+      while (i < formula.length && /\d/.test(formula[i]!)) digits += formula[i++];
+      if (buf) { parts.push(buf); buf = ''; }
+      parts.push(<sub key={i}>{digits}</sub>);
+      continue;
+    }
+    buf += ch;
+    i++;
+  }
+  if (buf) parts.push(buf);
+  return <>{parts}</>;
+}
+
 /** 화학식 (아래첨자 적용). 예: H₂O(g) */
 export function Formula({ id, withPhase = true }: { id: string; withPhase?: boolean }) {
   const m = MATERIALS[id];
   if (!m) return <span className="formula">{id}</span>;
-  return <span className="formula" aria-label={`${m.displayName} ${m.formula}`}>{formulaText(id, withPhase)}</span>;
+  return <span className="formula" aria-label={`${m.displayName} ${formulaText(id, withPhase)}`}><FormulaBody formula={m.formula} />{withPhase && <span className="st">({m.phase})</span>}</span>;
 }
 
-/** 반응식 문자열을 아래첨자로 표시. 예: 2H₂(g) + O₂(g) → 2H₂O(g) */
+/**
+ * 반응식: 계수·아래첨자·상태기호를 제대로 렌더링하고, 계수나 화학식 중간이 아니라 +/화살표 경계에서만 줄을 바꾼다.
+ * 예: 2H₂(g) + O₂(g) → 2H₂O(g)
+ */
 export function Equation({ text, className }: { text: string; className?: string }) {
-  return <span className={`formula ${className ?? ''}`}>{subscriptFormula(text)}</span>;
+  const tokens = text.split(/ (\+|→|⇌) /);
+  return (
+    <span className={`formula eqn ${className ?? ''}`} aria-label={subscriptFormula(text)} role="text">
+      {tokens.map((tok, i) => {
+        if (tok === '+' || tok === '→' || tok === '⇌') return <span key={i} className={`eq-op ${tok === '+' ? 'plus' : 'arrow'}`}> {tok} </span>;
+        const st = tok.match(/\((s|l|g|aq)\)$/);
+        const body = st ? tok.slice(0, -st[0].length) : tok;
+        const coef = body.match(/^(\d+)/);
+        const f = coef ? body.slice(coef[1]!.length) : body;
+        return <span key={i} className="eq-term">{coef && <span className="eq-coef">{coef[1]}</span>}<FormulaBody formula={f} />{st && <span className="st">({st[1]})</span>}</span>;
+      })}
+    </span>
+  );
 }
 
 /** 물질 이름을 먼저, 화학식은 작게. 예: 물(수증기) H₂O */
@@ -27,7 +65,7 @@ export function Mat({ id, count, bold = true }: { id: string; count?: number; bo
     <span className="mat">
       {bold ? <b>{m.displayName}</b> : m.displayName}
       {count !== undefined && <span className="units"> ×{count}</span>}
-      <span className="fsmall"> {formulaText(id, false)}</span>
+      <span className="fsmall"> <FormulaBody formula={m.formula} /></span>
     </span>
   );
 }
@@ -51,13 +89,15 @@ export function Modal({ title, onClose, children, wide }: { title: ReactNode; on
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
-  return (
+  // 장소 화면의 애니메이션(transform)이 쌓임 맥락을 만들어 HUD 아래에 깔리지 않도록 body 에 그린다
+  return createPortal(
     <div className="modal-bg" onClick={onClose} role="presentation">
-      <div className="modal fade-in" style={wide ? { width: 'min(920px, 100%)' } : undefined} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+      <div className="modal fade-in" style={wide ? { width: 'min(1000px, 100%)' } : undefined} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className="modal-head"><h3>{title}</h3><button className="x" onClick={onClose} aria-label="닫기">×</button></div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -78,14 +118,6 @@ export function EnergyIcon({ size = 18 }: { size?: number }) {
 }
 export function ActionIcon({ size = 18 }: { size?: number }) {
   return <svg className="ico" width={size} height={size} viewBox="0 0 24 24" aria-hidden><rect x="3" y="3" width="18" height="18" rx="5" fill="#B87346" /><path d="M8 12l3 3 5-6" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" /></svg>;
-}
-
-/** 재고 토큰 (상태별 모양) */
-export function Tokens({ materialId, units }: { materialId: string; units: number }) {
-  const ph = MATERIALS[materialId]?.phase ?? 's';
-  const cls = ph === 'g' ? 'token gas' : ph === 'l' ? 'token liq' : ph === 'aq' ? 'token aq' : 'token';
-  const n = Math.min(units, 12);
-  return <div className="token-row" aria-hidden>{Array.from({ length: n }, (_, i) => <span key={i} className={cls} />)}{units > 12 && <span className="small">+{units - 12}</span>}</div>;
 }
 
 export function Wordmark({ compact }: { compact?: boolean }) {

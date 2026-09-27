@@ -4,6 +4,7 @@ import { App } from './App';
 import { loadAssetIndex } from './lib/assets';
 import { audio } from './lib/audio';
 import './styles.css';
+import './styles-v3.css';
 
 Promise.all([loadAssetIndex(), audio.init()]).finally(() => {
   createRoot(document.getElementById('root')!).render(

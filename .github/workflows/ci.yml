@@ -19,7 +19,8 @@ jobs:
       - run: npm run lint
       - run: npm run test
       - run: npm run verify:chemistry
-      - run: npm run sim:smoke -- --games 60
+      - run: npm run assets:validate
+      - run: npm run sim:smoke -- --games 63
       - run: npm run build
       - name: wrangler config check (dry run)
         run: npx wrangler deploy --dry-run --outdir dist/worker-dry

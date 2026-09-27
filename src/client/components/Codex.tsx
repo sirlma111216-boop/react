@@ -7,6 +7,7 @@ import { PROCESSES } from '../../shared/chemistry/processes';
 import { Modal, Formula, Equation, AssetImage } from './common';
 import { WhyThisMuch } from './ReactionCard';
 import { ParticleView } from './Particles';
+import { MaterialArt } from './Art';
 import { massRatio } from '../../shared/chemistry/atoms';
 import { tagLabel } from '../../shared/engine/commands';
 
@@ -59,7 +60,8 @@ function MaterialEntry({ id }: { id: string }) {
   const m = MATERIALS[id]!;
   return (
     <div className="stack">
-      <h3 style={{ color: 'var(--teal)' }}><Formula id={id} /> {m.displayName}</h3>
+      <h3 style={{ color: 'var(--teal)', display: 'flex', alignItems: 'center', gap: 10 }}><MaterialArt materialId={id} size={72} showPhase /> <span><Formula id={id} /> {m.displayName}</span></h3>
+      <p className="small muted">그림은 보관 용기예요. 용기 색은 물질의 실제 색이 아니고, 그림 속 알갱이 수는 개수가 아니에요.</p>
       <div className="particles"><ParticleView materialId={id} count={1} scale={1.1} /></div>
       <div className="row"><span className="tag">{PHASE_LABEL[m.phase]}</span><span className="tag">{m.compositionClass === 'element' ? '홑원소 물질' : '화합물'}</span><span className="tag">{m.structureClass === 'ionic' ? '이온성' : m.structureClass === 'molecular' ? '분자성' : m.structureClass === 'metallic' ? '금속성' : '그물 구조'}</span><span className="tag">몰질량 {m.molarMass} g/mol</span></div>
       {m.ions && <p className="small">이온 구성: {m.ions.map((i) => `${i.formula} × ${i.count}`).join(', ')} (formula unit 기준, 총전하 {m.charge})</p>}
@@ -102,6 +104,10 @@ function Rules() {
       <p>우리 팀은 작은 <b>화학 공방</b>이에요. <b>재료를 사고</b>, <b>만들기 카드로 만들고</b>, <b>정리해서</b>, <b>도시의 주문에 배달</b>해요. 필요하면 <b>장비</b>를 사서 더 빠르고 싸게 만들어요. 마지막에 코인(+ 산 장비 값의 절반)이 가장 많은 팀이 이겨요.</p>
       <h3>라운드</h3>
       <p>제한시간은 없어요. 차례인 사람이 네 장소(의뢰소·공방·상점·출하장)를 오가며 3번 행동하고 <b>준비 완료</b>를 누르면, 모든 팀이 준비됐을 때 라운드가 마무리돼요(완성품 도착·시세 변화·차례 교대). 다른 팀원은 카드를 보고 👍 추천으로 도와요.</p>
+      <h3>길드 연구지원품</h3>
+      <p>라운드마다 공방에 세 묶음(완성 소재 1칸 · 공정 재료 3~4칸 · 기초 원료 8~10칸)이 도착해요. 차례인 사람이 <b>1묶음을 통째로 반송</b>하고 나머지 <b>2묶음</b>을 받아요. 고르기 전에는 사기·만들기·준비 완료가 잠기고, 행동력·코인은 들지 않아요. 팀원은 '반송 제안'으로 도와요. 완성 소재는 조건에 '지원 완성 소재 가능'이라고 적힌 의뢰에만 보탤 수 있어요.</p>
+      <h3>재고 매입</h3>
+      <p>상점의 '재고 매입'에서 남는 순물질을 <b>구입가보다 낮은 값</b>에 넘길 수 있어요. 라운드에 한 번, 라운드 5코인·경기 20코인(10라운드 기준) 한도가 있고 행동력은 들지 않아요. 섞인 것은 먼저 정리해야 해요. 게임이 끝날 때 남은 재고는 점수에 더하지도 빼지도 않아요.</p>
       <h3>개수</h3>
       <p>게임의 1개 = 0.1 mol. 만들기 카드가 재료 비율을 보여주고 필요한 양을 계산해 줘요. 원자는 사라지거나 생기지 않고(질량 보존), 섞여 나온 것은 정리해야 배달할 수 있어요. 가게에서 산 재료는 그대로 배달할 수 없어요.</p>
       <h3>주문·시세·입찰</h3>

@@ -1,9 +1,9 @@
 {
   "title": "final validation",
-  "when": "2026-09-26T04:03:15.077Z",
+  "when": "2026-09-27T01:17:59.694Z",
   "seedPrefix": "valid",
   "games": 2016,
-  "configVersion": "econ-1.3",
+  "configVersion": "econ-3.2",
   "scienceVersion": "chem-1.0",
   "summary": {
     "games": 2016,
@@ -12,180 +12,270 @@
     "ledgerFailures": 0,
     "byBot": {
       "random": {
-        "n": 2016,
-        "asset": 11.23,
+        "n": 1344,
+        "asset": 35.44,
         "assetCi": [
-          10.64,
-          11.83
+          33.8,
+          37.07
         ],
-        "assetMedian": 7,
+        "assetMedian": 30,
         "winRate": 0,
-        "delivered": 0.88,
-        "firstDelivery": 5,
-        "stalledRate": 0.21
+        "delivered": 1.67,
+        "firstDelivery": 6,
+        "stalledRate": 0
       },
       "quickcash": {
-        "n": 2016,
-        "asset": 155,
+        "n": 1344,
+        "asset": 200.12,
         "assetCi": [
-          153.41,
-          156.58
+          197.8,
+          202.44
         ],
-        "assetMedian": 158,
-        "winRate": 0.37,
-        "delivered": 5.67,
+        "assetMedian": 204,
+        "winRate": 0.36,
+        "delivered": 6.63,
         "firstDelivery": 2,
-        "stalledRate": 0.01
+        "stalledRate": 0.02
       },
       "planner": {
-        "n": 2016,
-        "asset": 122.48,
+        "n": 1344,
+        "asset": 160.25,
         "assetCi": [
-          120.67,
-          124.29
+          157.89,
+          162.6
         ],
-        "assetMedian": 128,
-        "winRate": 0.09,
-        "delivered": 4.49,
+        "assetMedian": 161,
+        "winRate": 0.07,
+        "delivered": 5.25,
         "firstDelivery": 3,
-        "stalledRate": 0.06
+        "stalledRate": 0.07
       },
       "byproduct": {
-        "n": 2016,
-        "asset": 138.6,
+        "n": 1344,
+        "asset": 184.81,
         "assetCi": [
-          136.73,
-          140.46
+          182.18,
+          187.45
         ],
-        "assetMedian": 144,
+        "assetMedian": 192,
         "winRate": 0.22,
-        "delivered": 5.12,
+        "delivered": 6.11,
         "firstDelivery": 3,
         "stalledRate": 0.03
       },
       "investor": {
-        "n": 2016,
-        "asset": 133.33,
+        "n": 1344,
+        "asset": 184.64,
         "assetCi": [
-          131.4,
-          135.25
+          182.08,
+          187.21
         ],
-        "assetMedian": 140,
-        "winRate": 0.18,
-        "delivered": 5,
-        "firstDelivery": 3,
+        "assetMedian": 191,
+        "winRate": 0.2,
+        "delivered": 6.12,
+        "firstDelivery": 2,
         "stalledRate": 0.02
       },
       "bidder": {
-        "n": 2016,
-        "asset": 122.02,
+        "n": 1344,
+        "asset": 174.39,
         "assetCi": [
-          119.77,
-          124.27
+          171.44,
+          177.34
         ],
-        "assetMedian": 130,
-        "winRate": 0.15,
-        "delivered": 4.54,
+        "assetMedian": 184,
+        "winRate": 0.17,
+        "delivered": 5.66,
+        "firstDelivery": 2,
+        "stalledRate": 0.03
+      },
+      "supportfinished": {
+        "n": 1344,
+        "asset": 203.42,
+        "assetCi": [
+          201.22,
+          205.62
+        ],
+        "assetMedian": 207,
+        "winRate": 0.37,
+        "delivered": 6.93,
+        "firstDelivery": 2,
+        "stalledRate": 0.02
+      },
+      "supportbasic": {
+        "n": 1344,
+        "asset": 155.73,
+        "assetCi": [
+          153.3,
+          158.15
+        ],
+        "assetMedian": 158,
+        "winRate": 0.07,
+        "delivered": 5.14,
         "firstDelivery": 3,
-        "stalledRate": 0.05
+        "stalledRate": 0.07
+      },
+      "recycler": {
+        "n": 1344,
+        "asset": 157.86,
+        "assetCi": [
+          155.73,
+          160
+        ],
+        "assetMedian": 159,
+        "winRate": 0.06,
+        "delivered": 5.24,
+        "firstDelivery": 2,
+        "stalledRate": 0
       }
     },
     "byPosition": {
       "0": {
         "n": 2016,
-        "winRate": 0.16,
+        "winRate": 0.19,
         "winCi": [
-          0.14,
-          0.18
+          0.17,
+          0.2
         ],
-        "asset": 112.94
+        "asset": 163.48
       },
       "1": {
         "n": 2016,
-        "winRate": 0.17,
+        "winRate": 0.16,
         "winCi": [
           0.15,
-          0.19
+          0.18
         ],
-        "asset": 114.65
+        "asset": 163.35
       },
       "2": {
         "n": 2016,
         "winRate": 0.17,
         "winCi": [
           0.15,
-          0.19
-        ],
-        "asset": 113.87
-      },
-      "3": {
-        "n": 2016,
-        "winRate": 0.16,
-        "winCi": [
-          0.14,
           0.18
         ],
-        "asset": 113.83
+        "asset": 161.9
       },
-      "4": {
-        "n": 2016,
-        "winRate": 0.18,
-        "winCi": [
-          0.16,
-          0.19
-        ],
-        "asset": 114.48
-      },
-      "5": {
+      "3": {
         "n": 2016,
         "winRate": 0.17,
         "winCi": [
           0.15,
-          0.19
+          0.18
         ],
-        "asset": 112.87
+        "asset": 161.59
+      },
+      "4": {
+        "n": 2016,
+        "winRate": 0.17,
+        "winCi": [
+          0.15,
+          0.18
+        ],
+        "asset": 159.53
+      },
+      "5": {
+        "n": 2016,
+        "winRate": 0.16,
+        "winCi": [
+          0.14,
+          0.17
+        ],
+        "asset": 161.25
       }
     },
     "byBundle": {
-      "gas": {
-        "n": 4032,
-        "asset": 113.52,
-        "winRate": 0.18
-      },
-      "carbonate": {
-        "n": 4032,
-        "asset": 113.13,
-        "winRate": 0.15
-      },
-      "material": {
-        "n": 4032,
-        "asset": 114.67,
-        "winRate": 0.18
+      "v3": {
+        "n": 12096,
+        "asset": 161.85,
+        "winRate": 0.17
       }
     },
     "firstDeliveryMedian": 3,
-    "deliveredMedian": 5,
+    "deliveredMedian": 6,
     "stalledRate": 0.03,
     "dominantTemplate": {
-      "templateId": "C04",
-      "share": 0.19
+      "templateId": "C01",
+      "share": 0.18
     },
-    "plannerVsRandom": 111.25,
-    "skilledSpreadPct": 23.44,
-    "objective": 7.25,
+    "plannerVsRandom": 124.81,
+    "skilledSpreadPct": 31.01,
+    "objective": -4.81,
     "objectiveParts": {
       "fairness": 0,
       "progress": 0,
       "firstSuccess": 0,
-      "deliveries": 0,
+      "buyback": 0,
+      "returnBias": 0,
+      "supportDominance": 0,
+      "deliveries": -6,
       "diversity": 0,
       "skill": 10,
-      "spread": -2.75
-    }
+      "spread": -8.81
+    },
+    "buybackShare": 0.01,
+    "supportDeliveryShare": 0.11,
+    "supportRevenueShare": 0.12,
+    "returnRate": {
+      "finished": 0.47,
+      "basic": 0.13,
+      "process": 0.41
+    },
+    "returnRateByBot": {
+      "random": {
+        "finished": 0.33,
+        "basic": 0.33,
+        "process": 0.34
+      },
+      "quickcash": {
+        "finished": 0.56,
+        "process": 0.35,
+        "basic": 0.1
+      },
+      "planner": {
+        "process": 0.35,
+        "finished": 0.55,
+        "basic": 0.1
+      },
+      "byproduct": {
+        "finished": 0.56,
+        "process": 0.35,
+        "basic": 0.1
+      },
+      "investor": {
+        "process": 0.35,
+        "basic": 0.1,
+        "finished": 0.55
+      },
+      "bidder": {
+        "finished": 0.55,
+        "process": 0.35,
+        "basic": 0.1
+      },
+      "supportfinished": {
+        "basic": 0.21,
+        "process": 0.79
+      },
+      "supportbasic": {
+        "finished": 0.56,
+        "process": 0.44
+      },
+      "recycler": {
+        "finished": 0.54,
+        "process": 0.36,
+        "basic": 0.1
+      }
+    },
+    "keptWithin15": 0.71,
+    "keptSpreadP90": 0.25,
+    "forfeitRate": 0,
+    "diversity": 4.05,
+    "firstDeliverySkilledMedian": 2
   },
   "config": {
-    "version": "econ-1.3",
-    "startCoins": 40,
+    "version": "econ-3.2",
+    "startCoins": 24,
     "startEnergy": 6,
     "energyCap": 12,
     "energyPerRound": 2,
@@ -240,7 +330,7 @@
     "contractRewards": {
       "C01": 30,
       "C02": 24,
-      "C03": 26,
+      "C03": 30,
       "C04": 30,
       "C05": 18,
       "C06": 12,
@@ -332,8 +422,77 @@
         "extraCoins": 0,
         "blurb": "마그네슘을 태워 세라믹 주문을 가장 빨리 끝낸다."
       }
-    ]
+    ],
+    "support": {
+      "finishedUnits": 1,
+      "processUnits": [
+        3,
+        4
+      ],
+      "basicUnits": [
+        8,
+        10
+      ],
+      "tolerance": 0.15,
+      "weight": {
+        "finished": 1,
+        "process": 1.25,
+        "basic": 1.25
+      },
+      "finishedExclude": [
+        "ethylAcetate_l",
+        "NH4Cl_s"
+      ]
+    },
+    "buyback": {
+      "rate": 0.3,
+      "roundCap": 5,
+      "gameCap": 20,
+      "baseRounds": 10,
+      "perRound": 1
+    },
+    "materialValues": {
+      "H2_g": 1.6,
+      "O2_g": 1,
+      "N2_g": 1,
+      "CH4_g": 3,
+      "CO2_g": 1,
+      "NH3_g": 2.2,
+      "HCl_g": 3,
+      "H2O_g": 1.1,
+      "H2O_l": 1,
+      "H2O2_aq": 3,
+      "HCl_aq": 2,
+      "NaOH_aq": 2,
+      "NaCl_aq": 1,
+      "CaCl2_aq": 2.5,
+      "MgCl2_aq": 3.5,
+      "ZnSO4_aq": 4,
+      "CuSO4_aq": 4,
+      "Na2SO4_aq": 4,
+      "FeSO4_aq": 3.5,
+      "glucose_aq": 4,
+      "ethanol_aq": 1,
+      "Mg_s": 3,
+      "MgO_s": 3.8,
+      "NaHCO3_s": 1,
+      "Na2CO3_s": 1.1,
+      "CaCl2_s": 2,
+      "CaO_s": 1.5,
+      "CaOH2_s": 2.5,
+      "CaCO3_s": 1,
+      "NaCl_s": 1,
+      "Zn_s": 4,
+      "Cu_s": 2.8,
+      "CuO_s": 2.7,
+      "CuOH2_s": 4,
+      "Fe_s": 3,
+      "NH4Cl_s": 5.2,
+      "ethanol_l": 1,
+      "aceticAcid_l": 1.7,
+      "ethylAcetate_l": 1.7
+    }
   },
   "failures": [],
-  "elapsedMs": 26525
+  "elapsedMs": 132053
 }

@@ -9,9 +9,10 @@ import { LobbyScreen } from './screens/LobbyScreen';
 import { GameScreen } from './screens/GameScreen';
 import { TeacherBoard } from './screens/TeacherBoard';
 import { PracticeScreen } from './screens/PracticeScreen';
+import { AssetReview } from './screens/AssetReview';
 import { Toasts, ConnectionBadge } from './components/common';
 
-type Route = { kind: 'title' } | { kind: 'room'; session: StudentSession } | { kind: 'practice'; mode: ModeId };
+type Route = { kind: 'title' } | { kind: 'room'; session: StudentSession } | { kind: 'practice'; mode: ModeId } | { kind: 'assets' };
 
 function roomCodeFromPath(): string | null {
   const m = location.pathname.match(/^\/game\/([A-Za-z0-9]{6})/);
@@ -20,6 +21,7 @@ function roomCodeFromPath(): string | null {
 
 export function App() {
   const [route, setRoute] = useState<Route>(() => {
+    if (location.pathname === '/asset-review') return { kind: 'assets' };
     const s = loadSession();
     const urlRoom = new URL(location.href).searchParams.get('room') ?? roomCodeFromPath();
     // URL 에 다른 방 코드가 있으면 새로 입장하도록 타이틀부터
@@ -51,6 +53,7 @@ export function App() {
     history.replaceState(null, '', '/');
   };
 
+  if (route.kind === 'assets') return <AssetReview onLeave={() => { history.replaceState(null, '', '/'); setRoute({ kind: 'title' }); }} />;
   if (route.kind === 'practice') return <><PracticeScreen mode={route.mode} onLeave={() => setRoute({ kind: 'title' })} /><Toasts /></>;
   if (route.kind === 'title') return <><TitleScreen onJoin={onJoin} onPractice={(mode) => setRoute({ kind: 'practice', mode })} /><Toasts /></>;
 

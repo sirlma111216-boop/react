@@ -40,9 +40,10 @@ describe('V3 시작과 연구지원품', () => {
     const b = t.support!.bundles;
     expect(b[0]!.items.reduce((a, i) => a + i.units, 0)).toBe(1);
     const pu = b[1]!.items.reduce((a, i) => a + i.units, 0);
-    expect(pu).toBeGreaterThanOrEqual(2); expect(pu).toBeLessThanOrEqual(3);
+    const [plo, phi] = g.config.support!.processUnits;
+    expect(pu).toBeGreaterThanOrEqual(plo); expect(pu).toBeLessThanOrEqual(phi);
     const bu = b[2]!.items.reduce((a, i) => a + i.units, 0);
-    expect(bu).toBeGreaterThanOrEqual(8); expect(bu).toBeLessThanOrEqual(10);
+    expect(bu).toBeGreaterThanOrEqual(g.config.support!.basicUnits[0]); expect(bu).toBeLessThanOrEqual(g.config.support!.basicUnits[1]);
     expect(g.buybackGameCap).toBe(20);
   });
 

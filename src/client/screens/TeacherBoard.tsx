@@ -10,6 +10,7 @@ import { store } from '../lib/store';
 import { Emblem } from '../components/Emblem';
 import { Wordmark, Modal } from '../components/common';
 import { Spark } from '../components/Spark';
+import { SUPPORT_KIND_LABEL, bundleText } from '../../shared/engine/support';
 import { ResultsScreen } from './ResultsScreen';
 
 /** 교사 관전 보드: 모든 팀의 준비·연결·남은 행동을 한 화면에서. 진행이 어디서 막혔는지 보인다. */
@@ -17,6 +18,7 @@ export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey
   const game = view.game!;
   const [opTeam, setOpTeam] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [supportTeam, setSupportTeam] = useState<string | null>(null);
   const send = async (cmd: Parameters<GameClient['send']>[0]) => { const r = await client.send(cmd); if (!r.ok) store.toast(r.error ?? '실패', 'error'); return r.ok; };
   const exportAll = async () => {
     if (!teacherKey) return;
@@ -56,7 +58,8 @@ export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey
               <div className="row" style={{ marginBottom: 4 }}>
                 <span className="tag tag-amber">차례 {op?.nick ?? '-'}{op && !op.connected ? ' (끊김)' : ''}</span>
                 <button className="btn btn-sm btn-ghost" onClick={() => setOpTeam(t.id)}>차례 넘기기</button>
-                {manual && !t.roundReady && <button className="btn btn-sm btn-ghost" onClick={() => { if (confirm(`${t.name} 팀의 이번 라운드를 건너뛸까요? 남은 행동 ${t.actionsLeft}번은 버려져요.`)) send({ type: 'skipTeam', teamId: t.id }); }}>이번 라운드 건너뛰기</button>}
+                {manual && !t.roundReady && <button className="btn btn-sm btn-ghost" onClick={() => { if (confirm(`${t.name} 팀의 이번 라운드를 건너뛸까요? 남은 행동 ${t.actionsLeft}번은 버려져요.${t.support?.status === 'pending' ? ' 고르지 않은 연구지원품은 이번 라운드 수령 포기가 돼요.' : ''}`)) send({ type: 'skipTeam', teamId: t.id }); }}>이번 라운드 건너뛰기</button>}
+                {t.support?.status === 'pending' && t.support.round === game.round && <><span className="tag tag-amber">지원품 선택 대기</span><button className="btn btn-sm btn-ghost" onClick={() => setSupportTeam(t.id)}>지원품 대신 고르기</button></>}
                 <span className="muted small">{members.map((m) => { const p = view.players.find((x) => x.id === m); return p ? `${p.nick}${p.connected ? '' : '(끊김)'}` : ''; }).join(', ')}</span>
               </div>
               <div className="small"><b>만드는 중:</b> {t.processes.length ? t.processes.map((p) => `${p.kind === 'reaction' ? REACTIONS[p.defId]!.name : PROCESSES[p.defId]!.name}→${p.completesRound}R`).join(', ') : '없음'}</div>
@@ -77,6 +80,18 @@ export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey
           <div className="stack">{(view.teams.find((t) => t.id === opTeam)?.members ?? []).map((m) => { const p = view.players.find((x) => x.id === m); return <button key={m} className="btn" onClick={async () => { if (await send({ type: 'setOperator', teamId: opTeam, playerId: m })) setOpTeam(null); }}>{p?.nick ?? m} {p?.connected ? '' : '(끊김)'}</button>; })}</div>
         </Modal>
       )}
+      {supportTeam && (() => {
+        const st = teams.find((x) => x.id === supportTeam);
+        const gr = st?.support;
+        if (!st || !gr || gr.status !== 'pending') return null;
+        return (
+          <Modal title={`${st.name} · 연구지원품 대신 고르기`} onClose={() => setSupportTeam(null)}>
+            <p className="small">팀이 멈춰 있을 때만 쓰세요. 반송할 1묶음을 고르면 나머지 2묶음이 입고되고 '교사 대리 선택'으로 기록돼요. 몰래 추첨하지 않아요.</p>
+            <div className="stack" style={{ marginTop: 8 }}>{gr.bundles.map((b, i) => <button key={i} className="btn btn-ghost" style={{ justifyContent: 'flex-start', textAlign: 'left' }} onClick={async () => { if (await send({ type: 'teacherSupport', teamId: st.id, returnIndex: i })) setSupportTeam(null); }}><span><b>{SUPPORT_KIND_LABEL[b.kind]} 반송</b><div className="small">{bundleText(b)}</div></span></button>)}</div>
+            <div className="row" style={{ justifyContent: 'space-between', marginTop: 10 }}><button className="btn btn-sm btn-danger" onClick={async () => { if (await send({ type: 'forfeitSupport', teamId: st.id })) setSupportTeam(null); }}>이번 라운드 수령 포기로 진행</button><button className="btn btn-ghost" onClick={() => setSupportTeam(null)}>닫기</button></div>
+          </Modal>
+        );
+      })()}
       {confirmEnd && (
         <Modal title="조기 종료" onClose={() => setConfirmEnd(false)}>
           <p>현재 라운드를 마지막으로 마무리하고 결과를 계산합니다. 되돌릴 수 없습니다.</p>

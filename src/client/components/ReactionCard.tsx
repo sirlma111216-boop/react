@@ -7,6 +7,7 @@ import { massRatio } from '../../shared/chemistry/atoms';
 import { Formula, Equation, Mat, Modal, EnergyIcon } from './common';
 import { ParticleView } from './Particles';
 import { lotComponents } from '../../shared/chemistry/processes';
+import { slotMaterial } from '../lib/slot';
 
 function stockOf(team: TeamState, ids: string[]): number {
   let n = 0;
@@ -26,7 +27,7 @@ export function reactionStatus(team: TeamState, rid: string, game: GameView): { 
   for (const s of r.reactants) {
     const have = stockOf(team, s.accepts);
     const per = s.coef * r.batchMultiplier;
-    if (have < per) { scaleMax = 0; missing.push(`${MATERIALS[s.accepts[0]!]!.displayName} ${per - have}개`); }
+    if (have < per) { scaleMax = 0; missing.push(`${MATERIALS[slotMaterial(s.accepts, team, game.shopMaterials)]!.displayName} ${per - have}개`); }
     else if (have < per * 2 && scaleMax === 2) scaleMax = 1;
   }
   if (missingEq.length) return { canRun: false, reason: '장비 필요', detail: missingEq.map((e) => EQUIPMENT[e]!.name).join(', '), scaleMax: 0, energy: r.energy, time };
@@ -35,29 +36,7 @@ export function reactionStatus(team: TeamState, rid: string, game: GameView): { 
   const running = team.processes.filter((p) => p.kind === 'reaction').length;
   const slots = 2 + (owns('U01') ? 1 : 0);
   if (running >= slots) return { canRun: false, reason: '작업 자리 없음', detail: '라운드가 끝나면 비어요', scaleMax, energy: r.energy, time };
-  void game;
   return { canRun: true, reason: '', detail: '', scaleMax, energy: r.energy, time };
-}
-
-/** 만들기 카드: 물질 이름 먼저, 화학식은 작게. */
-export function ReactionCard({ rid, team, game, pinned, onOpen }: { rid: string; team: TeamState; game: GameView; pinned: number; onOpen: () => void }) {
-  const r = REACTIONS[rid]!;
-  const st = reactionStatus(team, rid, game);
-  const prodMult = r.extentModel.type === 'partial' ? r.extentModel.extent : r.batchMultiplier;
-  return (
-    <button className={`rcard ${st.canRun ? 'ready' : ''} ${st.reason === '장비 필요' ? 'locked' : ''}`} onClick={onOpen} aria-label={`${r.name} 만들기 카드`}>
-      {pinned > 0 && <span className="pinmark">추천 {pinned}</span>}
-      <span className="rname">{r.name}</span>
-      <span className="recipe">
-        {r.reactants.map((s, i) => <span key={i} className={`ing ${stockOf(team, s.accepts) >= s.coef * r.batchMultiplier ? 'have' : 'need'}`}>{MATERIALS[s.accepts[0]!]!.displayName} ×{s.coef * r.batchMultiplier}</span>)}
-        <span className="arrow-s">→</span>
-        {r.products.map((p, i) => <span key={i} className="ing out">{MATERIALS[p.materialId]!.displayName} ×{p.coef * prodMult}</span>)}
-      </span>
-      <Equation text={r.equation} className="eq-small" />
-      <span className="cost"><span><EnergyIcon size={13} /> {r.energy}</span><span>⏱ {st.time}라운드</span>{r.exothermic && <span title="열이 나는 반응">🔥</span>}{r.extentModel.type === 'partial' && <span className="tag tag-amber">일부만 반응</span>}</span>
-      {st.canRun ? <span className="tag tag-teal">지금 만들 수 있어요</span> : <span className="tag">{st.reason}{st.detail ? `: ${st.detail}` : ''}</span>}
-    </button>
-  );
 }
 
 export function ReactionDetail({ rid, team, game, canAct, onRun, onPin, onClose }: { rid: string; team: TeamState; game: GameView; canAct: boolean; onRun: (scale: 1 | 2) => void; onPin: () => void; onClose: () => void }) {
@@ -68,7 +47,7 @@ export function ReactionDetail({ rid, team, game, canAct, onRun, onPin, onClose 
     <Modal title={<span>{r.name} <span className="muted small">{r.id}</span></span>} onClose={onClose} wide>
       <div className="stack">
         <div className="recipe-big">
-          {r.reactants.map((s, i) => <Mat key={`r${i}`} id={s.accepts[0]!} count={s.coef * r.batchMultiplier} />)}
+          {r.reactants.map((s, i) => <Mat key={`r${i}`} id={slotMaterial(s.accepts, team, game.shopMaterials)} count={s.coef * r.batchMultiplier} />)}
           <span className="arrow">→</span>
           {r.products.map((p, i) => <Mat key={`p${i}`} id={p.materialId} count={p.coef * (r.extentModel.type === 'partial' ? r.extentModel.extent : r.batchMultiplier)} />)}
         </div>
@@ -80,7 +59,7 @@ export function ReactionDetail({ rid, team, game, canAct, onRun, onPin, onClose 
           {r.exothermic ? <span className="tag tag-copper">열이 나는 반응{r.heatRecoverable ? ' · 열회수 가능' : ''}</span> : <span className="tag tag-teal">열을 넣어야 하는 반응</span>}
           {r.requiredEquipment?.map((e) => <span key={e} className={`tag ${owns(e) ? 'tag-teal' : 'tag-danger'}`}>{EQUIPMENT[e]!.name} {owns(e) ? '있음' : '필요'}</span>)}
         </div>
-        <BatchPreview rid={rid} team={team} />
+        <BatchPreview rid={rid} team={team} shop={game.shopMaterials} />
         <WhyThisMuch rid={rid} />
         {r.extentModel.type === 'partial' && <p className="small" style={{ background: 'var(--amber-soft)', padding: 8, borderRadius: 8 }}>{r.extentModel.note}</p>}
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: 6 }}>
@@ -97,13 +76,13 @@ export function ReactionDetail({ rid, team, game, canAct, onRun, onPin, onClose 
   );
 }
 
-function BatchPreview({ rid, team }: { rid: string; team: TeamState }) {
+function BatchPreview({ rid, team, shop }: { rid: string; team: TeamState; shop: string[] }) {
   const r = REACTIONS[rid]!;
   return (
     <div className="card" style={{ padding: 10 }}>
       <div className="card-title">한 번 만들 때 (×1)</div>
       <div className="row" style={{ alignItems: 'flex-start' }}>
-        <div className="stack">{r.reactants.map((s, i) => { const need = s.coef * r.batchMultiplier; const have = stockOf(team, s.accepts); return <span key={i} className={`tag ${have >= need ? 'tag-teal' : 'tag-danger'}`}>{MATERIALS[s.accepts[0]!]!.displayName} {need}개 필요 (창고에 {have}개){s.dissolve ? ' · 물에 녹여 넣음' : ''}</span>; })}</div>
+        <div className="stack">{r.reactants.map((s, i) => { const need = s.coef * r.batchMultiplier; const have = stockOf(team, s.accepts); return <span key={i} className={`tag ${have >= need ? 'tag-teal' : 'tag-danger'}`}>{MATERIALS[slotMaterial(s.accepts, team, shop)]!.displayName} {need}개 필요 (창고에 {have}개){s.dissolve ? ' · 물에 녹여 넣음' : ''}</span>; })}</div>
         <span className="arrow">→</span>
         <div className="stack">{r.outputs.map((s, i) => <span key={i} className={`tag ${s.mixture ? 'tag-copper' : 'tag-teal'}`}>{s.mixture ? '섞여서 나옴: ' : ''}{s.products.map((p) => `${MATERIALS[p.materialId]!.displayName} ${p.coef}개`).join(' + ')}{s.mixture ? ' → 정리하기 필요' : s.products.some((p) => p.materialId === 'H2O_g') ? ' → 응축하기 필요' : ''}</span>)}</div>
       </div>
