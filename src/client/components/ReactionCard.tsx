@@ -1,10 +1,10 @@
 import type { GameView } from '../../shared/protocol';
 import type { TeamState } from '../../shared/types';
-import { REACTIONS } from '../../shared/chemistry/reactions';
+import { REACTIONS, heatLabel } from '../../shared/chemistry/reactions';
 import { MATERIALS } from '../../shared/chemistry/materials';
 import { EQUIPMENT } from '../../shared/chemistry/equipment';
 import { massRatio } from '../../shared/chemistry/atoms';
-import { Formula, Equation, Mat, Modal, EnergyIcon } from './common';
+import { FormulaBody, Equation, Mat, Modal, EnergyIcon } from './common';
 import { ParticleView } from './Particles';
 import { lotComponents } from '../../shared/chemistry/processes';
 import { slotMaterial } from '../lib/slot';
@@ -49,14 +49,15 @@ export function ReactionDetail({ rid, team, game, canAct, onRun, onPin, onClose 
         <div className="recipe-big">
           {r.reactants.map((s, i) => <Mat key={`r${i}`} id={slotMaterial(s.accepts, team, game.shopMaterials)} count={s.coef * r.batchMultiplier} />)}
           <span className="arrow">→</span>
-          {r.products.map((p, i) => <Mat key={`p${i}`} id={p.materialId} count={p.coef * (r.extentModel.type === 'partial' ? r.extentModel.extent : r.batchMultiplier)} />)}
+          {r.outputs.map((o, oi) => <span key={`o${oi}`} className={o.mixture ? 'tag tag-copper' : ''}>{o.mixture && <b className="small">섞여 나옴: </b>}{o.products.map((p, i) => <Mat key={i} id={p.materialId} count={p.coef} />)}</span>)}
+          {r.products.some((p) => p.materialId === 'H2O_l' && !r.outputs.some((o) => o.products.some((q) => q.materialId === 'H2O_l'))) && <span className="small muted">(생긴 물은 용액 속 물로 합쳐져요)</span>}
         </div>
         <Equation text={r.equation} className="eq-mid" />
         <p className="small muted">{r.conditions} · {r.handling}</p>
         <div className="row">
           <span className="tag"><EnergyIcon size={13} /> 에너지 {r.energy} (1회)</span>
           <span className="tag">⏱ {st.time}라운드 뒤 완성{r.catalystEquipment && r.timeWithCatalyst !== undefined && (owns(r.catalystEquipment) ? ' (촉매 적용)' : ` · ${EQUIPMENT[r.catalystEquipment]!.name}이 있으면 ${r.timeWithCatalyst}라운드`)}</span>
-          {r.exothermic ? <span className="tag tag-copper">열이 나는 반응{r.heatRecoverable ? ' · 열회수 가능' : ''}</span> : <span className="tag tag-teal">열을 넣어야 하는 반응</span>}
+          <span className={`tag ${r.exothermic && !r.heatKind ? 'tag-copper' : 'tag-teal'}`}>{heatLabel(r)}{r.heatRecoverable ? ' · 열회수 가능' : ''}</span>
           {r.requiredEquipment?.map((e) => <span key={e} className={`tag ${owns(e) ? 'tag-teal' : 'tag-danger'}`}>{EQUIPMENT[e]!.name} {owns(e) ? '있음' : '필요'}</span>)}
         </div>
         <BatchPreview rid={rid} team={team} shop={game.shopMaterials} />
@@ -93,6 +94,9 @@ function BatchPreview({ rid, team, shop }: { rid: string; team: TeamState; shop:
 /** '왜 이만큼?' — 원자 수 · 질량 · 기체 부피비 */
 export function WhyThisMuch({ rid }: { rid: string }) {
   const r = REACTIONS[rid]!;
+  const eqPhase = r.equation.split(/ (?:\+|→|⇌) /).map((t) => t.match(/\((s|l|g|aq)\)$/)?.[1]);
+  const rows = [...r.reactants.map((s) => ({ id: s.accepts[0]!, coef: s.coef, side: 'in' })), ...r.products.map((p) => ({ id: p.materialId, coef: p.coef, side: 'out' }))];
+  const sum = (side: string) => Math.round(rows.filter((x) => x.side === side).reduce((a, x) => a + x.coef * MATERIALS[x.id]!.molarMass, 0) * 100) / 100;
   return (
     <details className="card" style={{ padding: 10 }}>
       <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--teal)' }}>왜 이만큼 필요할까? — 원자 · 질량 · 기체 부피</summary>
@@ -104,15 +108,16 @@ export function WhyThisMuch({ rid }: { rid: string }) {
         </div>
         <p className="small">반응 전과 후에 원자의 수는 같아요 ({elementSummary(rid)}). 그래서 재료 비율이 정해져 있어요.</p>
         <table className="small" style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead><tr><th style={{ textAlign: 'left' }}>물질</th><th>개수(계수)</th><th>1몰 질량(g)</th><th>질량 합</th><th>원소 질량비</th></tr></thead>
+          <thead><tr><th style={{ textAlign: 'left' }}>물질</th><th>반응식 계수</th><th>1몰 질량(g)</th><th>계수 × 1몰 질량(g)</th><th>원소 질량비</th></tr></thead>
           <tbody>
-            {[...r.reactants.map((s) => ({ id: s.accepts[0]!, coef: s.coef })), ...r.products.map((p) => ({ id: p.materialId, coef: p.coef }))].map((x, i) => {
+            {rows.map((x, i) => {
               const m = MATERIALS[x.id]!;
-              return <tr key={i} style={{ borderTop: '1px solid var(--ivory-3)' }}><td>{m.displayName} <Formula id={x.id} /></td><td className="center">{x.coef}</td><td className="center">{m.molarMass}</td><td className="center">{Math.round(x.coef * m.molarMass * 100) / 100}</td><td className="center">{massRatio(m.composition).map((e) => `${e.element} ${e.percent}%`).join(' · ')}</td></tr>;
+              return <tr key={i} style={{ borderTop: '1px solid var(--ivory-3)' }}><td>{m.displayName} <span className="formula"><FormulaBody formula={m.formula} /><span className="st">({eqPhase[i] ?? m.phase})</span></span></td><td className="center">{x.coef}</td><td className="center">{m.molarMass}</td><td className="center">{Math.round(x.coef * m.molarMass * 100) / 100}</td><td className="center">{massRatio(m.composition).map((e) => `${e.element} ${e.percent}%`).join(' · ')}</td></tr>;
             })}
           </tbody>
+          <tfoot><tr style={{ borderTop: '2px solid var(--ivory-3)' }}><td colSpan={3}><b>반응 전 합 → 반응 후 합</b></td><td className="center"><b>{sum('in')} → {sum('out')}</b></td><td /></tr></tfoot>
         </table>
-        <p className="small muted">질량 보존: 재료의 질량 합 = 만들어진 것의 질량 합 (원자량 H=1, C=12, N=14, O=16 …). 게임의 1개 = 0.1 mol.</p>
+        <p className="small muted">질량 보존: 반응 전 질량 합 = 반응 후 질량 합 (원자량 H=1, C=12, N=14, O=16 …). 표는 반응식 계수대로 계산했어요. 게임의 1개는 0.1 mol이라 실제 질량은 표 값의 10분의 1이에요 (예: 물 1개 = 1.8 g).</p>
         {r.gasVolumeRatio ? <p className="small"><b>기체 부피비</b> {r.gasVolumeRatio.label} = {r.gasVolumeRatio.ratio}. {r.gasVolumeRatio.note}</p> : <p className="small muted">기체 부피비는 같은 온도·압력의 기체끼리만 비교해요. 이 반응에는 표시하지 않아요.</p>}
         <p className="small muted">출처: {r.scientificSources.join('; ')}</p>
       </div>

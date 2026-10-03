@@ -3,6 +3,7 @@ import { MATERIALS } from '../chemistry/materials';
 import { addElements, addWater } from './ledger';
 import { ensureValueLedger, MC, peekBasis, refMc, takeBasis } from './value';
 import { pushLog } from './state';
+import { josa } from '../josa';
 
 /**
  * 잉여 재고 매입 (V3). 상점의 낮은 수요를 표현하는 제한적 거래이며 납품을 대체하지 않는다.
@@ -66,7 +67,7 @@ export function quoteBuyback(state: GameState, team: TeamState, items: { lotId: 
     if (!lot) return { ...base, ok: false, error: '창고에 없는 재료예요. (만드는 중이거나 이미 쓴 것)' };
     if (lot.kind !== 'pure') return { ...base, ok: false, error: '섞인 것은 그대로 넘길 수 없어요. 먼저 정리해 유효한 재료를 얻으세요.' };
     if (!lotSellable(lot)) return { ...base, ok: false, error: '넘길 수 없는 재료예요.' };
-    if (units > lot.units) return { ...base, ok: false, error: `${MATERIALS[lot.materialId!]!.displayName}은(는) ${lot.units}개만 있어요.` };
+    if (units > lot.units) return { ...base, ok: false, error: `${MATERIALS[lot.materialId!]!.displayName}${josa(MATERIALS[lot.materialId!]!.displayName, '은/는')} ${lot.units}개만 있어요.` };
     const share = peekBasis(lot, units);
     const cap = refMc(state, lot.materialId!) * units;
     const mc = Math.floor((Math.min(share, cap) * rateNum) / 1000);

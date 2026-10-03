@@ -115,7 +115,7 @@ export function unreachableContracts(activeReactions: string[], shop: string[], 
 export function describeRoute(r: Route): string {
   const rx = REACTIONS[r.reactionId]!;
   const p = r.processIds.length ? ' → ' + r.processIds.map((pid) => PROCESSES[pid]!.name).join(' → ') : '';
-  return `${rx.name}${p} (배치당 ${r.yieldPerBatch}칸)`;
+  return `${rx.name}${p} (한 번에 ${r.yieldPerBatch}개)`;
 }
 
 export const materialName = (id: string) => MATERIALS[id]?.displayName ?? id;

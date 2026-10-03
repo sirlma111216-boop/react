@@ -79,6 +79,16 @@ export function subscriptFormula(text: string): string {
   return text.replace(/([A-Za-z)])(\d+)/g, (_m, a: string, d: string) => a + [...d].map((c) => SUB[Number(c)] ?? c).join(''));
 }
 
+const SUP: Record<string, string> = { '2': '²', '3': '³', '+': '⁺', '-': '⁻' };
+/** 이온식: 'SO4 2-' → 'SO₄²⁻', 'Ca2+' → 'Ca²⁺', 'O2-' → 'O²⁻', 'NH4+' → 'NH₄⁺'. 전하 크기는 charge 로 판단한다. */
+export function ionText(ion: { formula: string; charge: number }): string {
+  const mag = Math.abs(ion.charge);
+  const tail = `${mag > 1 ? mag : ''}${ion.charge > 0 ? '+' : '-'}`;
+  const raw = ion.formula.replace(/\s/g, '');
+  const body = raw.endsWith(tail) ? raw.slice(0, -tail.length) : raw;
+  return subscriptFormula(body) + [...tail].map((c) => SUP[c] ?? c).join('');
+}
+
 /** 원소 질량비 (예: 물 H:O = 2:16 → 1:8) */
 export function massRatio(composition: Record<string, number>): { element: string; mass: number; percent: number }[] {
   const total = molarMassOf(composition);

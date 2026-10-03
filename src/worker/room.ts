@@ -324,6 +324,12 @@ export class RoomDurableObject extends DurableObject<Env> {
       if (this.meta.cmdOrder.length > 400) { const old = this.meta.cmdOrder.splice(0, 100); for (const k of old) delete this.meta.cmdLog[k]; }
     }
     this.sendTo(ws, { type: 'ack', id: env.id, ok: res.ok, error: res.error });
+    if (env.cmd.type === 'observe') {
+      // 장소 이동 기록은 다른 사람 화면을 바꾸지 않는다: 관측 기록(meta)만 저장하고 전체 재전송은 하지 않는다.
+      this.meta.updatedAt = Date.now();
+      await this.ctx.storage.put('meta', this.meta);
+      return;
+    }
     await this.save();
     this.scheduleBroadcast();
   }

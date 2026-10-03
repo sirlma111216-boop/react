@@ -22,7 +22,7 @@ export function TitleScreen({ onJoin, onPractice }: { onJoin: (r: JoinResult) =>
       <div className={`bg-full ${bg ? '' : 'bg-fallback-title'}`} style={bg ? { backgroundImage: `url(${bg})` } : undefined} />
       <div className="bg-content title-panel fade-in">
         <Wordmark />
-        <p className="center muted" style={{ marginBottom: 14 }}>작은 화학 공방을 운영하는 길드가 원료를 사고 반응을 연결해 도시의 주문을 납품합니다.<br />부산물까지 활용해 가장 높은 자산을 만든 길드가 승리합니다.</p>
+        <p className="center muted" style={{ marginBottom: 14 }}>작은 화학 공방을 운영하는 길드가 재료를 사고 반응을 이어 도시의 의뢰를 배달합니다.<br />함께 생긴 물질까지 잘 활용해 점수(코인 + 장비 값의 절반)가 가장 높은 길드가 이깁니다.</p>
         <div className="tabs" role="tablist">
           <button role="tab" className={tab === 'student' ? 'active' : ''} onClick={() => setTab('student')}>학생 입장</button>
           <button role="tab" className={tab === 'teacher' ? 'active' : ''} onClick={() => setTab('teacher')}>교사</button>
@@ -32,7 +32,7 @@ export function TitleScreen({ onJoin, onPractice }: { onJoin: (r: JoinResult) =>
         {tab === 'teacher' && <TeacherPanel onJoin={onJoin} />}
         {tab === 'practice' && (
           <div className="stack">
-            <p className="small">혼자 3분 안에 AI 공방과 한 주문을 완료해 봅니다. 담당자는 항상 나, 라운드는 6개, 단계 시간은 짧게.</p>
+            <p className="small">혼자 3분 안에 AI 공방과 한 의뢰를 완료해 봅니다. 담당자는 항상 나, 라운드는 6개, 단계 시간은 짧게.</p>
             <div className="row">{(['classic', 'extended', 'industrial'] as ModeId[]).map((m) => <button key={m} className="btn btn-primary btn-block" onClick={() => onPractice(m)}>{MODES[m].name}</button>)}</div>
           </div>
         )}

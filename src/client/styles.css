@@ -520,3 +520,5 @@ p { margin: 0; }
 /* 상점 카드: 설명을 항상 표시, 수량·구입 버튼은 카드 맨 아래 */
 .product-desc { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--ink-2); border-top: 1px dashed var(--ivory-3); padding-top: 6px; }
 .product-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+
+.pv-formula { display: inline-block; padding: 6px 8px; border-radius: 8px; background: var(--ivory-2); font-size: 12px; font-weight: 700; color: var(--ink-2); }

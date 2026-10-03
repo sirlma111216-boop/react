@@ -19,11 +19,11 @@ export function LotDetail({ lot, team, canAct, onProcess, onClose }: { lot: Lot;
         <div className="lot-hero"><MaterialArt lot={lot} size={96} showPhase /><span className="small">{lot.kind === 'pure' ? '그림은 보관 용기예요. 정확한 이름·수량·상태는 글자로 표시해요.' : '섞인 것은 순물질이 아니에요. 정리하기로 나누면 쓸 수 있어요.'}</span></div>
         <div className="particles">{comps.map((c) => <ParticleView key={c.materialId} materialId={c.materialId} count={c.units} />)}</div>
         <div className="row">
-          {comps.map((c) => { const m = MATERIALS[c.materialId]!; return <span key={c.materialId} className="tag tag-teal">{m.displayName} · {PHASE_LABEL[m.phase]} · {m.compositionClass === 'element' ? '홑원소 물질' : m.compositionClass === 'compound' ? '화합물' : '혼합물'} · {m.structureClass === 'ionic' ? '이온 결합' : m.structureClass === 'molecular' ? '분자' : m.structureClass === 'metallic' ? '금속' : '그물 구조'}</span>; })}
+          {comps.map((c) => { const m = MATERIALS[c.materialId]!; return <span key={c.materialId} className="tag tag-teal">{m.displayName} · {PHASE_LABEL[m.phase]} · {m.compositionClass === 'element' ? '홑원소 물질' : m.compositionClass === 'compound' ? '화합물' : '혼합물'} · {m.structureClass === 'ionic' ? (m.phase === 'aq' ? '물에 녹아 이온으로 나뉨' : '이온으로 이루어짐') : m.structureClass === 'molecular' ? (m.ions && m.phase === 'aq' ? '물에서 이온으로 나뉨' : '분자') : m.structureClass === 'metallic' ? '금속' : '그물 구조'}</span>; })}
         </div>
         <p className="small">{comps.map((c) => MATERIALS[c.materialId]!.blurb).join(' ')}</p>
-        <p className="muted small">어디서 왔나: {lot.origin.type === 'purchase' ? '가게에서 삼' : lot.origin.type === 'bundle' ? '시작 재료' : lot.origin.type === 'support' ? '길드 연구지원품' : lot.origin.chain.map((x) => (x.startsWith('R') ? '만들기' : PROCESSES[x]?.name ?? x)).join(' → ')} · {lot.tags.map(tagLabel).join(', ')} · 무게 약 {lotMassGrams(lot)} g{lot.solvent > 0 ? ` · 함께 있는 물 ${lot.solvent} (팔 수 없는 공정 용수)` : ''}</p>
-        {lot.grade === 'purchased' && <p className="small" style={{ background: 'var(--amber-soft)', padding: 8, borderRadius: 8 }}>가게에서 산 재료는 그대로 배달할 수 없어요. 만들기나 정리하기를 거쳐야 해요.</p>}
+        <p className="muted small">어디서 왔나: {lot.origin.type === 'purchase' ? '상점에서 삼' : lot.origin.type === 'bundle' ? '시작 재료' : lot.origin.type === 'support' ? '길드 연구지원품' : lot.origin.chain.map((x) => (x.startsWith('R') ? '만들기' : PROCESSES[x]?.name ?? x)).join(' → ')} · {lot.tags.map(tagLabel).join(', ')} · 무게 약 {lotMassGrams(lot)} g{lot.solvent > 0 ? ` · 함께 있는 물 ${lot.solvent} (팔 수 없는 공정 용수)` : ''}</p>
+        {lot.grade === 'purchased' && <p className="small" style={{ background: 'var(--amber-soft)', padding: 8, borderRadius: 8 }}>상점에서 산 재료는 그대로 배달할 수 없어요. 만들기나 정리하기를 거쳐야 해요.</p>}
         <div className="divider" />
         <div className="card-title">정리하기 (기다림 없이 바로 창고에 들어와요)</div>
         {procs.length === 0 && <p className="muted small">이 재료는 정리할 것이 없어요. 만들기 카드의 재료로 쓰거나, 배달 조건에 맞으면 배달하세요.</p>}
@@ -51,7 +51,7 @@ export function LotDetail({ lot, team, canAct, onProcess, onClose }: { lot: Lot;
             );
           })}
         </div>
-        <p className="muted small"><Formula id={comps[0]!.materialId} /></p>
+        <p className="muted small">{comps.map((c, i) => <span key={c.materialId}>{i > 0 && ' + '}<Formula id={c.materialId} /></span>)}</p>
       </div>
     </Modal>
   );

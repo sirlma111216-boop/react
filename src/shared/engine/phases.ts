@@ -18,10 +18,10 @@ const lotGen = makeIdGen('B');
 const EVENT_LABEL: Record<EventType, string> = {
   energy: '에너지 지원: 모든 팀 에너지 +1',
   discount: '원료 할인: 지정 원료 2종 −1코인 (이번 라운드)',
-  paperDemand: '제지 수요 증가: 신규 제지 계약 보상 +10%',
-  metalDemand: '금속 수요 증가: 신규 금속 계약 보상 +10%',
-  gasDemand: '기체 수요 증가: 신규 기체 계약 보상 +10%',
-  transport: '운송 지원: 이번 라운드 첫 납품 +2코인',
+  paperDemand: '제지 수요 증가: 새 제지 의뢰 보상 +10%',
+  metalDemand: '금속 수요 증가: 새 금속 의뢰 보상 +10%',
+  gasDemand: '기체 수요 증가: 새 기체 의뢰 보상 +10%',
+  transport: '운송 지원: 이번 라운드 첫 배달 +2코인',
 };
 
 function scheduleEvents(state: GameState): void {
@@ -89,7 +89,7 @@ export function generateOffers(state: GameState, team: TeamState, map: Reachabil
   // 첫 라운드에는 시작 묶음으로 2~3라운드 안에 끝낼 수 있는 짧은 계약을 반드시 하나 넣는다
   if (state.round === 1) {
     const quick = shuffled.filter((cid) => CONTRACTS[cid]!.minRounds <= 3 && !CONTRACTS[cid]!.byproductOnly);
-    // V3: 이번 라운드 지원품으로 시작할 수 있는 짧은 주문을 우선 (지원품 기준 반응 또는 완성 소재의 주문)
+    // V3: 이번 라운드 지원품으로 시작할 수 있는 짧은 의뢰를 우선 (지원품 기준 반응 또는 완성 소재의 의뢰)
     const supportPref = team.support ? quick.find((cid) => supportMatches(team, cid, map)) : undefined;
     const bundlePref = supportPref ?? quick.find((cid) => bundleMatches(team.bundleId, cid)) ?? quick[0];
     if (bundlePref) { out.push(makeOffer(state, bundlePref, state.round, CONTRACTS[bundlePref]!.minRounds)); cats.add(CONTRACTS[bundlePref]!.category); }
@@ -218,7 +218,7 @@ export function beginPlan(state: GameState): void {
   }
   if (state.config.auctionRounds.includes(state.round)) {
     const a = makeAuction(state, state.round, state.config.auctionRounds.indexOf(state.round), map);
-    if (a) { state.auctions.push(a); pushLog(state, 'auction', `도시 특별 계약 공개: ${a.contract.title} (보상 ${a.contract.reward})`); }
+    if (a) { state.auctions.push(a); pushLog(state, 'auction', `도시 특별 의뢰 공개: ${a.contract.title} (보상 ${a.contract.reward})`); }
   }
   state.version += 1;
 }

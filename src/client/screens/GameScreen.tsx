@@ -16,6 +16,7 @@ import { WorkshopPlace } from '../places/WorkshopPlace';
 import { StorePlace } from '../places/StorePlace';
 import { ShippingPlace } from '../places/ShippingPlace';
 import { ResultsScreen } from './ResultsScreen';
+import { preloadPlaceArt } from '../components/Scene';
 
 /** 게임 화면 골격: HUD + 4개 장소. 장소 이동은 개인 UI 상태이며 서버 명령이 아니다. */
 export function GameScreen({ view, client, onLeave, headerExtra }: { view: ClientView; client: GameClient; onLeave: () => void; headerExtra?: React.ReactNode }) {
@@ -35,6 +36,7 @@ export function GameScreen({ view, client, onLeave, headerExtra }: { view: Clien
   const canAct = !!team && me.isOperator && game.phase === 'execute' && view.room.status === 'playing' && !team.roundReady;
   const canPlan = canAct;
 
+  useEffect(() => { preloadPlaceArt(); }, []);
   useEffect(() => { audio.bgm(game.round >= game.roundsTotal ? 'bgm-final' : 'bgm-gameplay'); }, [game.round, game.roundsTotal]);
   // 라운드가 바뀌면 장소는 유지하고 변화 요약 한 줄만
   useEffect(() => {
@@ -76,7 +78,7 @@ export function GameScreen({ view, client, onLeave, headerExtra }: { view: Clien
     return (
       <div className="screen" style={{ padding: 16 }}>
         <div className="card center"><h2>구경 중</h2><p className="muted">팀에 들어가 있지 않아 공개된 진행만 볼 수 있어요. 선생님이 팀에 넣어 줄 수 있어요.</p>
-          <div className="others" style={{ marginTop: 12 }}>{view.teams.map((t) => <div key={t.id} className="other"><Emblem shape={t.emblem} color={t.color} /><span>{t.name}</span><span className="muted small">주문 {t.contractsHeld} · 배달 {t.delivered} · {t.roundReady ? '준비 완료' : '진행 중'}</span></div>)}</div>
+          <div className="others" style={{ marginTop: 12 }}>{view.teams.map((t) => <div key={t.id} className="other"><Emblem shape={t.emblem} color={t.color} /><span>{t.name}</span><span className="muted small">의뢰 {t.contractsHeld} · 배달 {t.delivered} · {t.roundReady ? '준비 완료' : '진행 중'}</span></div>)}</div>
           <button className="btn btn-ghost" style={{ marginTop: 12 }} onClick={onLeave}>나가기</button>
         </div>
       </div>
@@ -118,10 +120,10 @@ function TeamPanel({ view, send, onClose }: { view: ClientView; send: (cmd: Team
         <div className="panel-title">다음 사람에게 메모</div>
         <textarea className="input" rows={2} defaultValue={t.memo} key={t.memo} maxLength={200} placeholder="예: 다음엔 수증기를 응축해서 배달하면 돼" onBlur={(e) => { if (e.target.value !== t.memo) send({ type: 'memo', text: e.target.value }); }} />
         <div className="panel-title" style={{ marginTop: 8 }}>팀원 추천</div>
-        <div className="pins">{t.pins.length === 0 && <p className="muted small">카드나 주문에서 👍를 누르면 여기에 나와요.</p>}{t.pins.slice().reverse().map((p, i) => <div key={i} className="pin"><b>{view.players.find((x) => x.id === p.playerId)?.nick ?? '?'}</b>: {p.label}</div>)}</div>
+        <div className="pins">{t.pins.length === 0 && <p className="muted small">카드나 의뢰에서 👍를 누르면 여기에 나와요.</p>}{t.pins.slice().reverse().map((p, i) => <div key={i} className="pin"><b>{view.players.find((x) => x.id === p.playerId)?.nick ?? '?'}</b>: {p.label}</div>)}</div>
         <div className="divider" />
         <div className="panel-title">다른 팀</div>
-        <div className="others">{view.teams.filter((x) => x.id !== t.id).map((x) => <div key={x.id} className="other"><Emblem shape={x.emblem} color={x.color} size={20} /><span>{x.name}<div className="muted small">주문 {x.contractsHeld} · 배달 {x.delivered} · {x.roundReady ? '준비 완료' : '진행 중'}</div></span><span className="small muted">{x.assetHistory[x.assetHistory.length - 1] ?? '-'}</span></div>)}</div>
+        <div className="others">{view.teams.filter((x) => x.id !== t.id).map((x) => <div key={x.id} className="other"><Emblem shape={x.emblem} color={x.color} size={20} /><span>{x.name}<div className="muted small">의뢰 {x.contractsHeld} · 배달 {x.delivered} · {x.roundReady ? '준비 완료' : '진행 중'}</div></span><span className="small muted">{x.assetHistory[x.assetHistory.length - 1] ?? '-'}</span></div>)}</div>
         <div className="panel-title" style={{ marginTop: 8 }}>소식</div>
         <div className="small" style={{ maxHeight: 120, overflow: 'auto' }}>{g.log.slice(-12).reverse().map((l, i) => <div key={i} className="muted">{l.round}R {l.text}</div>)}</div>
       </div>

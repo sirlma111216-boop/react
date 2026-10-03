@@ -13,6 +13,7 @@ import { MaterialArt, ObjectArt } from '../components/Art';
 import { mapFor, unmetRequirements } from '../components/Coach';
 import { previewProps, type Place } from '../lib/places';
 import { reactionStatus } from '../components/ReactionCard';
+import { josa } from '../../shared/josa';
 
 type Send = (cmd: TeamCommand, sfx?: string) => Promise<boolean>;
 type Filter = 'rec' | 'all' | 'mat' | 'equip';
@@ -24,7 +25,7 @@ function EquipmentFallback() {
 const coinText = (mc: number) => (mc / 1000).toFixed(1).replace(/\.0$/, '');
 
 function lotSource(l: Lot): string {
-  if (l.grade === 'purchased') return '가게에서 산 것';
+  if (l.grade === 'purchased') return '상점에서 산 것';
   if (l.grade === 'support') return l.tags.length ? `지원품 · ${lotTagText(l)}` : '지원품';
   return l.tags.map(tagLabel).join('/') || '만든 것';
 }
@@ -179,7 +180,7 @@ export function StorePlace({ view, send, focusId, canAct, goTo, highlight }: { v
               {bb && <button role="tab" aria-selected={mode === 'sell'} className={`chip ${mode === 'sell' ? 'active' : ''}`} onClick={() => setMode('sell')}>재고 매입</button>}
             </span>
             {mode === 'buy' && (['rec', 'all', 'mat', 'equip'] as Filter[]).map((f) => <button key={f} className={`chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{{ rec: '추천', all: '전체', mat: '재료', equip: '장비' }[f]}</button>)}
-            {mode === 'buy' && filter === 'rec' && !hasRec && <span className="small filter-note">주문을 받으면 필요한 재료를 추천해 드려요. 지금은 전체 상품이에요.</span>}
+            {mode === 'buy' && filter === 'rec' && !hasRec && <span className="small filter-note">의뢰를 받으면 필요한 재료를 추천해 드려요. 지금은 전체 상품이에요.</span>}
           </div>
           {mode === 'buy' ? (
             <div className="product-grid">
@@ -254,7 +255,7 @@ export function StorePlace({ view, send, focusId, canAct, goTo, highlight }: { v
               <div className={`divider ${highlight === 'energy' ? 'hl' : ''}`} />
               <div className="small"><b>에너지 충전</b> — {cfg.energyBundleCost}코인에 <EnergyIcon size={12} /> {cfg.energyBundleAmount} (행동 1)</div>
               <div className="row">{[1, 2].slice(0, cfg.energyBundleMax).map((n) => <button key={n} className="btn btn-sm btn-ghost" disabled={!canAct || supportPending || t.actionsLeft <= 0 || avail < n * cfg.energyBundleCost || t.energy >= cfg.energyCap} {...previewProps({ coins: -n * cfg.energyBundleCost, energy: n * cfg.energyBundleAmount, actions: -1 })} onClick={() => send({ type: 'buyEnergy', bundles: n }, 'sfx-supply')}>{n}묶음 {n * cfg.energyBundleCost}코인</button>)}</div>
-              {arrived && <div className="arrival" role="status"><ObjectArt id="obj-support-closed" size={28} variant="s" /> {arrived}이(가) 공방에 도착했어요 <button className="btn btn-sm btn-copper" onClick={() => goTo('workshop')}>공방으로 →</button></div>}
+              {arrived && <div className="arrival" role="status"><ObjectArt id="obj-support-closed" size={28} variant="s" /> {arrived}{josa(arrived, '이/가')} 공방에 도착했어요 <button className="btn btn-sm btn-copper" onClick={() => goTo('workshop')}>공방으로 →</button></div>}
             </section>
           ) : (
             <section className="panel trade crate-panel">

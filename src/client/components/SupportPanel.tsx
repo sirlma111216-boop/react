@@ -10,9 +10,9 @@ import { Modal } from './common';
 type Send = (cmd: TeamCommand, sfx?: string) => Promise<boolean>;
 
 const KIND_HINT: Record<string, string> = {
-  finished: '검수된 완성 소재 1칸 — 조건이 맞는 의뢰에 바로 보탤 수 있어요',
-  process: '중간물·연결 재료 3~4칸 — 몇 단계를 건너뛰게 해 줘요',
-  basic: '기초 원료 8~10칸 — 여러 번 만들 수 있어요',
+  finished: '검수된 완성 소재 1개 — 조건이 맞는 의뢰에 바로 보탤 수 있어요',
+  process: '중간물·연결 재료 3~4개 — 몇 단계를 건너뛰게 해 줘요',
+  basic: '기초 원료 8~10개 — 여러 번 만들 수 있어요',
 };
 
 function BundleItems({ b, size = 44 }: { b: SupportBundle; size?: number }) {

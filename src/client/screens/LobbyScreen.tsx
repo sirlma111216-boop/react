@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import QRCode from 'qrcode';
 import type { ClientView, TeamPublic } from '../../shared/protocol';
 import type { GameClient } from '../lib/net';
 import { TEAM_COLORS, TEAM_EMBLEMS, EMBLEM_LABEL } from '../../shared/engine/state';
@@ -23,7 +22,7 @@ export function LobbyScreen({ view, client, onLeave }: { view: ClientView; clien
   useEffect(() => { audio.bgm('bgm-lobby'); }, []);
   useEffect(() => {
     if (!isTeacher) return;
-    QRCode.toDataURL(view.room.joinUrl, { width: 240, margin: 1, color: { dark: '#17494D', light: '#FFFFFF' } }).then(setQr).catch(() => setQr(null));
+    import('qrcode').then(({ default: QRCode }) => QRCode.toDataURL(view.room.joinUrl, { width: 240, margin: 1, color: { dark: '#17494D', light: '#FFFFFF' } })).then(setQr).catch(() => setQr(null));
   }, [view.room.joinUrl, isTeacher]);
   const send = async (cmd: Parameters<GameClient['send']>[0]) => { const r = await client.send(cmd); if (!r.ok) store.toast(r.error ?? '실패', 'error'); return r.ok; };
   const myTeam = view.teams.find((t) => t.id === me.teamId) ?? null;

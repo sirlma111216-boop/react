@@ -9,6 +9,7 @@ import { contractPayout } from './market';
 import { distributeBasis, MC, takeBasis } from './value';
 import { chooseSupport, supportPending } from './support';
 import { sellSurplus } from './buyback';
+import { josa } from '../josa';
 
 const idGen = makeIdGen('L');
 
@@ -162,7 +163,7 @@ export function lotTagText(lot: { grade: string; tags: string[] }): string {
   return lot.tags.map((t) => (lot.grade === 'support' && t === 'reaction' ? '반응 생성품 등급' : tagLabel(t))).join('/');
 }
 
-export const tagLabel = (t: string): string => ({ support: '연구지원품', purchased: '가게에서 산 것', reaction: '직접 만든 것', condensed: '응축한 것', gasCollected: '모은 기체', filtered: '건져 낸 고체', filtrate: '남은 용액', crystallized: '결정으로 만든 것', refined: '정제한 것', recovered: '되돌려 받은 재료', solutionWater: '회수수', gasMixture: '섞인 기체', suspension: '섞인 것(고체+용액)', liquidMixture: '섞인 액체', partial: '일부만 반응' } as Record<string, string>)[t] ?? t;
+export const tagLabel = (t: string): string => ({ support: '연구지원품', purchased: '상점에서 산 것', reaction: '직접 만든 것', condensed: '응축한 것', gasCollected: '모은 기체', filtered: '건져 낸 고체', filtrate: '남은 용액', crystallized: '결정으로 만든 것', refined: '정제한 것', recovered: '되돌려 받은 재료', solutionWater: '회수수', gasMixture: '섞인 기체', suspension: '섞인 것(고체+용액)', liquidMixture: '섞인 액체', partial: '일부만 반응' } as Record<string, string>)[t] ?? t;
 
 export function deliverContract(state: GameState, team: TeamState, c: ContractInstance): CommandResult {
   const check = contractSatisfiable(team, c);
@@ -242,34 +243,34 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
       return { ok: true };
     }
     case 'chooseLease': {
-      if (phase !== 'setup') return fail('임대 설비는 경기 시작 전에만 고를 수 있습니다.');
+      if (phase !== 'setup') return fail('빌리는 장비는 경기 시작 전에만 고를 수 있어요.');
       if (state.mode !== 'industrial') return fail('산업 공방에서만 임대할 수 있습니다.');
       const e = EQUIPMENT[cmd.equipmentId];
-      if (!e?.leasable || !state.activeEquipment.includes(e.id)) return fail('임대할 수 없는 설비입니다.');
+      if (!e?.leasable || !state.activeEquipment.includes(e.id)) return fail('빌릴 수 없는 장비예요.');
       team.leaseId = e.id;
       return { ok: true };
     }
     case 'takeContract': {
-      if (phase !== 'plan' && phase !== 'execute') return fail('주문은 상의 시간이나 행동 시간에 받을 수 있어요.');
+      if (phase !== 'plan' && phase !== 'execute') return fail('의뢰는 상의 시간이나 행동 시간에 받을 수 있어요.');
       if (team.roundReady) return fail('준비 완료 상태예요. 준비를 취소하면 다시 받을 수 있어요.');
       const offer = team.offers.find((o) => o.id === cmd.offerId);
-      if (!offer) return fail('이미 사라진 주문이에요.');
-      if (team.contracts.length >= cfg.contractLimit) return fail(`주문은 한 번에 ${cfg.contractLimit}개까지만 받을 수 있어요.`);
-      if (team.bid > 0 && team.contracts.length >= cfg.contractLimit - 1) return fail('입찰 중이라 주문 자리 하나가 예약되어 있어요.');
-      if (team.lastCancelRound === state.round && team.contracts.length > 0) return fail('이번 라운드에 취소했으면 새 주문은 다음 라운드부터 받을 수 있어요.');
+      if (!offer) return fail('이미 사라진 의뢰예요.');
+      if (team.contracts.length >= cfg.contractLimit) return fail(`의뢰는 한 번에 ${cfg.contractLimit}개까지만 받을 수 있어요.`);
+      if (team.bid > 0 && team.contracts.length >= cfg.contractLimit - 1) return fail('입찰 중이라 의뢰 자리 하나가 예약되어 있어요.');
+      if (team.lastCancelRound === state.round && team.contracts.length > 0) return fail('이번 라운드에 취소했으면 새 의뢰는 다음 라운드부터 받을 수 있어요.');
       const limit = offer.templateId === 'C06' ? cfg.byproductTemplateLimit : cfg.sameTemplateLimit;
-      if ((team.templateCounts[offer.templateId] ?? 0) >= limit) return fail('같은 종류의 주문은 더 받을 수 없어요.');
+      if ((team.templateCounts[offer.templateId] ?? 0) >= limit) return fail('같은 종류의 의뢰는 더 받을 수 없어요.');
       team.offers = team.offers.filter((o) => o.id !== offer.id);
       team.contracts.push({ ...offer, acquiredRound: state.round });
       team.templateCounts[offer.templateId] = (team.templateCounts[offer.templateId] ?? 0) + 1;
-      pushLog(state, 'contract', `${team.name}: ${offer.title} 주문 받음`, team.id);
+      pushLog(state, 'contract', `${team.name}: ${offer.title} 의뢰 받음`, team.id);
       return { ok: true };
     }
     case 'cancelContract': {
-      if (phase !== 'plan' && !(phase === 'execute' && state.turnMode === 'manual')) return fail('주문 취소는 상의 시간에만 할 수 있어요.');
+      if (phase !== 'plan' && !(phase === 'execute' && state.turnMode === 'manual')) return fail('의뢰 취소는 상의 시간에만 할 수 있어요.');
       const c = team.contracts.find((x) => x.id === cmd.contractId);
-      if (!c) return fail('없는 주문이에요.');
-      if (c.special) return fail('낙찰받은 특별 주문은 취소할 수 없어요.');
+      if (!c) return fail('없는 의뢰예요.');
+      if (c.special) return fail('낙찰받은 특별 의뢰는 취소할 수 없어요.');
       team.contracts = team.contracts.filter((x) => x.id !== c.id);
       team.templateCounts[c.templateId] = Math.max(0, (team.templateCounts[c.templateId] ?? 1) - 1);
       team.lastCancelRound = state.round;
@@ -285,7 +286,7 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
       break;
   }
 
-  // V3: 자기 팀 연구지원품을 고르기 전에는 경제 행동·입찰·준비 완료를 잠근다 (장소 이동·의뢰 확인·주문 받기·토론은 가능)
+  // V3: 자기 팀 연구지원품을 고르기 전에는 경제 행동·입찰·준비 완료를 잠근다 (장소 이동·의뢰 확인·의뢰 받기·토론은 가능)
   if (supportPending(state, team) && ['procure', 'buyEnergy', 'react', 'process', 'deliver', 'equip', 'bid', 'sellSurplus'].includes(cmd.type)) {
     return fail('먼저 이번 라운드 연구지원품을 골라 주세요. (공방 → 지원품 확인)');
   }
@@ -310,10 +311,10 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
     case 'bid': {
       if (phase !== 'plan' && phase !== 'execute') return fail('입찰은 상의 시간이나 행동 시간에만 할 수 있어요.');
       const auction = state.auctions.find((a) => a.round === state.round && !a.resolved);
-      if (!auction) return fail('이번 라운드에는 특별 주문 입찰이 없어요.');
+      if (!auction) return fail('이번 라운드에는 특별 의뢰 입찰이 없어요.');
       const amount = Math.floor(Number(cmd.amount));
       if (!Number.isFinite(amount) || amount < 0 || amount > cfg.auctionMaxBid) return fail(`입찰액은 0~${cfg.auctionMaxBid}코인입니다.`);
-      if (amount > 0 && team.contracts.length >= cfg.contractLimit) return fail('주문 자리가 가득 차서 입찰할 수 없어요.');
+      if (amount > 0 && team.contracts.length >= cfg.contractLimit) return fail('의뢰 자리가 가득 차서 입찰할 수 없어요.');
       if (amount > team.coins) return fail('가진 코인보다 많이 입찰할 수 없어요.');
       team.bid = amount;
       auction.bids[team.id] = amount;
@@ -338,9 +339,9 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
       if (total > cfg.procureMaxTotal) return fail(`한 번에 모두 ${cfg.procureMaxTotal}개까지 살 수 있어요.`);
       let cost = 0;
       for (const i of items) {
-        if (!state.shopMaterials.includes(i.materialId)) return fail('이 가게에서 팔지 않는 재료예요.');
+        if (!state.shopMaterials.includes(i.materialId)) return fail('이 상점에서 팔지 않는 재료예요.');
         if (i.units > cfg.procureMaxPerKindPerRound) return fail(`한 종류는 라운드당 ${cfg.procureMaxPerKindPerRound}개까지예요.`);
-        if ((team.purchasesThisRound[i.materialId] ?? 0) + i.units > cfg.procureMaxPerKindPerRound) return fail(`${MATERIALS[i.materialId]!.displayName}은(는) 이번 라운드에 더 살 수 없어요.`);
+        if ((team.purchasesThisRound[i.materialId] ?? 0) + i.units > cfg.procureMaxPerKindPerRound) return fail(`${MATERIALS[i.materialId]!.displayName}${josa(MATERIALS[i.materialId]!.displayName, '은/는')} 이번 라운드에 더 살 수 없어요.`);
         cost += priceOf(state, i.materialId) * i.units;
       }
       if (cost > availableCoins(team)) return fail(`코인이 부족해요 (필요 ${cost}, 쓸 수 있는 코인 ${availableCoins(team)}).`);
@@ -437,7 +438,7 @@ function applyInner(state: GameState, team: TeamState, cmd: TeamCommand): Comman
     }
     case 'deliver': {
       const c = team.contracts.find((x) => x.id === cmd.contractId);
-      if (!c) return fail('받지 않은 주문이에요.');
+      if (!c) return fail('받지 않은 의뢰예요.');
       if (cmd.quoteVersion !== undefined && cmd.quoteVersion !== state.round) return fail('시세가 바뀌었어요. 새 금액을 확인하고 다시 눌러 주세요.');
       const r = deliverContract(state, team, c);
       if (r.ok) team.actionsLeft -= 1;

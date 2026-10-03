@@ -43,9 +43,9 @@ const BASE_ECONOMY: EconomyConfig = {
   reactionEnergy: {},
   reactionTime: {},
   bundles: [
-    { id: 'gas', name: '기체 공방', items: [{ materialId: 'H2_g', units: 4 }, { materialId: 'O2_g', units: 2 }, { materialId: 'H2O2_aq', units: 4 }], extraCoins: 0, blurb: '수소와 산소로 물을 만들어 정제수 주문을 바로 노린다.' },
-    { id: 'carbonate', name: '탄산 공방', items: [{ materialId: 'NaHCO3_s', units: 4 }, { materialId: 'CaCl2_s', units: 2 }, { materialId: 'Na2CO3_s', units: 1 }], extraCoins: 2, blurb: '베이킹소다를 가열하고 침전을 만들어 종이 공장 주문을 노린다.' },
-    { id: 'material', name: '소재 공방', items: [{ materialId: 'Mg_s', units: 2 }, { materialId: 'O2_g', units: 2 }, { materialId: 'CaO_s', units: 1 }, { materialId: 'H2O_l', units: 2 }], extraCoins: 0, blurb: '마그네슘을 태워 세라믹 주문을 가장 빨리 끝낸다.' },
+    { id: 'gas', name: '기체 공방', items: [{ materialId: 'H2_g', units: 4 }, { materialId: 'O2_g', units: 2 }, { materialId: 'H2O2_aq', units: 4 }], extraCoins: 0, blurb: '수소와 산소로 물을 만들어 정제수 의뢰를 바로 노린다.' },
+    { id: 'carbonate', name: '탄산 공방', items: [{ materialId: 'NaHCO3_s', units: 4 }, { materialId: 'CaCl2_s', units: 2 }, { materialId: 'Na2CO3_s', units: 1 }], extraCoins: 2, blurb: '베이킹소다를 가열하고 침전을 만들어 종이 공장 의뢰를 노린다.' },
+    { id: 'material', name: '소재 공방', items: [{ materialId: 'Mg_s', units: 2 }, { materialId: 'O2_g', units: 2 }, { materialId: 'CaO_s', units: 1 }, { materialId: 'H2O_l', units: 2 }], extraCoins: 0, blurb: '마그네슘을 태워 세라믹 의뢰를 가장 빨리 끝낸다.' },
   ],
   support: {
     finishedUnits: 1,

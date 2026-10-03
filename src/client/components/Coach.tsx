@@ -9,6 +9,7 @@ import { contractSatisfiable, lotUsableFor } from '../../shared/engine/commands'
 import { reactionStatus } from './ReactionCard';
 import { Modal } from './common';
 import type { Place } from '../lib/places';
+import { josa } from '../../shared/josa';
 
 export interface Hint {
   step: string;
@@ -63,14 +64,14 @@ export function nextHint(view: ClientView, focusId: string | null): Hint {
   if (t.support && t.support.status === 'pending' && t.support.round === g.round) return isOp
     ? { step: '연구지원품 고르기', detail: '공방에 도착한 세 묶음 중 1묶음을 반송하고 2묶음을 받으세요. 고르기 전에는 사기·만들기·준비 완료가 잠겨요.', place: 'workshop', target: 'support' }
     : { step: '연구지원품 상의', detail: `${opNick}님이 지원품을 고르는 중이에요. 공방에서 세 묶음을 보고 '반송 제안'을 보낼 수 있어요.`, place: 'workshop', target: 'support' };
-  if (!isOp) return { step: `${opNick} 차례`, detail: '카드나 주문을 열어 👍 추천으로 도와줄 수 있어요. 창고와 장소는 자유롭게 볼 수 있어요.', place: 'workshop' };
+  if (!isOp) return { step: `${opNick} 차례`, detail: '카드나 의뢰를 열어 👍 추천으로 도와줄 수 있어요. 창고와 장소는 자유롭게 볼 수 있어요.', place: 'workshop' };
 
   const map = mapFor(view);
   const ordered = [...t.contracts].sort((a, b) => (a.id === focusId ? -1 : b.id === focusId ? 1 : 0));
   const deliverable = ordered.find((c) => contractSatisfiable(t, c).ok);
-  if (deliverable && t.actionsLeft > 0) return { step: '완성품 준비 끝', detail: `"${deliverable.title}"을(를) 출하장에서 배달할 수 있어요.`, place: 'shipping', target: `contract:${deliverable.id}` };
+  if (deliverable && t.actionsLeft > 0) return { step: '완성품 준비 끝', detail: `"${deliverable.title}"${josa(deliverable.title, '을/를')} 출하장에서 배달할 수 있어요.`, place: 'shipping', target: `contract:${deliverable.id}` };
   if (t.actionsLeft <= 0) return { step: '행동 끝', detail: '이번 라운드 행동을 모두 썼어요. 준비 완료를 누르면 다른 팀을 기다려요.', place: 'workshop', target: 'ready' };
-  if (t.contracts.length === 0) return t.offers.length ? { step: '주문 받기', detail: '의뢰소에서 과학자의 주문을 하나 받으세요. 행동을 쓰지 않아요.', place: 'orders', target: 'offer' } : { step: '주문 없음', detail: '이번 라운드에는 새 주문이 없어요. 준비 완료로 다음 라운드를 기다려요.', place: 'orders', target: 'ready' };
+  if (t.contracts.length === 0) return t.offers.length ? { step: '의뢰 받기', detail: '의뢰소에서 과학자의 의뢰를 하나 받으세요. 행동을 쓰지 않아요.', place: 'orders', target: 'offer' } : { step: '의뢰 없음', detail: '이번 라운드에는 새 의뢰가 없어요. 준비 완료로 다음 라운드를 기다려요.', place: 'orders', target: 'ready' };
 
   for (const c of ordered) {
     for (const req of unmetRequirements(t, c.requirements)) {
@@ -79,13 +80,13 @@ export function nextHint(view: ClientView, focusId: string | null): Hint {
         if (pid) {
           const p = PROCESSES[pid]!;
           const owns = !p.requiredEquipment || t.equipment.some((e) => e.id === p.requiredEquipment);
-          if (!owns) return { step: '장비 필요', detail: `${nm(req.materialId)}을(를) 얻으려면 "${EQUIPMENT[p.requiredEquipment!]!.name}"이 필요해요. 상점에서 사세요.`, place: 'store', target: `equip:${p.requiredEquipment}` };
+          if (!owns) return { step: '장비 필요', detail: `${nm(req.materialId)}${josa(nm(req.materialId), '을/를')} 얻으려면 "${EQUIPMENT[p.requiredEquipment!]!.name}"이 필요해요. 상점에서 사세요.`, place: 'store', target: `equip:${p.requiredEquipment}` };
           const label = lot.kind === 'pure' ? nm(lot.materialId!) : '섞인 것';
-          return { step: '정리하기', detail: `공방 트레이의 "${label}"을(를) "${p.name}"로 정리하면 ${nm(req.materialId)}이(가) 돼요.`, place: 'workshop', target: `lot:${lot.id}` };
+          return { step: '정리하기', detail: `공방 트레이의 "${label}"${josa(label, '을/를')} "${p.name}"로 정리하면 ${nm(req.materialId)}${josa(nm(req.materialId), '이/가')} 돼요.`, place: 'workshop', target: `lot:${lot.id}` };
         }
       }
       const pending = t.processes.find((p) => p.outputs.some((o) => (o.kind === 'pure' && o.materialId === req.materialId) || (o.kind === 'mixture' && o.components?.some((x) => x.materialId === req.materialId))));
-      if (pending) return { step: '완성 기다리기', detail: `"${REACTIONS[pending.defId]?.name ?? '만들기'}"은(는) ${pending.completesRound}라운드 마무리 때 끝나요. 다른 일을 하거나 준비 완료를 눌러요.`, place: 'workshop', target: 'ready' };
+      if (pending) return { step: '완성 기다리기', detail: `"${REACTIONS[pending.defId]?.name ?? '만들기'}"${josa(REACTIONS[pending.defId]?.name ?? '만들기', '은/는')} ${pending.completesRound}라운드 마무리 때 끝나요. 다른 일을 하거나 준비 완료를 눌러요.`, place: 'workshop', target: 'ready' };
       const routes = routesFor(map, req.materialId, req.tags).filter((r) => g.activeReactions.includes(r.reactionId));
       for (const r of routes) {
         const st = reactionStatus(t, r.reactionId, g);
@@ -94,29 +95,29 @@ export function nextHint(view: ClientView, focusId: string | null): Hint {
       if (routes.length && routes.every((r) => reactionStatus(t, r.reactionId, g).reason === '작업 자리 없음')) return { step: '작업 자리 없음', detail: '작업 자리가 모두 사용 중이에요. 마무리 뒤 비거나, 상점에서 "추가 반응기"를 살 수 있어요.', place: 'store', target: 'equip:U01' };
       for (const r of routes) {
         const st = reactionStatus(t, r.reactionId, g);
-        if (st.reason === '재료 부족') return { step: '재료 부족', detail: `"${REACTIONS[r.reactionId]!.name}"에 ${st.detail}이(가) 더 필요해요. 상점에서 확인하세요.`, place: 'store', target: `need:${r.reactionId}` };
+        if (st.reason === '재료 부족') return { step: '재료 부족', detail: `"${REACTIONS[r.reactionId]!.name}"에 ${st.detail}${josa(st.detail, '이/가')} 더 필요해요. 상점에서 확인하세요.`, place: 'store', target: `need:${r.reactionId}` };
         if (st.reason === '에너지 부족') return { step: '에너지 부족', detail: `에너지가 부족해요 (${st.detail}). 상점에서 에너지를 충전할 수 있어요.`, place: 'store', target: 'energy' };
-        if (st.reason === '장비 필요') return { step: '장비 필요', detail: `"${REACTIONS[r.reactionId]!.name}"에는 ${st.detail}이(가) 필요해요. 상점에서 사세요.`, place: 'store', target: `equip:${r.requiredEquipment[0] ?? ''}` };
+        if (st.reason === '장비 필요') return { step: '장비 필요', detail: `"${REACTIONS[r.reactionId]!.name}"에는 ${st.detail}${josa(st.detail, '이/가')} 필요해요. 상점에서 사세요.`, place: 'store', target: `equip:${r.requiredEquipment[0] ?? ''}` };
       }
     }
   }
   const anyRun = g.activeReactions.find((rid) => reactionStatus(t, rid, g).canRun);
   if (anyRun) return { step: '만들기', detail: `재료가 있는 "${REACTIONS[anyRun]!.name}"을 공방에서 만들어 볼 수 있어요.`, place: 'workshop', target: `reaction:${anyRun}` };
-  return { step: '다음 준비', detail: '의뢰소에서 주문을 더 받거나 상점에서 다음 라운드 재료를 사 두세요.', place: 'orders' };
+  return { step: '다음 준비', detail: '의뢰소에서 의뢰를 더 받거나 상점에서 다음 라운드 재료를 사 두세요.', place: 'orders' };
 }
 
 export function HelpModal({ onClose, isLocal }: { onClose: () => void; isLocal: boolean }) {
   return (
     <Modal title="이렇게 놀아요 (1분)" onClose={onClose}>
       <div className="stack">
-        <p>우리 팀은 작은 <b>화학 공방</b>이에요. 네 장소를 오가며 주문을 만들어 배달하고 코인을 모읍니다. 마지막에 코인이 가장 많은 팀이 이겨요.</p>
+        <p>우리 팀은 작은 <b>화학 공방</b>이에요. 네 장소를 오가며 의뢰를 만들어 배달하고 코인을 모읍니다. 마지막에 코인이 가장 많은 팀이 이겨요.</p>
         <ol className="help-steps">
-          <li><b>📋 의뢰소</b> — 과학자에게 <b>주문</b>을 받아요. (행동을 쓰지 않아요)</li>
+          <li><b>📋 의뢰소</b> — 과학자에게 <b>의뢰</b>을 받아요. (행동을 쓰지 않아요)</li>
           <li><b>🧺 상점</b> — 재료와 장비를 사요. 부족한 재료는 안내가 알려줘요.</li>
           <li><b>⚗️ 공방</b> — 빈 작업 자리를 눌러 <b>만들기 카드</b>로 만들고, 트레이의 완성품을 <b>정리</b>해요.</li>
           <li><b>📦 출하장</b> — 완성품을 <b>배달</b>하면 코인이 들어와요. 시세가 낮으면 다음 라운드에 팔 수도 있어요.</li>
         </ol>
-        <p className="small">라운드마다 차례인 사람이 <b>3번</b> 행동해요(사기·만들기·정리·배달·장비). 다 했으면 위의 <b>준비 완료</b>. 모든 팀이 준비되면 라운드가 마무리(정산)되고 만들던 것이 완성돼요. <b>제한시간은 없어요.</b> 가게에서 산 재료는 그대로 배달할 수 없어요.</p>
+        <p className="small">라운드마다 차례인 사람이 <b>3번</b> 행동해요(사기·만들기·정리·배달·장비). 다 했으면 위의 <b>준비 완료</b>. 모든 팀이 준비되면 라운드가 마무리(정산)되고 만들던 것이 완성돼요. <b>제한시간은 없어요.</b> 상점에서 산 재료는 그대로 배달할 수 없어요.</p>
         <p className="small"><b>길드 연구지원품</b> — 라운드마다 공방에 세 묶음(완성 소재·공정 재료·기초 원료)이 도착해요. <b>1묶음을 반송하고 2묶음</b>을 받아요. 고르기 전에는 사기·만들기·준비 완료가 잠겨요. 행동력·코인은 들지 않아요.</p>
         <p className="small"><b>재고 매입</b> — 남는 재료를 상점에 낮은 가격(구입가보다 싸게)에 넘길 수 있어요. 라운드에 한 번, 매입 한도가 있어요. 주 수입은 여전히 의뢰 배달이에요. 게임이 끝날 때 남은 재고는 점수에 더하지도 빼지도 않아요.</p>
         {isLocal && <p className="small" style={{ background: 'var(--amber-soft)', padding: 8, borderRadius: 8 }}>연습에서는 준비 완료를 누르면 AI 공방이 행동한 뒤 바로 라운드가 마무리돼요.</p>}

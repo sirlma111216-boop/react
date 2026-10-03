@@ -56,7 +56,7 @@ describe('V3 시작과 연구지원품', () => {
     expect(applyTeamCommand(g, 'T1', { type: 'sellSurplus', items: [{ lotId: t.lots[0]!.id, units: 1 }] }).ok).toBe(false);
   });
 
-  it('지원품을 고르기 전에는 경제 행동·입찰·준비 완료가 잠기고, 주문 받기는 가능하다', () => {
+  it('지원품을 고르기 전에는 경제 행동·입찰·준비 완료가 잠기고, 의뢰 받기는 가능하다', () => {
     const g = v3();
     const t = g.teams['T1']!;
     expect(applyTeamCommand(g, 'T1', { type: 'procure', items: [{ materialId: 'O2_g', units: 1 }] }).ok).toBe(false);

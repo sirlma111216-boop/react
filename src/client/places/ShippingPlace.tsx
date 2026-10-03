@@ -47,13 +47,13 @@ export function ShippingPlace({ view, send, focusId, setFocus, canAct, goTo, hig
   const lastRound = g.round >= g.roundsTotal;
   const mixtures = t.lots.filter((l) => l.kind === 'mixture' || (l.kind === 'pure' && l.materialId === 'H2O_g'));
   const planned = sel ? plannedLots(t, sel) : [];
-  const deliverReason = !sel ? '주문을 고르세요' : !canAct ? `이번 차례: ${view.players.find((p) => p.id === t.operatorId)?.nick ?? '다른 팀원'}` : t.actionsLeft <= 0 ? '행동이 남지 않았어요' : !sat?.ok ? '' : '';
+  const deliverReason = !sel ? '의뢰를 고르세요' : !canAct ? `이번 차례: ${view.players.find((p) => p.id === t.operatorId)?.nick ?? '다른 팀원'}` : t.actionsLeft <= 0 ? '행동이 남지 않았어요' : !sat?.ok ? '' : '';
   const deliver = async () => {
     if (!sel) return;
     const title = sel.title; const total = pay?.total ?? 0;
     if (await send({ type: 'deliver', contractId: sel.id, quoteVersion: g.round }, 'sfx-delivery')) { setStamp(`${title} · +${total}코인`); setTimeout(() => setStamp(null), 2500); if (focusId === sel.id) setFocus(null); }
   };
-  const line = !t.contracts.length ? '배달할 주문이 아직 없네요. 의뢰소에서 주문을 받아 오세요.' : sat?.ok ? '검수 완료! 지금 배달할까요, 시세를 보고 다음 라운드에 할까요?' : '준비되면 여기서 검수해 드릴게요. 부족한 것은 아래에 적혀 있어요.';
+  const line = !t.contracts.length ? '배달할 의뢰가 아직 없네요. 의뢰소에서 의뢰를 받아 오세요.' : sat?.ok ? '검수 완료! 지금 배달할까요, 시세를 보고 다음 라운드에 할까요?' : '준비되면 여기서 검수해 드릴게요. 부족한 것은 아래에 적혀 있어요.';
 
   return (
     <Scene place="shipping">
@@ -62,7 +62,7 @@ export function ShippingPlace({ view, send, focusId, setFocus, canAct, goTo, hig
         <div className="place-main">
           <section className="panel dock" aria-label="출하대">
             <div className="panel-title">출하대 {sel && <span className="muted small" style={{ textTransform: 'none' }}>{sel.title}</span>}</div>
-            {!sel && <p className="muted small">오른쪽 운송 서류에서 주문을 고르세요.</p>}
+            {!sel && <p className="muted small">오른쪽 운송 서류에서 의뢰를 고르세요.</p>}
             {sel && (
               <>
                 <div className="dock-items">
@@ -96,7 +96,7 @@ export function ShippingPlace({ view, send, focusId, setFocus, canAct, goTo, hig
           {sel && pay && (
             <section className="panel price">
               <div className="panel-title">이번 라운드 수령액</div>
-              {pay.fixed ? <p><b>{pay.total}코인</b> <span className="small muted">(고정가 주문)</span></p> : (
+              {pay.fixed ? <p><b>{pay.total}코인</b> <span className="small muted">(고정가 의뢰)</span></p> : (
                 <p className="price-line">기본금 {pay.base} {pay.adjust >= 0 ? '+' : '−'} 시장 {Math.abs(pay.adjust)}{pay.bonus ? ` + 보너스 ${pay.bonus}` : ''} = <b>{pay.total}코인</b> <span className="tag">{CATEGORY_LABEL[cat as keyof typeof CATEGORY_LABEL] ?? cat} 시세 {arrow} {Math.round(z * MARKET_STEP * 100)}%</span></p>
               )}
               <p className="small muted">화살표는 지난 라운드와 비교한 변화예요. 다음 시세는 알 수 없고, 라운드가 바뀔 때만 움직여요 (±4%씩, 최대 ±8%).</p>
@@ -107,14 +107,14 @@ export function ShippingPlace({ view, send, focusId, setFocus, canAct, goTo, hig
                 <button className="btn btn-ghost" disabled={lastRound} title={lastRound ? '마지막 라운드예요' : ''} onClick={() => goTo('workshop')}>보관하고 다음 라운드에 보기</button>
               </div>
               {deliverReason && <p className="small muted">{deliverReason}</p>}
-              <p className="small muted">{lastRound ? '마지막 라운드: 배달하지 않은 주문은 마무리 때 조건이 맞으면 이번 시세로 자동 배달돼요.' : `보관해도 물건과 주문은 그대로예요. 기한(${sel.special ? '게임 끝' : sel.deadlineRound + '라운드'})이 지나면 주문이 사라져요.`}</p>
+              <p className="small muted">{lastRound ? '마지막 라운드: 배달하지 않은 의뢰는 마무리 때 조건이 맞으면 이번 시세로 자동 배달돼요.' : `보관해도 물건과 의뢰는 그대로예요. 기한(${sel.special ? '게임 끝' : sel.deadlineRound + '라운드'})이 지나면 의뢰가 사라져요.`}</p>
             </section>
           )}
         </div>
         <aside className="place-side">
           <section className="panel">
             <div className="panel-title">운송 서류</div>
-            {t.contracts.length === 0 && <p className="muted small">받은 주문이 없어요. <button className="btn btn-sm btn-ghost" onClick={() => goTo('orders')}>의뢰소로 →</button></p>}
+            {t.contracts.length === 0 && <p className="muted small">받은 의뢰가 없어요. <button className="btn btn-sm btn-ghost" onClick={() => goTo('orders')}>의뢰소로 →</button></p>}
             {t.contracts.map((c) => {
               const ok = contractSatisfiable(t, c).ok;
               const p = contractPayout(g, c);

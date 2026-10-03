@@ -116,6 +116,8 @@ export interface ReactionDefinition {
   requiredEquipment?: string[];
   exothermic: boolean;
   heatRecoverable: boolean;
+  /** 화면 표시용 열 출입 분류. 'electric' = 전기 에너지가 필요, 'small' = 실온에서 일어나고 열 출입이 작음. 없으면 exothermic 으로 표시 */
+  heatKind?: 'electric' | 'small';
   conditions: string;
   handling: string;
   gasVolumeRatio?: { label: string; ratio: string; note: string };

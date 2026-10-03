@@ -3,7 +3,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 /** 4개 장소. 이동은 개인 화면 상태이며 서버 경제 명령이 아니다. */
 export type Place = 'orders' | 'workshop' | 'store' | 'shipping';
 export const PLACES: { id: Place; label: string; icon: string; blurb: string }[] = [
-  { id: 'orders', label: '의뢰소', icon: '📋', blurb: '과학자에게 주문을 받아요' },
+  { id: 'orders', label: '의뢰소', icon: '📋', blurb: '과학자에게 의뢰를 받아요' },
   { id: 'workshop', label: '공방', icon: '⚗️', blurb: '재료로 만들고 정리해요' },
   { id: 'store', label: '상점', icon: '🧺', blurb: '재료와 장비를 사요' },
   { id: 'shipping', label: '출하장', icon: '📦', blurb: '완성품을 배달하고 코인을 받아요' },

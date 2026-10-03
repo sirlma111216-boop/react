@@ -6,6 +6,17 @@ const SCENE_ID: Record<Place, string> = { orders: 'scene-orders-v3', workshop: '
 const NPC_ID: Partial<Record<Place, string>> = { orders: 'npc-scientist-v2', store: 'npc-merchant-v2', shipping: 'npc-receiver-v2' };
 const NPC_NAME: Partial<Record<Place, string>> = { orders: '연구소장 하늘', store: '상인 도운', shipping: '물류 담당 서연' };
 
+let preloaded = false;
+/** 네 장소 배경과 NPC 그림을 미리 받아 둔다. 장소를 처음 옮길 때 배경이 늦게 뜨며 깜박이지 않게 한다. */
+export function preloadPlaceArt(): void {
+  if (preloaded || typeof Image === 'undefined') return;
+  preloaded = true;
+  for (const id of [...Object.values(SCENE_ID), ...Object.values(NPC_ID)]) {
+    const url = id ? imageUrl(id) : null;
+    if (url) { const img = new Image(); img.decoding = 'async'; img.src = url; }
+  }
+}
+
 /**
  * 장소 배경 레이어. 이미지가 없으면 장소마다 다른 CSS 공간(창·선반·카운터·출하대)을 그린다.
  * 배경에는 구매 장비나 납품 제품을 그리지 않는다 — 보유 상태는 코드 레이어가 얹는다.

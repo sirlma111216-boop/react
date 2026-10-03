@@ -41,7 +41,7 @@ export function ResultsScreen({ view, onLeave, teacherExport }: { view: ClientVi
         })}
         <AssetChart series={series} />
         {myTeam && myTeam.deliveredContracts.length > 0 && (
-          <div className="card" style={{ marginTop: 12 }}><div className="card-title">우리 팀의 배달 기록</div><ul className="small" style={{ margin: 0, paddingLeft: 16 }}>{myTeam.deliveredContracts.map((d, i) => <li key={i}>R{d.round} {CONTRACTS[d.templateId]?.title ?? d.templateId} +{d.reward}{d.special ? ' (특별 주문)' : ''}</li>)}</ul></div>
+          <div className="card" style={{ marginTop: 12 }}><div className="card-title">우리 팀의 배달 기록</div><ul className="small" style={{ margin: 0, paddingLeft: 16 }}>{myTeam.deliveredContracts.map((d, i) => <li key={i}>R{d.round} {CONTRACTS[d.templateId]?.title ?? d.templateId} +{d.reward}{d.special ? ' (특별 의뢰)' : ''}</li>)}</ul></div>
         )}
         <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
           <button className="btn btn-ghost" onClick={() => download('json')}>JSON 내려받기</button>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import type { ModeId } from '../shared/types';
 import { WsClient } from './lib/net';
 import { useAppState, store } from './lib/store';
@@ -7,9 +7,14 @@ import { audio } from './lib/audio';
 import { TitleScreen, type JoinResult } from './screens/TitleScreen';
 import { LobbyScreen } from './screens/LobbyScreen';
 import { GameScreen } from './screens/GameScreen';
-import { TeacherBoard } from './screens/TeacherBoard';
-import { PracticeScreen } from './screens/PracticeScreen';
-import { AssetReview } from './screens/AssetReview';
+// 학생 대부분이 쓰지 않는 화면은 필요할 때 따로 받는다 (첫 로딩을 가볍게)
+const TeacherBoard = lazy(() => import('./screens/TeacherBoard').then((m) => ({ default: m.TeacherBoard })));
+const PracticeScreen = lazy(() => import('./screens/PracticeScreen').then((m) => ({ default: m.PracticeScreen })));
+const AssetReview = lazy(() => import('./screens/AssetReview').then((m) => ({ default: m.AssetReview })));
+
+function Loading() {
+  return <div className="screen title-screen"><div className="bg-full bg-fallback-lobby" /><div className="bg-content title-panel center"><div className="spinner" style={{ margin: '0 auto' }} /></div></div>;
+}
 import { Toasts, ConnectionBadge } from './components/common';
 
 type Route = { kind: 'title' } | { kind: 'room'; session: StudentSession } | { kind: 'practice'; mode: ModeId } | { kind: 'assets' };
@@ -53,8 +58,8 @@ export function App() {
     history.replaceState(null, '', '/');
   };
 
-  if (route.kind === 'assets') return <AssetReview onLeave={() => { history.replaceState(null, '', '/'); setRoute({ kind: 'title' }); }} />;
-  if (route.kind === 'practice') return <><PracticeScreen mode={route.mode} onLeave={() => setRoute({ kind: 'title' })} /><Toasts /></>;
+  if (route.kind === 'assets') return <Suspense fallback={<Loading />}><AssetReview onLeave={() => { history.replaceState(null, '', '/'); setRoute({ kind: 'title' }); }} /></Suspense>;
+  if (route.kind === 'practice') return <><Suspense fallback={<Loading />}><PracticeScreen mode={route.mode} onLeave={() => setRoute({ kind: 'title' })} /></Suspense><Toasts /></>;
   if (route.kind === 'title') return <><TitleScreen onJoin={onJoin} onPractice={(mode) => setRoute({ kind: 'practice', mode })} /><Toasts /></>;
 
   if (!client || !view) {
@@ -82,5 +87,5 @@ export function App() {
   if (view.room.status === 'lobby' || !view.game) screen = <LobbyScreen view={view} client={client} onLeave={leave} />;
   else if (isTeacher && (teacherView === 'spectate' || !view.me.teamId)) screen = <TeacherBoard view={view} client={client} onLeave={leave} teacherKey={loadTeacherKey()} onSwitchToTeam={view.me.teamId ? () => setTeacherView('team') : undefined} />;
   else screen = <GameScreen view={view} client={client} onLeave={leave} headerExtra={isTeacher ? <button className="btn btn-sm btn-copper" onClick={() => setTeacherView('spectate')}>관전 보드</button> : undefined} />;
-  return <>{screen}<Toasts /><ConnectionBadge /></>;
+  return <><Suspense fallback={<Loading />}>{screen}</Suspense><Toasts /><ConnectionBadge /></>;
 }

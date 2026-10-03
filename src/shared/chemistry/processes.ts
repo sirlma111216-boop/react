@@ -6,10 +6,10 @@ import { MATERIALS } from './materials';
  * 학생 화면에서는 "정리하기"로 부르며, 분리·정제의 추상 공정이다.
  */
 export const PROCESSES: Record<string, ProcessDefinition> = {
-  P01: { id: 'P01', name: '응축하기', energy: 1, fee: 0, time: 0, description: '수증기를 식혀 물로 만들고, 섞여 있던 기체는 따로 모은다. 기체가 두 종류 이상 섞여 있으면 나누지 않는다.' },
+  P01: { id: 'P01', name: '응축하기', energy: 1, fee: 0, time: 0, description: '수증기를 식혀 액체 물로 바꾸고(액화), 섞여 있던 다른 기체는 따로 모은다. 다른 기체가 두 종류 이상이면 그 기체들끼리는 섞인 채로 나온다.' },
   P02: { id: 'P02', name: '거르기', energy: 0, fee: 2, time: 0, description: '섞인 것에서 녹지 않은 고체만 건져 낸다. 물에 녹은 것은 여액(남은 용액)으로 남는다.' },
-  P03: { id: 'P03', name: '결정 만들기', energy: 2, fee: 1, time: 0, description: '소금물(염화나트륨 수용액)에서 물을 날려 소금 결정을 얻는다. 물은 회수수로 돌아간다.' },
-  P04: { id: 'P04', name: '정제하기', energy: 2, fee: 2, time: 0, requiredEquipment: 'U07', description: '암모니아·에탄올·에스터 혼합물에서 제품만 골라내고 남은 재료는 되돌려 받는다. 정제 장비가 필요하다.' },
+  P03: { id: 'P03', name: '결정 만들기', energy: 2, fee: 1, time: 0, description: '소금물(염화나트륨 수용액)을 가열해 물을 증발시키면 소금 결정이 남는다. 날아간 물은 다시 모아 회수수로 쓴다.' },
+  P04: { id: 'P04', name: '정제하기', energy: 2, fee: 2, time: 0, requiredEquipment: 'U07', description: '암모니아는 차갑게 식혀 액체로 만들고, 에탄올·아세트산에틸은 끓는점 차이(증류)를 이용해 제품만 골라낸다. 반응하지 않고 남은 재료는 되돌려 받는다. 정제 모듈이 필요하다.' },
 };
 
 let lotCounter = 0;

@@ -63,7 +63,7 @@ export function TeacherBoard({ view, client, onLeave, onSwitchToTeam, teacherKey
                 <span className="muted small">{members.map((m) => { const p = view.players.find((x) => x.id === m); return p ? `${p.nick}${p.connected ? '' : '(끊김)'}` : ''; }).join(', ')}</span>
               </div>
               <div className="small"><b>만드는 중:</b> {t.processes.length ? t.processes.map((p) => `${p.kind === 'reaction' ? REACTIONS[p.defId]!.name : PROCESSES[p.defId]!.name}→${p.completesRound}R`).join(', ') : '없음'}</div>
-              <div className="small"><b>주문:</b> {t.contracts.length ? t.contracts.map((c) => `${c.title}(${c.deadlineRound}R)`).join(', ') : '없음'} · 배달 {t.delivered}</div>
+              <div className="small"><b>의뢰:</b> {t.contracts.length ? t.contracts.map((c) => `${c.title}(${c.deadlineRound}R)`).join(', ') : '없음'} · 배달 {t.delivered}</div>
               <div className="small"><b>창고:</b> {t.lots.slice(0, 8).map((l) => l.kind === 'pure' ? `${MATERIALS[l.materialId!]!.displayName}×${l.units}` : `섞인 것(${l.origin.reactionId})`).join(' ')}{t.lots.length > 8 ? ' …' : ''}</div>
               {t.memo && <div className="small muted">메모: {t.memo}</div>}
             </div>

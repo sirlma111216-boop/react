@@ -11,6 +11,7 @@ import { CATALYST_ART, PROCESS_AID } from '../../shared/assets/objectArt';
 import { MaterialArt, MixtureArt, ObjectArt } from './Art';
 import { slotMaterial } from '../lib/slot';
 import { ActionIcon, EnergyIcon, Equation, FormulaBody } from './common';
+import { josa } from '../../shared/josa';
 
 export type CardState = 'ok' | 'short' | 'equip' | 'slot' | 'energy' | 'lock' | 'wait' | 'actions' | 'ready';
 
@@ -39,11 +40,11 @@ export function availability(game: GameView, team: TeamState, rid: string, opts:
   const slots = (game.reactionSlots ?? 2) + (owns('U01') ? 1 : 0);
   const running = team.processes.filter((p) => p.kind === 'reaction').length;
   const base = { scaleMax, missing, missingEquipment, energy, time, running };
-  if (missingEquipment.length) return { ...base, state: 'equip', text: `${missingEquipment.map((e) => EQUIPMENT[e]!.name).join(', ')}이(가) 필요해요.` };
+  if (missingEquipment.length) return { ...base, state: 'equip', text: `${missingEquipment.map((e) => EQUIPMENT[e]!.name).join(', ')}${josa(missingEquipment.map((e) => EQUIPMENT[e]!.name).join(', '), '이/가')} 필요해요.` };
   const nameOfSlot = (m: string) => MATERIALS[slotMaterial(r.reactants.find((s) => s.accepts[0] === m)?.accepts ?? [m], team, game.shopMaterials)]!.displayName;
   if (missing.length) return { ...base, state: 'short', text: `${missing.map((m) => `${nameOfSlot(m.materialId)} ${m.units}개`).join(', ')}가 부족해요.` };
   if (running >= slots) return { ...base, state: 'slot', text: `빈 반응기가 필요해요 (작업 자리 ${running}/${slots} 사용 중 · 정산 뒤 비어요).` };
-  if (team.energy < energy) return { ...base, state: 'energy', text: `에너지 ${energy - team.energy}이(가) 더 필요해요 (지금 ${team.energy}).` };
+  if (team.energy < energy) return { ...base, state: 'energy', text: `에너지 ${energy - team.energy}${josa(energy - team.energy, '이/가')} 더 필요해요 (지금 ${team.energy}).` };
   if (opts.supportPending) return { ...base, state: 'lock', text: '먼저 이번 라운드 연구지원품을 고르세요.' };
   if (team.roundReady) return { ...base, state: 'ready', text: '준비 완료 상태예요. 준비를 취소하면 할 수 있어요.' };
   if (!opts.isOperator) return { ...base, state: 'wait', text: `재료는 충분해요. 이번 조작: ${opts.operatorNick}` };
@@ -54,7 +55,7 @@ export function availability(game: GameView, team: TeamState, rid: string, opts:
 const STATE_TAG: Record<CardState, { sym: string; label: string; cls: string }> = {
   ok: { sym: '✓', label: '바로 가능', cls: 'st-ok' },
   short: { sym: '!', label: '재료 부족', cls: 'st-short' },
-  equip: { sym: '!', label: '설비 필요', cls: 'st-short' },
+  equip: { sym: '!', label: '장비 필요', cls: 'st-short' },
   slot: { sym: '⟳', label: '자리 없음', cls: 'st-busy' },
   energy: { sym: '!', label: '에너지 부족', cls: 'st-short' },
   lock: { sym: '▢', label: '지원품 먼저', cls: 'st-wait' },
@@ -188,7 +189,7 @@ export function WorkCard({ rid, game, team, av, focus, relation, route, selected
           <button className="btn btn-primary wc-go" onClick={() => onRun(1)}>반응 시작</button>
         </>}
         {av.state === 'short' && <button className="btn btn-copper" onClick={onShort}>부족한 재료 보기</button>}
-        {av.state === 'equip' && <button className="btn btn-copper" onClick={() => onEquip(av.missingEquipment[0]!)}>설비 확인</button>}
+        {av.state === 'equip' && <button className="btn btn-copper" onClick={() => onEquip(av.missingEquipment[0]!)}>장비 확인</button>}
         {av.state === 'slot' && <button className="btn btn-ghost" onClick={() => onEquip('U01')}>추가 반응기 보기</button>}
         {av.state === 'energy' && <button className="btn btn-copper" onClick={() => onEquip('energy')}>에너지 충전하러 가기</button>}
         {(av.state === 'wait' || av.state === 'lock' || av.state === 'ready' || av.state === 'actions') && <button className="btn btn-ghost" onClick={onPin}>👍 팀원에게 추천</button>}
