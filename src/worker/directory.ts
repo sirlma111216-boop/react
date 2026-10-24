@@ -22,7 +22,20 @@ export class DirectoryDurableObject extends DurableObject {
     return this.list;
   }
   private async save(): Promise<void> {
-    await this.ctx.storage.put('rooms', this.list ?? []);
+    const rooms = this.list ?? [];
+    if (!rooms.length) {
+      await this.ctx.storage.deleteAll();
+      await this.ctx.storage.deleteAlarm();
+      return;
+    }
+    await this.ctx.storage.put('rooms', rooms);
+    await this.ctx.storage.setAlarm(Math.max(Date.now() + 1, Math.min(...rooms.map(r => r.createdAt + MAX_AGE))));
+  }
+
+  async alarm(): Promise<void> {
+    const rooms = await this.load();
+    this.list = rooms.filter(r => Date.now() - r.createdAt < MAX_AGE);
+    await this.save();
   }
 
   async fetch(request: Request): Promise<Response> {

@@ -11,7 +11,7 @@ export interface Env {
   DIRECTORY: DurableObjectNamespace<DirectoryDurableObject>;
   ASSETS: Fetcher;
   TEACHER_ID: string;
-  TEACHER_PASSWORD: string;
+  TEACHER_PASSWORD_SECRET?: string;
   ENVIRONMENT: string;
 }
 
@@ -38,12 +38,13 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 /** 교사 키: 비밀번호에서 파생한 HMAC. 비밀번호 자체는 클라이언트에 저장하지 않는다. */
 export async function teacherKey(env: Env): Promise<string> {
-  return hmacHex(env.TEACHER_PASSWORD || 'guild2026', 'reaction-guild-teacher-key-v1');
+  if (!env.TEACHER_PASSWORD_SECRET) throw new Error('Teacher authentication is not configured');
+  return hmacHex(env.TEACHER_PASSWORD_SECRET!, 'reaction-guild-teacher-key-v1');
 }
 
 async function isTeacher(request: Request, env: Env): Promise<boolean> {
   const key = request.headers.get('x-teacher-key') ?? '';
-  if (!key) return false;
+  if (!key || !env.TEACHER_PASSWORD_SECRET) return false;
   return timingSafeEqual(key, await teacherKey(env));
 }
 
@@ -76,9 +77,10 @@ export default {
       if (path === '/api/health') return json({ ok: true, env: env.ENVIRONMENT, now: Date.now() });
 
       if (path === '/api/teacher/login' && request.method === 'POST') {
+        if (!env.TEACHER_PASSWORD_SECRET) return json({ error: '교사 인증 설정이 필요합니다.' }, 503);
         const body = (await request.json().catch(() => ({}))) as { id?: string; password?: string };
         const idOk = timingSafeEqual(String(body.id ?? ''), env.TEACHER_ID || 'teacher');
-        const pwOk = timingSafeEqual(String(body.password ?? ''), env.TEACHER_PASSWORD || 'guild2026');
+        const pwOk = timingSafeEqual(String(body.password ?? ''), env.TEACHER_PASSWORD_SECRET!);
         if (!idOk || !pwOk) return json({ error: '아이디 또는 비밀번호가 맞지 않습니다.' }, 401);
         return json({ ok: true, teacherKey: await teacherKey(env) });
       }
